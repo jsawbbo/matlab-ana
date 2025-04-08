@@ -1,0 +1,6 @@
+-
+    content:
+        version:
+            default: 0.0
+            protected: true
+            comment: "ANA version number"

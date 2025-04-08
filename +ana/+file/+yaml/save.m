@@ -1,9 +1,9 @@
 function save(filePath,data,style)
-    %ANA.YAML.SAVE Write data to YAML file.
-    %   ANA.YAML.SAVE(FILE, DATA) converts DATA to YAML and saves it in a new
+    %ANA.FILE.YAML.SAVE Write data to YAML file.
+    %   ANA.FILE.YAML.SAVE(FILE, DATA) converts DATA to YAML and saves it in a new
     %   file FILE.
     %
-    %   ANA.YAML.SAVE(FILE, DATA, STYLE) uses a specific output style.
+    %   ANA.FILE.YAML.SAVE(FILE, DATA, STYLE) uses a specific output style.
     %   STYLE can be "auto" (default), "block" or "flow".
     %
     %   The following types are supported for DATA:
@@ -30,7 +30,7 @@ function save(filePath,data,style)
     %           a: 1
     %           b: {["text"]  [0]}
     %
-    %   See also YAML.PARSE, YAML.PARSE, YAML.LOAD
+    %   See also ANA.FILE.YAML.PARSE, ANA.FILE.YAML.PARSE, ANA.FILE.YAML.LOAD
     
     arguments
         filePath (1, 1) string
@@ -39,7 +39,7 @@ function save(filePath,data,style)
     end
     
     % Create YAML string.
-    yamlString = yaml.dump(data, style);
+    yamlString = ana.file.yaml.dump(data, style);
     
     % Create folder.
     folder = fileparts(filePath);

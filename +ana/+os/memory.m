@@ -1,8 +1,11 @@
 function [total,free] = memory()
-    %ANA.SYSTEM.MEMORY Get total and available physical RAM.
+    %ANA.OS.MEMORY Get total and available physical RAM.
     %
     %Syntax:
     %   [total,free] = ana.system.memory
+    %
+    %Note:
+    %   This function was only tested on Linux and Windows. 
     %
     try
         [~, systemview] = memory;

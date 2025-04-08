@@ -1,5 +1,5 @@
 function result = dump(data, style)
-    %ANA.FILEFORMAT.YAML.DUMP Convert data to YAML string
+    %ANA.FILE.YAML.DUMP Convert data to YAML string
     %   STR = DUMP(DATA) converts DATA to a YAML string STR.
     %
     %   STR = .DUMP(DATA, STYLE) uses a specific output style.
@@ -34,7 +34,7 @@ function result = dump(data, style)
     %         b: [hello, false]
     %         "
     %
-    %   See also ANA.YAML.DUMP, ANA.YAML.LOAD, ANA.YAML.SAVE
+    %   See also ANA.FILE.YAML.DUMP, ANA.FILE.YAML.LOAD, ANA.FILE.YAML.SAVE
     
     arguments
         data

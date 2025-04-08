@@ -1,9 +1,9 @@
 function result = parse(s, options)
-    %ANA.YAML.PARSE Parse YAML string
-    %   DATA = ANA.YAML.PARSE(STR) parses a YAML string STR and converts it to
+    %ANA.FILE.YAML.PARSE Parse YAML string
+    %   DATA = ANA.FILE.YAML.PARSE(STR) parses a YAML string STR and converts it to
     %   appropriate data types DATA.
     %
-    %   DATA = YANA.AML.PARSE(STR, ConvertToArray=false) avoids conversion of
+    %   DATA = ANA.FILE.AML.PARSE(STR, ConvertToArray=false) avoids conversion of
     %   sequences to 1D or 2D non-cell arrays.
     %
     %   The YAML types are convert to MATLAB types as follows:
@@ -29,7 +29,7 @@ function result = parse(s, options)
     %           a: 1
     %           b: {["text"]  [0]}
     %
-    %   See also ANA.YAML.DUMP, ANA.YAML.SAVE, ANA.YAML.LOAD
+    %   See also ANA.FILE.YAML.DUMP, ANA.FILE.YAML.SAVE, ANA.FILE.YAML.LOAD
         
     arguments
         s (1, 1) string
