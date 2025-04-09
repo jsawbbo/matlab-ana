@@ -2,10 +2,6 @@ classdef version < matlab.mixin.Copyable
     %ANA.UTIL.VERSION Version information
     %
 
-    properties(Constant,Hidden)
-        matlab_ana = '0.0.0' % Current ANA version
-    end
-   
     properties (SetAccess = protected)
         Number = []         % Version array (major,minor,patch).
     end
@@ -68,14 +64,14 @@ classdef version < matlab.mixin.Copyable
             end
 
             if isempty(value)
-                obj.parse(obj.ana);
+                obj.Number = [0 0];
             elseif isa(value,'ana.util.version')
                 obj.Number = value.Number;
                 obj.Tweak = value.Tweak;
             elseif isstring(value) || ischar(value)
                 obj.parse(value);
             elseif isa(value,'double')
-                n = numel(p);
+                n = numel(value);
                 if (n < 1) || (n>4) 
                     error('ana:util:version:format', 'invalid version format')
                 end
@@ -85,6 +81,24 @@ classdef version < matlab.mixin.Copyable
             end
         end
 
+        function res = string(obj)
+            %STRING   Convert to string.
+            %
+            arguments
+                obj ana.util.version
+            end
+
+            res = num2cell(obj.Number);
+            res = cellfun(@string,res);
+            res = strjoin(res,'.');
+
+            if ~isempty(obj.Tweak)
+                res = res + "-" + string(obj.Tweak);
+            end
+        end
+    end
+
+    methods
         function res = lt(obj,other)
             res = obj.compare(other) < 0;
         end
