@@ -33,7 +33,7 @@ classdef path
                     pathname = pwd();
                 end
     
-                obj.Parts = regexp(char(pathname),'[/\\]','split');
+                obj.Parts = regexp(string(pathname),'[/\\]','split');
                 obj.Drive = ~isempty(regexp(obj.Parts{1}, '^[a-zA-Z]:$', 'once'));
     
                 if (numel(obj.Parts) == 2) && strlength(obj.Parts{end}) == 0
@@ -64,18 +64,28 @@ classdef path
         function res = mldivide(obj, part)
             res = obj.mrdivide(part);
         end
+
+        function res = plus(obj,piece)
+            %PLUS    Add piece to file name.
+            %
+            res = obj;
+            res.Parts(end) = res.Parts(end) + string(piece);
+        end
+
+        function res = string(obj)
+            res = fullfile(obj);
+        end
     end
 
     methods
-        
         function res = isfile(obj)
             %ISFILE   Check if path points to an existing file.
-            res = isfile(obj.full());
+            res = isfile(fullfile(obj));
         end
 
         function res = isfolder(obj)
             %ISFOLDER   Check if path points to an existing directory.
-            res = isfolder(obj.full());
+            res = isfolder(fullfile(obj));
         end
 
         function res = isrelative(obj)
@@ -106,18 +116,31 @@ classdef path
             end
         end
 
-        function str = full(obj)
-            %FULL   Get full path as string.
+        function str = fullfile(obj,varargin)
+            %FULLFILE   Get full path as string.
+            %
+            %   The behavior is identical to Matlab's 'fullfile'.
             %
             arguments
                 obj ana.fs.path;
             end
+            arguments(Repeating)
+                varargin
+            end
 
-            str = strjoin(obj.Parts,obj.separator);
+            full = obj;
+            for i = 1:nargin-1
+                full = full / varargin{i};
+            end
+
+            str = strjoin(full.Parts,obj.separator);
         end
 
-        function [path,filename,extension] = parts(obj)
-            %PARTS   Get file parts as string.
+        function [path,filename,extension] = fileparts(obj)
+            %FILEPARTS   Get file parts.
+            %
+            %   The behavior is identical to Matlab's 'fileparts'.
+            %
             arguments
                 obj ana.fs.path;
             end
@@ -125,6 +148,23 @@ classdef path
             path = strjoin(obj.Parts(1:end-1),obj.separator);
             filename = obj.Parts{end};
             extension = regexp(filename, '[.][^.]+$', 'match');
+        end
+
+        function res = exist(obj,searchType)
+            %EXIST   Check if file exists.
+            %
+            %   The behavior is identical to Matlab's 'exist'.
+            %
+            arguments
+                obj ana.fs.path;
+                searchType = [];
+            end
+
+            if isempty(searchType)
+                res = exist(fullfile(obj)); %#ok<EXIST>
+            else
+                res = exist(fullfile(obj), searchType);
+            end
         end
 
         % function rel = relative(obj, other)

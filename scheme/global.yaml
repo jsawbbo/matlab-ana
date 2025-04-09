@@ -1,0 +1,12 @@
+version: "1.0"
+type: map
+content:
+-   key: storage
+    type: map
+    comment: "Local and remote default storage locations "
+    content:
+    -   key: scratch
+        type: string
+        comment: "Local scratch directory (for temporary large files)."
+        default: 
+            eval: "ana.os.paths('tmpdir')"
