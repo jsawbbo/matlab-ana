@@ -23,7 +23,7 @@ function result = parse(s, options)
     %
     %   Example:
     %       >> STR = "{a: 1, b: [text, false]}";
-    %       >> DATA = yaml.load(STR)
+    %       >> DATA = ana.file.yaml.load(STR)
     %
     %         struct with fields:
     %           a: 1

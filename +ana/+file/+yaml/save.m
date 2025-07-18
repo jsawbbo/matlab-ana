@@ -22,8 +22,8 @@ function save(filePath,data,style)
     %       >> DATA.a = 1
     %       >> DATA.b = {"text", false}
     %       >> FILE = ".\test.yaml"
-    %       >> yaml.dumpFile(FILE, DATA)
-    %       >> yaml.loadFile("test.yaml")
+    %       >> ana.file.yaml.dump(FILE, DATA)
+    %       >> ana.file.yaml.load("test.yaml")
     %
     %         struct with fields:
     %

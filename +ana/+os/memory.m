@@ -23,7 +23,7 @@ function [total,free] = memory()
             free = total - used;
         catch
             warning("could not determine physical memory size");
-            total = 1024*1024;
+            total = 4*1024*1024;
             free = total;
         end
     end

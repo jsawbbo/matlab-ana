@@ -1,12 +1,46 @@
 version: "1.0"
+
 type: map
-content:
+contents:
 -   key: storage
     type: map
-    comment: "Local and remote default storage locations "
-    content:
+    comment: |
+        Local and remote storage locations.
+    actions:
+    contents:
+    -   key: searchpath
+        type: seq
+        comment: |
+            File storage search path.
+
+            Depending on the computing environment, files may be stored in locations with
+            a different root (for example when moving from a Microscoft Windows to a
+            Linux workstation). This allows files to be represented as, for example
+
+                {storage}/rawdata/datafile-01.data
+
+            so that a configuration file must not be edited.
+        contents:
+            type: map
+            contents:
+            -   key: location
+                type: path
+                comment: "Local path or remote URL."
+            -   key: remote
+                type: logical
+                default: false
+                comment: "Search path resides on a remote system."
+            -   key: permanent
+                type: logical
+                default: true
+                comment: "Storage location may be assumed to be permanently attached."
     -   key: scratch
-        type: string
+        type: path
         comment: "Local scratch directory (for temporary large files)."
         default: 
-            eval: "ana.os.paths('tmpdir')"
+            eval: |
+                ana.os.paths('tmpdir')
+    -   key: cache
+        type: path
+        comment: "Cache directory."
+

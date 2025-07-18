@@ -9,37 +9,49 @@ classdef scheme < handle
     end
     
     methods(Access=private,Hidden)
-        function node = parseScheme(obj,node)
-            if isfield(node, 'type')
-                switch(node.type)
-                    case 'map'
-                        for i = 1:numel(node.content)
-                            node.content{i} = obj.parseScheme(node.content{i});
-                        end
-                        return
-                    case 'seq'
-                        error("FIXME")
-                    otherwise
-                        error("FIXME")
-                end
-            end
+        function [node,type] = parseDefault(~,node)
+            assert(isfield(node,'default'))
 
-            if isfield(node, 'content') && isstruct(node.content)
-                if isfield(node.content,'eval')
-                    node.content = eval(node.content.eval);
-                end
-            end
-
-            if isfield(node, 'content') && ~isfield(node, 'type')
-                if isnumeric(node.content)
-                    node.type = 'numeric';
-                elseif isstring(node.content) || ischar(node.content)
-                    node.type = 'string';
-                elseif islogical(node.content)
-                    node.type = 'logical';
+            type = [];
+            if isstruct(node.default)
+                if isfield(node.default, 'eval')
+                    node.default = eval(node.default.eval);
                 else
-                    error('ana:config:scheme:invalid-type', 'unsupported data type')
+                    error('ana:config:scheme:default', 'invalid default field')
                 end
+            end
+
+            if isstring(node.default) || ischar(node.default)
+                type = 'string';
+            elseif numel(node.default) > 1
+                error("FIXME")
+            else
+                type = class(node.default);
+            end
+        end
+
+        function node = parseNode(obj,node)
+            if ~isfield(node,'type')
+                % need to guess type from default
+                [node,node.type] = obj.parseDefault(node);
+                if isempty(node.type)
+                    error('ana:config:scheme:type', 'type cannot be deduced, no default field')
+                end
+            end
+            
+            switch(node.type)
+                case 'map'
+                    for i = 1:numel(node.contents)
+                        node.contents{i} = obj.parseNode(node.contents{i});
+                    end
+                    return
+                case 'seq'
+                    node.contents = obj.parseNode(node.contents);
+                    return
+                otherwise
+                    if isfield(node,'default')
+                        node = obj.parseDefault(node);
+                    end
             end
         end
 
@@ -48,15 +60,17 @@ classdef scheme < handle
 
             switch(node.type)
                 case 'map'
-                    for i = 1:numel(node.content)
-                        s = obj.assignDefaults(s,node.content{i});
+                    if ~isfield(s,node.key)
+                        s.(node.key) = struct();
+                    end
+
+                    for i = 1:numel(node.contents)
+                        s.(node.key) = obj.assignDefaults(s.(node.key),node.contents{i});
                     end
                     return
-                case 'seq'
-                    error("FIXME")
                 otherwise
-                    if ~isfield(s,node.key)
-                        s.(node.key) = node.content;
+                    if ~isfield(s,node.key) && isfield(node,'default')
+                        s.(node.key) = node.default;
                     end
             end            
         end
@@ -66,8 +80,8 @@ classdef scheme < handle
 
             switch(node.type)
                 case 'map'
-                    for i = 1:numel(node.content)
-                        if strcmp(node.content{i}, stack{end})
+                    for i = 1:numel(node.contents)
+                        if strcmp(node.contents{i}, stack{end})
                             % FIXME
                         end
                     end                   
@@ -95,7 +109,7 @@ classdef scheme < handle
             end
 
             obj.Scheme = ana.file.yaml.load(fullfile(name));
-            obj.Scheme = obj.parseScheme(obj.Scheme);
+            obj.Scheme = obj.parseNode(obj.Scheme);
         end
 
         function s = check(obj, s)
@@ -116,7 +130,10 @@ classdef scheme < handle
             end
 
             % assign defaults
-            s = obj.assignDefaults(s, obj.Scheme);
+            contents = obj.Scheme.contents;
+            for i = 1:numel(contents)
+                s = obj.assignDefaults(s, contents{i});
+            end
             
             % check existing entries
             fn = fieldnames(s);

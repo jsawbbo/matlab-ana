@@ -26,7 +26,22 @@ classdef file < handle & matlab.mixin.indexing.RedefinesDot
         function n = dotListLength(obj,indexOp,indexContext)
             n = listLength(obj.Data,indexOp,indexContext);
         end
-    end    
+    end
+
+    methods(Hidden)
+        function names = properties(obj)
+            names = fieldnames(obj.Data);
+        end        
+
+        function names = fieldnames(obj)
+            names = fieldnames(obj.Data);
+        end
+
+        function delete(obj)
+            %DELETE Destructor.
+            % FIXME save
+        end
+    end
 
     methods
         function obj = file(filename,options)
@@ -74,11 +89,6 @@ classdef file < handle & matlab.mixin.indexing.RedefinesDot
                 obj.Scheme = ana.config.scheme(obj.Scheme);
                 obj.Data = obj.Scheme.check(obj.Data);
             end
-        end
-
-        function delete(obj)
-            %DELETE Destructor.
-            % FIXME save
         end
     end
 end

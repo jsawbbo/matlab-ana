@@ -28,7 +28,7 @@ function result = dump(data, style)
     %   Example:
     %       >> DATA.a = 1
     %       >> DATA.b = {"hello", false}
-    %       >> STR = yaml.dump(DATA)
+    %       >> STR = ana.file.yaml.dump(DATA)
     %
     %         "a: 1.0
     %         b: [hello, false]

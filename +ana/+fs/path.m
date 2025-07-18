@@ -1,18 +1,35 @@
 classdef path
-    %ANA.FS.PATH Filesystem path.
+    %ANA.FS.PATH Canonical representation of a file path.
     %
-    %   Canonical representation of a filesystem path.
+    %   To enable operating system indepent file paths, and, as well, storage layouts,
+    %   ...FIXME...
     %
+    %   FIXME: storage layout -> search path "{storage}"
+    %
+    %TODO:
+    %   Samba shares starting with "\\" (or "//").
+    %
+    %See also: FIXME search path
 
     properties (SetAccess = protected)
-        Drive
-        Parts
+        Drive   % Boolean value indicating that a Windows® drive letter is used.
+        Parts   % String array of path elements.
     end
 
-    properties(Constant,Hidden)
-        separator = '/'
+    properties(Constant)
+        separator = '/' % Canonical path separator.
     end
     
+    methods(Hidden)
+        function res = string(obj)
+            res = fullfile(obj);
+        end
+
+        function disp(obj)
+            fprintf('    "%s" (<a href="matlab:help ana.fs.path">ana.fs.path</a>)\n\n', string(obj));
+        end
+    end
+   
     methods
         function obj = path(pathname)
             %PATH Construct an instance of this class
@@ -41,7 +58,9 @@ classdef path
                 end           
             end
         end
+    end
 
+    methods(Hidden)
         function res = mrdivide(obj, part)
             %MRDIVIDE   Add a path part.
             arguments
@@ -62,6 +81,7 @@ classdef path
         end
 
         function res = mldivide(obj, part)
+            %MLDIVIDE   Add a path part.
             res = obj.mrdivide(part);
         end
 
@@ -70,10 +90,6 @@ classdef path
             %
             res = obj;
             res.Parts(end) = res.Parts(end) + string(piece);
-        end
-
-        function res = string(obj)
-            res = fullfile(obj);
         end
     end
 
