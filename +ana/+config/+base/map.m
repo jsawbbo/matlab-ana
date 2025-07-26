@@ -7,16 +7,20 @@ classdef map < ana.config.base.node & matlab.mixin.indexing.RedefinesDot
     end
     
     methods (Access=protected)
+        function n = dotListLength(obj,indexOp,indexContext)
+            n = listLength(obj.Properties,indexOp,indexContext);
+        end
+
         function varargout = dotReference(obj,indexOp)
+            % FIXME access to value node should return value
             [varargout{1:nargout}] = obj.Properties.(indexOp);
         end
 
         function obj = dotAssign(obj,indexOp,varargin)
+            % FIXME 
+            % -differentiate between value and node assignment
+            % -node assignment needs to propagate Parent,Scheme
             [obj.Properties.(indexOp)] = varargin{:};
-        end
-        
-        function n = dotListLength(obj,indexOp,indexContext)
-            n = listLength(obj.Properties,indexOp,indexContext);
         end
     end
 
@@ -27,13 +31,17 @@ classdef map < ana.config.base.node & matlab.mixin.indexing.RedefinesDot
                 options.Parent = [];
                 options.Scheme = [];
             end
+
+            poptions = namedargs2cell(options);
+            obj@ana.config.base.node(poptions{:});
         end
+
+        function res = fieldnames(obj)
+            %FIELDNAMES Get map keys.
+            res = fieldnames(obj.Properties);
+        end
+
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
-        end
     end
 end
 

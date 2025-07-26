@@ -1,7 +1,8 @@
 classdef node < handle
     %ANA.CONFIG.BASE.NODE Configuration node base class.
     %
-    %   FIXME
+    %   A "configuration node" can be a simple branch node or represent a setting.
+    %   These nodes may be accompanied by schemes. 
     %
     
     properties(Hidden,Access=protected)
@@ -13,6 +14,7 @@ classdef node < handle
     methods
         function obj = node(options)
             %NODE Construct an instance of this class
+            %
             arguments
                 options.Parent = [];
                 options.Scheme = [];
@@ -24,6 +26,7 @@ classdef node < handle
 
         function res = root(obj)
             %ROOT   Find root node.
+            %
             arguments
                 obj ana.config.base.node;
             end
@@ -32,6 +35,18 @@ classdef node < handle
             while ~isempty(res.Parent)
                 res = res.Parent;
             end
+        end
+
+        function res = ismodified(obj)
+            %ISMODIFIED Check if modified.
+            %
+            %   This methods checks if this node or any child node was modified.
+            %
+            arguments
+                obj ana.config.base.node;
+            end
+            
+            res = obj.Modified;
         end
     end
 end
