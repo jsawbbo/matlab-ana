@@ -41,7 +41,22 @@ classdef map < ana.config.base.node & matlab.mixin.indexing.RedefinesDot
             res = fieldnames(obj.Properties);
         end
 
-        
+        function res = ismodified(obj)
+            %ISMODIFIED Check if modified.
+            %
+            arguments
+                obj ana.config.base.node;
+            end
+           
+            res = false;
+            f = fieldnames(obj);
+            for k = 1:numel(f)
+                if obj.Properties.(f{k}).ismodified())
+                    res = true;
+                    break;
+                end
+            end
+        end
     end
 end
 

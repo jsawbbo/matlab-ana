@@ -40,8 +40,6 @@ classdef node < handle
         function res = ismodified(obj)
             %ISMODIFIED Check if modified.
             %
-            %   This methods checks if this node or any child node was modified.
-            %
             arguments
                 obj ana.config.base.node;
             end
