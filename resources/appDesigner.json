@@ -1,0 +1,23 @@
+{
+  "components": [
+    {
+      "className": "ana.util.statusbar",
+      "componentName": "statusbar",
+      "description": "Status and progress bar component.",
+      "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsSAAALEgHS3X78AAABGUlEQVRIiWNsaGj4z0ACqK+vZwSp7ujouPPz509lbDrZ2dnvVlRUqIDYLAwQTUTZsHz5cjgbZDgufY2NjXCLWWAMR0cnnAbv378Pq/i3b98IOgpuAS5DcAFQMHR3d+MMIpJ8gM0BsDCmmQ9IimQGMuKA5Egm1QcMpEYyqXFALBgcqQib5TRPRcQCiuKA1bUVazn2e3c1I9V80NWRicIvq5iOwmdRU1NDKcSoDVgiIyMZaWY6AwMDEy0NBwHG9vZ2nGUKCCCXKyCgWMaJNWIrV//Bqp8FX5kCAsjlCgy0Fbeh8Kt6q8B0SOsUFPE11TmQVERMmUIuoHkc0NwCFnyFFgggF1wwAAtzdAAKc3TA+P8/Sa0W0gADAwMAacOCsonAW8UAAAAASUVORK5CYII=",
+      "category": "My Components",
+      "authorName": "Jürgen \"George\" Sawinski",
+      "authorEmail": "juergen.sawinski@mpinb.mpg.de",
+      "version": "1.0",
+      "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjUAAAAkCAIAAAD+YlzYAAAAB3RJTUUH6QkIDxwyEMfhlAAAAqFJREFUeJzt3DFIKnEcwPHfiRROeQZuNTRY5BR5QdRQuzRkW4Nbs0RDDYFuOrQUTe0HCgWBiwguLWE1RHMSqEikpYOEZNhwjzc9KMTH+3Hv+xl//D1/N3055DTa7bYAAKCM518vAADAH9AnAIBG9AkAoNE3fer3+36/v16vf3uhh4eHhYWFn3zlz08CAP5bPD8BADQask+2bS8tLS0uLkaj0Vqt5gwNw0gmk5FIJBKJXF1dOcNCobCysmJZ1tbWVqPRGM3WAAC3G6ZPb29vu7u75+fnd3d3s7OzR0dHzrxarYbD4dvb2/39/UQiISLPz887OztnZ2c3Nzdra2t7e3uj3B0A4F7D9Mk0zUqlMjU1JSLLy8tPT0/OfHx8PBaLicjGxkalUmm1WqVSybKs+fl5EYnH44VCod/vj2x3AIB7eYf4zOfnZzqdLhaLHx8f3W43FAo5c9M0PR6PiIyNjfl8vna73Ww2y+WyZVnOgYmJiWazOarVAQAuNkyfLi4uisViPp+fnJzMZrO2bTvzTqczGAwMw+j1eu/v74FAIBgMrq6u/j7geHl5GcHiAABXG/L3p+np6UAg8Pr6att2p9Nx5t1uN5/Pi8jl5eXc3Jxpmuvr6+Vy+fHxUUTu7+8PDg5GuDoAwMV+9PwUjUa93l8nj4+PNzc3c7lcOByemZlJJpPb29uHh4exWCwUCl1fX6dSKcMwTk5ORCQYDJ6ensbj8V6v5/P5MpnMX7wVAICLGPw/LABAId7PBQBoRJ8AABrRJwCARvQJAKARfQIAaESfAAAa0ScAgEb0CQCgEX0CAGhEnwAAGtEnAIBG9AkAoBF9AgBoRJ8AABrRJwCARvQJAKARfQIAaESfAAAa0ScAgEb0CQCgEX0CAGhEnwAAGn0B0dTDvIcYj1QAAAAASUVORK5CYII=",
+      "defaultPosition": [
+        1,
+        1,
+        565,
+        36
+      ]
+    }
+  ],
+  "schema": 2,
+  "MATLABRelease": "R2024b"
+}
