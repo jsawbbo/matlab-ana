@@ -46,5 +46,11 @@ classdef node < handle
             
             res = obj.Modified;
         end
+
+        function apply(obj)
+        end
+
+        function reset(obj)
+        end
     end
 end

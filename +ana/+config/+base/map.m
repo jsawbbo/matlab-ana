@@ -38,6 +38,9 @@ classdef map < ana.config.base.node & matlab.mixin.indexing.RedefinesDot
 
         function res = fieldnames(obj)
             %FIELDNAMES Get map keys.
+            arguments
+                obj ana.config.base.map;
+            end
             res = fieldnames(obj.Properties);
         end
 
@@ -51,7 +54,7 @@ classdef map < ana.config.base.node & matlab.mixin.indexing.RedefinesDot
             res = false;
             f = fieldnames(obj);
             for k = 1:numel(f)
-                if obj.Properties.(f{k}).ismodified())
+                if obj.Properties.(f{k}).ismodified()
                     res = true;
                     break;
                 end
