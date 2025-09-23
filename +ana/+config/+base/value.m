@@ -9,14 +9,35 @@ classdef value < ana.config.base.node
     
     methods
         function obj = value(options)
-            %VALUE Construct an instance of this class
             arguments
                 options.Parent = [];
                 options.Scheme = [];
             end
 
-            poptions = namedargs2cell(options);
+            poptions = ana.util.passoptions(options, {'Parent','Scheme'});
             obj@ana.config.base.node(poptions{:});
+        end
+
+        function res = ismodified(obj)
+            arguments
+                obj ana.config.base.node;
+            end
+
+            res = (obj.Value ~= obj.LastValue);
+        end
+
+        function reset(obj)
+            arguments
+                obj ana.config.base.value
+            end
+            obj.Value = obj.LastValue;
+        end
+
+        function apply(obj)
+            arguments
+                obj ana.config.base.value
+            end
+            obj.LastValue = obj.Value;
         end
 
         function res = get(obj)
@@ -25,20 +46,6 @@ classdef value < ana.config.base.node
             end
             res = obj.Value;
         end
-
-        function reset(obj)
-            obj.Value = obj.LastValue;
-        end
-
-        function res = ismodified(obj)
-            %ISMODIFIED Check if modified.
-            %
-            arguments
-                obj ana.config.base.node;
-            end
-
-            res = (obj.Value ~= obj.LastValue);
-        end        
     end
 end
 

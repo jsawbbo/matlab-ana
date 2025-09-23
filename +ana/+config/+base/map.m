@@ -32,7 +32,7 @@ classdef map < ana.config.base.node & matlab.mixin.indexing.RedefinesDot
                 options.Scheme = [];
             end
 
-            poptions = namedargs2cell(options);
+            poptions = ana.util.passoptions(options, {'Parent','Scheme'});
             obj@ana.config.base.node(poptions{:});
         end
 

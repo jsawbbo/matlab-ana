@@ -8,7 +8,6 @@ classdef node < handle
     properties(Hidden,Access=protected)
         Parent = [];                    % Parent node.
         Scheme = [];                    % Scheme node (if available).
-        Modified = false;               % Modified flag.
     end
     
     methods
@@ -44,13 +43,25 @@ classdef node < handle
                 obj ana.config.base.node;
             end
             
-            res = obj.Modified;
+            res = false;
         end
 
         function apply(obj)
+            arguments
+                obj ana.config.base.node;
+            end
         end
 
         function reset(obj)
+            arguments
+                obj ana.config.base.node;
+            end
+        end
+
+        function save(obj)
+            arguments
+                obj ana.config.base.node;
+            end
         end
     end
 end
