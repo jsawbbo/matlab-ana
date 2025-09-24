@@ -12,7 +12,7 @@ classdef node < handle
     
     methods
         function obj = node(options)
-            %NODE Construct an instance of this class
+            %node   Construct an instance of this class
             %
             arguments
                 options.Parent = [];
@@ -24,7 +24,7 @@ classdef node < handle
         end
 
         function res = root(obj)
-            %ROOT   Find root node.
+            %root   Find root node.
             %
             arguments
                 obj ana.config.base.node;
@@ -36,8 +36,8 @@ classdef node < handle
             end
         end
 
-        function res = ismodified(obj)
-            %ISMODIFIED Check if modified.
+        function res = ismodified(obj) %#ok<*MANU>
+            %ismodified     Check if modified.
             %
             arguments
                 obj ana.config.base.node;
@@ -47,21 +47,29 @@ classdef node < handle
         end
 
         function apply(obj)
+            %apply      Apply changes.
             arguments
                 obj ana.config.base.node;
             end
         end
 
         function reset(obj)
+            %reset      Reset changes.
             arguments
                 obj ana.config.base.node;
             end
         end
 
-        function save(obj)
+        function res = get(obj)
+            %get    Get content (YAML conforming).
             arguments
-                obj ana.config.base.node;
+                obj ana.config.node.value
             end
+            res = [];
+        end
+
+        function set(obj,v)
+            %set    Set content (YAML conforming).
         end
     end
 end

@@ -1,4 +1,4 @@
-classdef file < handle & matlab.mixin.indexing.RedefinesDot
+classdef file < ana.config.node.map
     %ANA.CONFIG.FILE     Configuration file accessor class.
     %
     %   Detailed explanation goes here
@@ -8,46 +8,64 @@ classdef file < handle & matlab.mixin.indexing.RedefinesDot
         Path
     end
 
-    properties(SetAccess=private,Hidden)
-        Scheme = []
+    properties 
         Autosave = true
+    end
+
+    properties(SetAccess=private,Hidden)
         Data = struct();
     end
-
-    methods (Access=protected)
-        function varargout = dotReference(obj,indexOp)
-            [varargout{1:nargout}] = obj.Data.(indexOp);
-        end
-
-        function obj = dotAssign(obj,indexOp,varargin)
-            [obj.Data.(indexOp)] = varargin{:};
-        end
-        
-        function n = dotListLength(obj,indexOp,indexContext)
-            n = listLength(obj.Data,indexOp,indexContext);
-        end
-    end
-
+    
     methods(Hidden)
-        function names = properties(obj)
-            names = fieldnames(obj.Data);
+        function res = properties(obj)
+            res = fieldnames(obj.Properties);
         end        
 
-        function names = fieldnames(obj)
-            names = fieldnames(obj.Data);
+        function res = fieldnames(obj)
+            res = fieldnames(obj.Properties);
+        end
+
+        function disp(obj,level)
+            arguments
+                obj ana.config.file
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            fprintf(" ana.config.file with contents:\n")
+            % FIXME Path,Autosave
+            disp@ana.config.node.map(obj,level+1);
+            fprintf("\n")
         end
 
         function delete(obj)
             %DELETE Destructor.
-            % FIXME save
+            if obj.Autosave && obj.ismodified()
+                obj.save()
+            end
+        end
+    end
+
+    methods
+        function set.Autosave(obj,value)
+            arguments
+                obj ana.config.file;
+                value {mustBeNumericOrLogical}
+            end
+
+            if ~obj.Autosave && value
+                obj.Autosave = true;
+                if obj.ismodified()
+                    % FIXME initial save
+                end
+            else
+                obj.Autosave = value;
+            end
         end
     end
 
     methods
         function obj = file(filename,options)
-            %FILE Construct an instance of this class
-            %
-            %   Detailed explanation goes here
+            %file   Construct an instance of this class
             %
             arguments
                 filename (1,:) = [];
@@ -71,24 +89,29 @@ classdef file < handle & matlab.mixin.indexing.RedefinesDot
                 filename = configdir / 'config.yaml';
             end
 
-            if ~isa(filename, 'ana.fs.path')
-                filename = ana.fs.path(filename);
-            end
-            obj.Path = filename;
+            obj.Path = ana.fs.path(filename);
 
-            % load config file
-            if isfile(filename)
-                obj.Data = yaml.load(fullfile(filename));
-                if isempty(obj.Data)
-                    obj.Data = struct();
-                end
-            end
-
-            % load and check scheme
+            % load scheme
             if ~isempty(obj.Scheme)
                 obj.Scheme = ana.config.scheme(obj.Scheme);
-                obj.Data = obj.Scheme.check(obj.Data);
             end
+            
+            % load config file
+            if isfile(filename)
+                obj.set(yaml.load(fullfile(filename)));
+                if ~isempty(obj.Scheme)
+                    % FIXME
+                end
+            end
+        end
+
+        function save(obj)
+            %save       Save contents to file.
+            arguments
+                obj ana.config.file;
+            end
+
+            % FIXME
         end
     end
 end

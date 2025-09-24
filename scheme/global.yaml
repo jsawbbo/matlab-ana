@@ -3,12 +3,14 @@ version: "1.0"
 type: map
 contents:
 -   key: storage
+    label: Storage paths
     type: map
     comment: |
         Local and remote storage locations.
     actions:
     contents:
     -   key: searchpath
+        label: Search paths
         type: seq
         comment: |
             File storage search path.
@@ -24,13 +26,16 @@ contents:
             type: map
             contents:
             -   key: location
+                label: FIXME
                 type: path
                 comment: "Local path or remote URL."
             -   key: remote
+                label: FIXME
                 type: logical
                 default: false
-                comment: "Search path resides on a remote system."
+                comment: "Search path residing on a remote system."
             -   key: permanent
+                label: FIXME
                 type: logical
                 default: true
                 comment: "Storage location may be assumed to be permanently attached."
