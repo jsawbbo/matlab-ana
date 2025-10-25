@@ -101,7 +101,7 @@ classdef scheme < handle
             name = ana.fs.path(name);
             if name.isrelative()
                 toolboxdir = ana.os.paths('toolboxdir');
-                name = toolboxdir / 'scheme' / name + '.yaml';
+                name = toolboxdir / 'scheme' / name + '.yml';
             end
 
             if ~isfile(name)

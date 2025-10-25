@@ -73,8 +73,6 @@ classdef file < ana.config.node.map
                 options.Scheme (1,1) string = '';
             end
 
-            import ana.file.*
-
             % options
             obj.Autosave = options.Autosave;
             if strlength(options.Scheme) > 0
@@ -86,7 +84,7 @@ classdef file < ana.config.node.map
             % config file
             if isempty(filename)
                 configdir = ana.os.paths('configdir');
-                filename = configdir / 'config.yaml';
+                filename = configdir / 'config.yml';
             end
 
             obj.Path = ana.fs.path(filename);
@@ -98,7 +96,7 @@ classdef file < ana.config.node.map
             
             % load config file
             if isfile(filename)
-                obj.set(yaml.load(fullfile(filename)));
+                obj.set(ana.file.yaml.load(fullfile(filename)));
                 if ~isempty(obj.Scheme)
                     % FIXME
                 end
@@ -112,6 +110,7 @@ classdef file < ana.config.node.map
             end
 
             % FIXME
+            % 
         end
     end
 end
