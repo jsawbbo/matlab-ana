@@ -55,7 +55,7 @@ classdef file < ana.config.node.map
             if ~obj.Autosave && value
                 obj.Autosave = true;
                 if obj.ismodified()
-                    % FIXME initial save
+                    obj.save()
                 end
             else
                 obj.Autosave = value;
