@@ -58,7 +58,7 @@ classdef version < matlab.mixin.Copyable
     methods
         function obj = version(value)
             %VERSION Construct an instance of this class
-            %   Detailed explanation goes here
+            %   FIXME
             arguments
                 value = [];
             end

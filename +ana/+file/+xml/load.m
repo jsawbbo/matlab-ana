@@ -12,7 +12,7 @@ function xml = load(filename)
     xml = [];
 
     if isempty(filename)
-        [file,location] = uigetfile('*.svg', 'Select SVG...');
+        [file,location] = uigetfile('*.xml', 'Select XML...');
         if isnumeric(file)
             return
         end
