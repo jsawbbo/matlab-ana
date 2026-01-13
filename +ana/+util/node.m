@@ -4,23 +4,38 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
     %   FIXME
     %
 
-    properties (Access=protected)
+    properties (Access=public)
         Name        = ''        % Node name.
         Attributes  = {}        % Attributes.
+    end
+
+    properties (Access=protected)
         Children    = []        % Node children, if this is a tree node.
         Data        = []        % Node data.
     end
 
+    properties (Access=protected)
+        Handler  % TODO use Handler if present...
+    end
+        
+    methods
+        function set.Attributes(obj,value)
+            % FIXME check 'value'
+            obj.Attributes = value;
+        end
+    end    
+    
     methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
-            obj.Children = obj.Children.(indexOp(1));
+            tmp = obj.Children.(indexOp(1));
+            tmp = tmp{1};
             if isscalar(indexOp)
-                varargout{1} = obj;
+                varargout{1} = tmp;
                 return;
             end
             % This code forwards all indexing operations after
             % the first parentheses reference to MATLAB for handling.
-            [varargout{1:nargout}] = obj.(indexOp(2:end));
+            [varargout{1:nargout}] = tmp.(indexOp(2:end));
         end
 
         function obj = parenAssign(obj,indexOp,varargin)
@@ -35,7 +50,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
                     end
                 else
                     assert(isa(varargin{1},'ana.util.node'), 'expected ana.util.node for child assignment')
-                    obj.Children.(indexOp(1)) = varargin{1};
+                    obj.Children.(indexOp(1)) = varargin(1);
                 end
                 return;
             end
@@ -71,13 +86,56 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
         end
 
         function varargout = size(obj,varargin)
-            [varargout{1:nargout}] = size(obj.Children,varargin{:});
+            if iscell(obj.Children)
+                [varargout{1:nargout}] = size(obj.Children,varargin{:});
+            else
+                [varargout{1:nargout}] = size(obj.Data,varargin{:});
+            end
         end
-    end    
+
+        function indented_disp(obj,level)
+            arguments
+                obj ana.util.node
+                level (1,1) double {mustBeInteger, mustBeNonnegative} = 1
+            end
+
+            indent = sprintf('%*s', 2*level, '');
+
+            if isempty(obj.Name)
+                fprintf('%s<> <a href="matlab:help ana.util.node">ana.util.node</a>:\n', indent);
+            else
+                fprintf('%s%s <a href="matlab:help ana.util.node">ana.util.node</a>:\n', indent, obj.Name);
+            end
+
+            fprintf('%sAttributes: ',indent);
+            if ~isempty(obj.Attributes)
+                if isstruct(obj.Attributes)
+                end
+            end
+            fprintf('\n');
+
+            if iscell(obj.Children)
+                fprintf('%sNode: %d children\n', indent, length(obj.Children));
+            else
+                if isempty(obj.Data)
+                    fprintf('%sData: <empty>\n', indent);
+                else
+                    fprintf('%sData:\n', indent);
+                    indented_disp(obj.Data,level+1)
+                end
+            end
+
+            fprintf('\n');
+        end
+
+        function disp(obj)
+            obj.indented_disp(1);
+        end
+    end
 
     methods (Access=public)
         function obj = node(options)
-            %NODE       Construct an instance of this class.
+            %NODE           Construct an instance of this class.
             %
             %   FIXME
             arguments
@@ -88,9 +146,26 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
             obj.Children = options.Children;
         end
 
+        function res = isempty(obj)
+            %ISEMPTY        Check if node is empty.
+            res = isempty(obj.Children) & isempty(obj.Data);
+        end
+
         function res = isnode(obj)
             %ISNODE         Check if this is a tree node.
             res = iscell(obj.Children);
+        end
+
+        function res = get(obj)
+            %GET            Get node data.
+            assert(~obj.isnode(), "cannot get data from a tree node")
+            res = obj.Data;
+        end
+
+        function set(obj,data)
+            %SET            Set node data.
+            assert(~obj.isnode(), "cannot assign data to a tree node")
+            obj.Data = data;
         end
     end
 end
