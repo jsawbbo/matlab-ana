@@ -20,7 +20,5 @@ function [layers,raw] = load(filename)
     end
     
     raw = ana.file.xml.load(filename);
-
-
 end
 

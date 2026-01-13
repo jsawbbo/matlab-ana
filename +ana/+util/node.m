@@ -7,11 +7,11 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
     properties (Access=public)
         Name        = ''        % Node name.
         Attributes  = {}        % Attributes.
+        Data        = []        % Data content.
     end
 
     properties (Access=protected)
         Children    = []        % Node children, if this is a tree node.
-        Data        = []        % Node data.
     end
 
     properties (Access=protected)
@@ -27,15 +27,16 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
     
     methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
-            tmp = obj.Children.(indexOp(1));
-            tmp = tmp{1};
+            assert(iscell(obj.Children), 'not a tree node')
+            tmpCell = obj.Children.(indexOp(1));
+            node = tmpCell{1};
             if isscalar(indexOp)
-                varargout{1} = tmp;
+                varargout{1} = node;
                 return;
             end
             % This code forwards all indexing operations after
             % the first parentheses reference to MATLAB for handling.
-            [varargout{1:nargout}] = tmp.(indexOp(2:end));
+            [varargout{1:nargout}] = node.(indexOp(2:end));
         end
 
         function obj = parenAssign(obj,indexOp,varargin)
@@ -116,6 +117,9 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
 
             if iscell(obj.Children)
                 fprintf('%sNode: %d children\n', indent, length(obj.Children));
+                for c = 1:length(obj.Children)
+                    indented_disp(obj.Children{c},level+1)
+                end
             else
                 if isempty(obj.Data)
                     fprintf('%sData: <empty>\n', indent);
@@ -140,10 +144,14 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
             %   FIXME
             arguments
                 options.Name = ''       % Node name.
+                options.Attributes = {} % Node attributes.
                 options.Children = []   % Children (use {} for empty node).
+                options.Data = []       % Node data.
             end
             obj.Name = options.Name;
+            obj.Attributes = options.Attributes;
             obj.Children = options.Children;
+            obj.Data = options.Data;
         end
 
         function res = isempty(obj)

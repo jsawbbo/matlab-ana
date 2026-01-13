@@ -1,4 +1,4 @@
-function xml = load(filename)
+function res = load(filename)
     %ANA.FILE.XML.LOAD  Load XML document and parse into a structure.
     %
     %   This function loads and XML file as outlined in 
@@ -9,7 +9,7 @@ function xml = load(filename)
         filename = []
     end
     
-    xml = [];
+    res = [];
 
     if isempty(filename)
         [file,location] = uigetfile('*.xml', 'Select XML...');
@@ -20,36 +20,32 @@ function xml = load(filename)
     end
 
     doc = xmlread(filename);
-    xml = parseChildNodes(doc);
+    res = ana.util.node(Name=filename,Children={});
+    % FIXME res.Handler = ???
+    res = parseChildNodes(doc, res);
 end
 
 % The following code was adapted from 'doc xmlread'
 
-function children = parseChildNodes(theNode)
+function node = parseChildNodes(xmlNode, node)
     % Recurse over node children.
-    children = [];
-    if theNode.hasChildNodes
-       childNodes = theNode.getChildNodes;
-       numChildNodes = childNodes.getLength;
-       allocCell = cell(1, 0);
-    
-       children = struct(             ...
-          'Name', allocCell, 'Attributes', allocCell,    ...
-          'Data', allocCell, 'Children', allocCell);
+    if xmlNode.hasChildNodes
+        childNodes = xmlNode.getChildNodes;
+        numChildNodes = childNodes.getLength;
     
         for count = 1:numChildNodes
             theChild = childNodes.item(count-1);
-            theStruct = makeStructFromNode(theChild);
-            if ~isempty(theStruct)
-                children(end+1) = theStruct; %#ok<AGROW>
+            theNode = makeNodeFromXML(theChild);
+            if isobject(theNode)
+                node(end+1) = theNode; %#ok<AGROW>
             end
         end
     end
 end
 
-function nodeStruct = makeStructFromNode(theNode)
+function node = makeNodeFromXML(theNode)
     % Create structure of node info.
-    nodeStruct = [];
+    node = [];
     nodeName = char(theNode.getNodeName);
 
     switch(nodeName)
@@ -65,22 +61,21 @@ function nodeStruct = makeStructFromNode(theNode)
                 return
             end
 
-            nodeStruct = struct(  ...
-               'Name', nodeName,  ...
-               'Attributes', [],  ...
-               'Data', text,      ...
-               'Children', []);
+            node = ana.util.node(Name = nodeName,Data = text);
         otherwise
-            nodeStruct = struct(                        ...
-               'Name', nodeName,                        ...
-               'Attributes', parseAttributes(theNode),  ...
-               'Data', [],                              ...
-               'Children', parseChildNodes(theNode));
             
             if any(strcmp(methods(theNode), 'getData'))
-               nodeStruct.Data = char(theNode.getData); 
+                node = ana.util.node(                       ...
+                    Name = nodeName,                        ...
+                    Attributes = parseAttributes(theNode),  ...
+                    Data = char(theNode.getData));
             else
-               nodeStruct.Data = '';
+                node = ana.util.node(                       ...
+                    Name = nodeName,                        ...
+                    Attributes = parseAttributes(theNode),  ...
+                    Children={});
+
+                node = parseChildNodes(theNode, node);
             end
     end
 end
@@ -90,16 +85,16 @@ function attributes = parseAttributes(theNode)
     
     attributes = [];
     if theNode.hasAttributes
-       theAttributes = theNode.getAttributes;
-       numAttributes = theAttributes.getLength;
-       allocCell = cell(1, numAttributes);
-       attributes = struct('Name', allocCell, 'Value', ...
-                           allocCell);
+        theAttributes = theNode.getAttributes;
+        numAttributes = theAttributes.getLength;
+        allocCell = cell(1, numAttributes);
+        attributes = struct('Name', allocCell, 'Value', ...
+                            allocCell);
     
        for count = 1:numAttributes
-          attrib = theAttributes.item(count-1);
-          attributes(count).Name = char(attrib.getName);
-          attributes(count).Value = char(attrib.getValue);
+            attrib = theAttributes.item(count-1);
+            attributes(count).Name = char(attrib.getName);
+            attributes(count).Value = char(attrib.getValue);
        end
     end
 end
