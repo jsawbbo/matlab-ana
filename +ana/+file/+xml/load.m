@@ -87,14 +87,11 @@ function attributes = parseAttributes(theNode)
     if theNode.hasAttributes
         theAttributes = theNode.getAttributes;
         numAttributes = theAttributes.getLength;
-        allocCell = cell(1, numAttributes);
-        attributes = struct('Name', allocCell, 'Value', ...
-                            allocCell);
+        attributes = dictionary();
     
-       for count = 1:numAttributes
+        for count = 1:numAttributes
             attrib = theAttributes.item(count-1);
-            attributes(count).Name = char(attrib.getName);
-            attributes(count).Value = char(attrib.getValue);
-       end
+            attributes(char(attrib.getName)) = char(attrib.getValue);
+        end
     end
 end

@@ -20,5 +20,19 @@ function [layers,raw] = load(filename)
     end
     
     raw = ana.file.xml.load(filename);
+    layers = extractLayers(raw(1));
 end
 
+function g = extractLayers(svg)
+    assert(strcmp(svg.Name,'svg'), "not an SVG document");
+    g = {};
+    for i = 1:length(svg)
+        if strcmp(svg(i).Name,'g')
+            g{end+1} = convertLayer(svg(i));
+        end
+    end
+end
+
+function g = convertLayer(svg)
+    g = svg;
+end

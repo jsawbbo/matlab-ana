@@ -1,27 +1,32 @@
 classdef node < matlab.mixin.indexing.RedefinesParen & handle
-    %ANA.UTIL.NODE  A data node with attributes and children.
+    %ANA.UTIL.NODE  A generic tree node with attributes.
     %
-    %   FIXME
+    %   This class represents either, a branch node or a value, accompanied 
+    %   by attributes. FIXME
     %
 
     properties (Access=public)
-        Name        = ''        % Node name.
-        Attributes  = {}        % Attributes.
-        Data        = []        % Data content.
+        Name        = ''            % Node name.
+        Attributes  = dictionary    % Attributes.
     end
 
     properties (Access=protected)
-        Children    = []        % Node children, if this is a tree node.
+        Value       = []            % (see Data below)
+        Children    = []            % Node children (if branch node).
     end
 
-    properties (Access=protected)
-        Handler  % TODO use Handler if present...
+    properties (Dependent)
+        Data                        % Data content (if value node).
     end
-        
+
     methods
-        function set.Attributes(obj,value)
-            % FIXME check 'value'
-            obj.Attributes = value;
+        function set.Data(obj,value)
+            assert(~iscell(obj.Children), 'cannot assign a value to a branch node')
+            obj.Value = value;
+        end
+
+        function res = get.Data(obj)
+            res = obj.Value;
         end
     end    
     
@@ -34,8 +39,6 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
                 varargout{1} = node;
                 return;
             end
-            % This code forwards all indexing operations after
-            % the first parentheses reference to MATLAB for handling.
             [varargout{1:nargout}] = node.(indexOp(2:end));
         end
 
@@ -125,7 +128,8 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
                     fprintf('%sData: <empty>\n', indent);
                 else
                     fprintf('%sData:\n', indent);
-                    indented_disp(obj.Data,level+1)
+                    % indented_disp(obj.Data,level+1)
+                    disp(obj.Data)
                 end
             end
 
@@ -133,7 +137,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
         end
 
         function disp(obj)
-            obj.indented_disp(1);
+            indented_disp(obj,1);
         end
     end
 
@@ -144,14 +148,22 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
             %   FIXME
             arguments
                 options.Name = ''       % Node name.
-                options.Attributes = {} % Node attributes.
+                options.Attributes = [] % Node attributes.
                 options.Children = []   % Children (use {} for empty node).
                 options.Data = []       % Node data.
             end
             obj.Name = options.Name;
-            obj.Attributes = options.Attributes;
+            if isa(options.Attributes,'dictionary')
+                obj.Attributes = options.Attributes;
+            elseif iscell(options.Attributes)
+                obj.Attributes = dictionary(options.Attributes{:});
+            elseif ~isempty(options.Attributes)
+                error('option ''Attributes'' must be a dictionary')
+            end
             obj.Children = options.Children;
-            obj.Data = options.Data;
+            if ~iscell(obj.Children)
+                obj.Data = options.Data;
+            end
         end
 
         function res = isempty(obj)
@@ -162,18 +174,6 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
         function res = isnode(obj)
             %ISNODE         Check if this is a tree node.
             res = iscell(obj.Children);
-        end
-
-        function res = get(obj)
-            %GET            Get node data.
-            assert(~obj.isnode(), "cannot get data from a tree node")
-            res = obj.Data;
-        end
-
-        function set(obj,data)
-            %SET            Set node data.
-            assert(~obj.isnode(), "cannot assign data to a tree node")
-            obj.Data = data;
         end
     end
 end
