@@ -111,9 +111,19 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
                 fprintf('%s%s <a href="matlab:help ana.util.node">ana.util.node</a>:\n', indent, obj.Name);
             end
 
-            fprintf('%sAttributes: ',indent);
+            fprintf('%sAttributes:\n',indent);
             if ~isempty(obj.Attributes)
                 if isstruct(obj.Attributes)
+                    FIXME
+                else
+                    try 
+                        fields = keys(obj.Attributes);
+                        for i = 1:length(fields)
+                            k = fields(i);
+                            fprintf('%s  %s = %s\n', indent, k, obj.Attributes(k));
+                        end
+                    catch
+                    end
                 end
             end
             fprintf('\n');
