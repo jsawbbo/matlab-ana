@@ -1,5 +1,5 @@
 classdef file < ana.config.node.map
-    %ANA.CONFIG.FILE     Configuration file accessor class.
+    %ana.config.file     Configuration file accessor class.
     %
     %   Detailed explanation goes here
     %

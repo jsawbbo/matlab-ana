@@ -1,5 +1,5 @@
 classdef path
-    %ANA.FS.PATH Canonical representation of a file path.
+    %ana.fs.path    Canonical representation of a file path.
     %
     %   To enable operating system indepent file paths, and, as well, storage layouts,
     %   ...FIXME...

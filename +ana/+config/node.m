@@ -1,5 +1,5 @@
 classdef node < handle
-    %ANA.CONFIG.BASE.NODE Configuration node base class.
+    %ana.config.node    Configuration node base class.
     %
     %   A "configuration node" can be a simple branch node or represent a setting.
     %   These nodes may be accompanied by schemes. 

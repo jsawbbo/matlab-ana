@@ -1,5 +1,5 @@
 classdef scheme < handle 
-    %SCHEME Configuration scheme.
+    %ana.config.scheme Configuration scheme.
     %
     %   Detailed explanation goes here
     %
