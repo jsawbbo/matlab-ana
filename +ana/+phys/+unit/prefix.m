@@ -39,6 +39,7 @@ classdef prefix
 
     properties (Constant,Hidden)
         Config = ana.util.shared(struct(...  
+                Unicode = false...
             ))
     end
 

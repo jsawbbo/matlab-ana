@@ -1,5 +1,4 @@
 classdef SharedDataClass
-
     properties (Constant)
         Shared = ana.util.shared
     end
