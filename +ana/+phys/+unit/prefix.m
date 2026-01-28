@@ -3,8 +3,8 @@ classdef prefix
     %
     %   Detailed explanation goes here
 
-    properties (Constant)
-        Letter = dictionary(...             % Units by letter.
+    properties (Constant,Hidden)
+        letter = dictionary(...             % Units by letter.
                 "E", 18,...
                 "P", 15,...
                 "T", 12,...
@@ -20,7 +20,7 @@ classdef prefix
                 "p",-12,...
                 "f",-15,...
                 "a",-18)
-        Exponent = dictionary(...           % Units by exponent.
+        exponent = dictionary(...           % Units by exponent.
                  18,"E",...
                  15,"P",...
                  12,"T",...
@@ -29,6 +29,7 @@ classdef prefix
                   3,"k",...
                   2,"d",...
                   1,"c",...
+                  0,"",...
                  -3,"m",...
                  -6,"u",...
                  -9,"n",...
@@ -37,10 +38,37 @@ classdef prefix
                 -18,"a")
     end
 
-    properties (Constant,Hidden)
-        Config = ana.util.shared(struct(...  
-                Unicode = false...
-            ))
+    properties
+        Exponent = 0
+    end
+
+    methods
+        function varargout = set.Exponent(obj,value)
+            arguments
+                obj ana.phys.unit.prefix
+                value
+            end
+
+            if isnumeric(value) && isscalar(value)
+                try
+                    ana.phys.unit.prefix.exponent(value);
+                catch
+                    FIXME
+                end
+                obj.Exponent = value;
+                varargout{1} = obj; % Return the updated object
+            else
+                error('Exponent must be a numeric scalar.');
+            end
+        end
+
+        function res = string(obj)
+            arguments
+                obj ana.phys.unit.prefix
+            end
+
+            res = obj.exponent(obj.Exponent);
+        end
     end
 
     methods

@@ -4,13 +4,22 @@ classdef shared < handle & matlab.mixin.indexing.RedefinesDot
     %   Generic shared data object (or handle, respectively).
     %
     %   The main purpose of this class is to facilitate global static
-    %   class members (in terms of C++). 
+    %   class members (in terms of C++). This class behaves like a struct.
     %
     %   Example:
     % 
     %       classdef MyClass
     %           properties (Constant)
-    %               AppData = ana.util.shared
+    %               AppData = ana.util.shared(...
+    %                   struct(initialized=false))
+    %           end
+    %           
+    %           methods
+    %               function obj = MyClass()
+    %                   if ~obj.AppData.initialized
+    %                       % ...
+    %                   end
+    %               end
     %           end
     %       end
     %
