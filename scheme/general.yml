@@ -1,5 +1,6 @@
 version: "1.0"
 
+label: General
 type: map
 contents:
 -   key: storage
@@ -23,7 +24,7 @@ contents:
 
             so that a configuration file must not be edited.
         contents:
-            type: map
+            type: table
             contents:
             -   key: location
                 label: FIXME
@@ -48,4 +49,7 @@ contents:
     -   key: cache
         type: path
         comment: "Cache directory."
+        default: 
+            eval: |
+                ana.os.paths('cachedir')
 

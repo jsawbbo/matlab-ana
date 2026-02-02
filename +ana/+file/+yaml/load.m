@@ -1,5 +1,5 @@
 function result = load(filePath, options)
-    %ANA.FILE.YAML.LOAD Read YAML file.
+    %ANA.FILE.YAML.LOAD     Read YAML file.
     %   DATA = ANA.FILE.YAML.LOAD(FILE) reads a YAML file and converts it to
     %   appropriate data types DATA.
     %

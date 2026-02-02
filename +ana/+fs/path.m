@@ -11,16 +11,16 @@ classdef path
     %
     %See also: FIXME search path
 
-    properties (SetAccess = protected)
+    properties (SetAccess=protected)
         Drive   % Boolean value indicating that a Windows® drive letter is used.
         Parts   % String array of path elements.
     end
 
-    properties(Constant)
+    properties (Constant)
         separator = '/' % Canonical path separator.
     end
     
-    methods(Hidden)
+    methods (Hidden)
         function res = string(obj)
             res = fullfile(obj);
         end
@@ -140,7 +140,7 @@ classdef path
             arguments
                 obj ana.fs.path;
             end
-            arguments(Repeating)
+            arguments (Repeating)
                 varargin
             end
 

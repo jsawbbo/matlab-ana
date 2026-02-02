@@ -105,7 +105,7 @@ classdef scheme < handle
             end
 
             if ~isfile(name)
-                error('ana:config:scheme:no-such-file', 'scheme file does not exist');
+                error('ANA:CONFIG:SCHEME:NO_SUCH_FILE', 'scheme file does not exist');
             end
 
             obj.Scheme = ana.file.yaml.load(fullfile(name));
