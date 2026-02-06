@@ -1,23 +1,25 @@
 classdef value < ana.config.node
-    %VALUE Summary of this class goes here
+    %VALUE      Representation of a value.
     %   Detailed explanation goes here
     
-    properties(Hidden,Access=protected)
+    properties(Hidden, Access=protected)
         Value = []
         LastValue = []
     end
     
-    methods(Hidden)
-        function disp(obj,level)
+    methods(Hidden, Access=protected)
+        function show(obj,level)
             arguments
                 obj ana.config.node.value
                 level {mustBeScalarOrEmpty} = 0
             end
 
-            if level > 0
-                fprintf(": ")
+            if level == 0
+                disp(obj.Value)
+                return
             end
 
+            fprintf(": ")
             if ischar(obj.Value) || isstring(obj.Value)
                 fprintf("""%s""", string(obj.Value));
             else

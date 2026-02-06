@@ -9,7 +9,37 @@ classdef node < handle
         Parent = [];                    % Parent node.
         Scheme = [];                    % Scheme node (if available).
     end
-    
+
+    methods(Hidden)
+        function disp(obj)
+            arguments
+                obj ana.config.node;
+            end
+
+            obj.show(0);
+        end
+    end        
+
+    methods(Hidden, Access=protected)
+        function show(obj,level) %#ok<INUSD>
+            error('internal error: not implemented')
+        end
+    end
+
+    methods (Access=protected)
+        function res = wrap(obj, val)
+            %wrap   FIXME
+
+            assert(isempty(obj.Scheme), 'FIXME')
+
+            if isa(val, 'ana.config.node')
+                res = val;
+            else
+                res = ana.config.node.value(val, Parent=obj);
+            end
+        end
+    end
+
     methods
         function obj = node(options)
             %node   Construct an instance of this class
@@ -49,14 +79,14 @@ classdef node < handle
         function apply(obj)
             %apply      Apply changes.
             arguments
-                obj ana.config.base.node;
+                obj ana.config.node;
             end
         end
 
         function reset(obj)
             %reset      Reset changes.
             arguments
-                obj ana.config.base.node;
+                obj ana.config.node;
             end
         end
 

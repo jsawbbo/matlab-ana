@@ -1,5 +1,6 @@
 classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
-    %SEQ Summary of this class goes here
+    %ana.config.node.seq        Representation of an array.
+    %
     %   Detailed explanation goes here
     
     properties(Hidden,Access=protected)
@@ -20,8 +21,10 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
         function result = size(obj,varargin)
             result = numel(obj.Properties);
         end
+    end
 
-        function disp(obj,level)
+    methods(Hidden, Access=protected)
+        function show(obj,level)
             arguments
                 obj ana.config.node.seq
                 level {mustBeScalarOrEmpty} = 1
@@ -29,11 +32,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
 
             for key = 1:numel(obj.Properties)
                 fprintf("\n%s-", pad('',(level-1)*4))
-                disp(obj.Properties{key}, level+1);
-            end
-
-            if level == 1
-                fprintf("\n")
+                show(obj.Properties{key}, level+1);
             end
         end        
     end

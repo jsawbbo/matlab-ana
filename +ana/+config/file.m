@@ -4,7 +4,7 @@ classdef file < ana.config.node.map
     %   Detailed explanation goes here
     %
 
-    properties(SetAccess=protected)
+    properties (SetAccess=protected)
         Path
     end
 
@@ -12,7 +12,7 @@ classdef file < ana.config.node.map
         Autosave = true
     end
 
-    properties(SetAccess=private,Hidden)
+    properties(SetAccess=private, Hidden)
         Data = struct();
     end
     
@@ -25,23 +25,25 @@ classdef file < ana.config.node.map
             res = fieldnames(obj.Properties);
         end
 
-        function disp(obj,level)
-            arguments
-                obj ana.config.file
-                level {mustBeScalarOrEmpty} = 0
-            end
-
-            fprintf(" ana.config.file with contents:\n")
-            % FIXME Path,Autosave
-            disp@ana.config.node.map(obj,level+1);
-            fprintf("\n")
-        end
-
         function delete(obj)
             %DELETE Destructor.
             if obj.Autosave && obj.ismodified()
                 obj.save()
             end
+        end
+    end
+
+    methods(Hidden, Access=protected)
+        function show(obj,level)
+            arguments
+                obj ana.config.file
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            fprintf(" <a href=""matlab:help ana.config.file"">ana.config.file</a> with contents:\n")
+            % FIXME Path,Autosave
+            show@ana.config.node.map(obj,level+1);
+            fprintf("\n")
         end
     end
 

@@ -1,35 +1,48 @@
 classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
-    %MAP Summary of this class goes here
+    %ana.config.node.map        Key-value pair map.
+    %
     %   Detailed explanation goes here
+    %
     
     properties(Hidden,Access=protected)
-        Properties = struct();          % Internal properties node.
+        Properties = dictionary;        % Internal storage.
     end
     
     methods(Hidden)
         function res = properties(obj)
-            res = fieldnames(obj.Properties);
+            res = keys(obj.Properties);
         end        
 
         function res = fieldnames(obj)
-            res = fieldnames(obj.Properties);
+            res = keys(obj.Properties);
         end
+    end
 
-        function disp(obj,level)
+    methods(Hidden, Access=protected)
+        function show(obj,level)
             arguments
                 obj ana.config.node.map
                 level {mustBeScalarOrEmpty} = 1
             end
 
-            fn = fieldnames(obj.Properties);
+            fn = keys(obj.Properties);
             for i = 1:numel(fn)
                 key = fn{i};
-                fprintf("\n%s%s", pad('',level*4),key)
-                disp(obj.Properties.(key), level+1);
+                value = obj.Properties(key);
+                fprintf("\n%s%s", pad('',level*4), key)
+                show(value{1}, level+1);
             end
+        end
+    end
 
-            if level == 1
-                fprintf("\n")
+    methods (Static, Access = protected)
+        function res = dotIndexOp(dict,scalarIndexOp)
+            switch scalarIndexOp.Type
+                case 'Dot'
+                    tmp = dict(scalarIndexOp.Name);
+                    res = tmp{1};
+                otherwise
+                    error('internal error: expected dot operation')
             end
         end
     end
@@ -40,7 +53,7 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
         end
 
         function varargout = dotReference(obj,indexOp)
-            tmp = obj.Properties.(indexOp(1));
+            tmp = obj.dotIndexOp(obj.Properties,indexOp(1));
             if numel(indexOp) > 1
                 for i = 2:numel(indexOp)
                     tmp = tmp.(indexOp(i));
@@ -50,7 +63,36 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
         end
 
         function obj = dotAssign(obj,indexOp,varargin)
-            FIXME 
+            tmp = obj;
+            if numel(indexOp) > 1
+                assert(isscalar(varargin), 'internal error: expected single argument')
+
+                for i = 1:numel(indexOp)-1
+                    try
+                        tmp = obj.dotIndexOp(tmp,indexOp(i));
+                    catch
+                        switch indexOp(i).Type
+                            case 'Dot'
+                                node = ana.config.node.map(Parent=tmp); % FIXME Scheme
+                                tmp.Properties(indexOp(i).Name) = {node};
+                                tmp = node;
+                            otherwise
+                                error('internal error: expected dot operation')
+                        end
+                    end
+                end
+            end
+
+            if numel(varargin) > 1
+                error('internal error: multiple assignments are not supported')
+            else
+                switch indexOp(end).Type
+                    case 'Dot'
+                        tmp.Properties(indexOp(end).Name) = {obj.wrap(varargin{1})};
+                    otherwise
+                        error('internal error: expected dot operation')
+                end
+            end
         end
     end
 
