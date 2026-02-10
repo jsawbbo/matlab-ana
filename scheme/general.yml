@@ -1,12 +1,12 @@
 version: "1.0"
 
-label: General
-type: map
 key: .
+type: map
+label: General
 contents:
 -   key: storage
-    label: Storage paths
     type: map
+    label: Storage
     comment: |
         Local and remote storage locations.
     actions:
@@ -48,6 +48,10 @@ contents:
             eval: |
                 ana.os.paths('tmpdir')
     -   key: cache
+        type: map
+        comment: 
+
+
         type: path
         comment: "Cache directory."
         default: 

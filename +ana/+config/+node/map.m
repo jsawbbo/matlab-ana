@@ -1,13 +1,20 @@
 classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
     %ana.config.node.map        Key-value pair map.
     %
-    %   Detailed explanation goes here
+    %   This class represents (in JSON jargon) a [key-value pair] map implemented
+    %   around Matlab's 'dictionary' (it should be noted, that, especially for
+    %   the purpose of use with GUIs, a 'dictionary' is sorted by order of first 
+    %   time key insertion).
+    %
+    %   FIXME
     %
     
+    %% class data
     properties(Hidden,Access=protected)
         Properties = dictionary;        % Internal storage.
     end
     
+    %% "RedefinesDot"
     methods(Hidden)
         function res = properties(obj)
             res = keys(obj.Properties);
@@ -96,6 +103,7 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
         end
     end
 
+    %% methods:
     methods
         function obj = map(options)
             %MAP Construct an instance of this class
