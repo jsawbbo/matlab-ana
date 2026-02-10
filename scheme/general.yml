@@ -9,11 +9,12 @@ contents:
     label: Storage
     comment: |
         Local and remote storage locations.
+    ui: ana.config.general
     actions:
     contents:
     -   key: searchpath
+        type: table
         label: Search paths
-        type: seq
         comment: |
             File storage search path.
 
@@ -25,36 +26,45 @@ contents:
 
             so that a configuration file must not be edited.
         contents:
-            type: table
-            contents:
-            -   key: location
-                label: FIXME
-                type: path
-                comment: "Local path or remote URL."
-            -   key: remote
-                label: FIXME
-                type: logical
-                default: false
-                comment: "Search path residing on a remote system."
-            -   key: permanent
-                label: FIXME
-                type: logical
-                default: true
-                comment: "Storage location may be assumed to be permanently attached."
+        -   key: location
+            label: Location
+            type: path
+            comment: "Local path or remote URL."
+        -   key: remote
+            label: Remote
+            type: logical
+            default: false
+            comment: "Search path residing on a remote system."
+        -   key: removable
+            label: Removable
+            type: logical
+            default: true
+            comment: "Storage location resides on a removable device."
     -   key: scratch
         type: path
+        label: Scratch directory
         comment: "Local scratch directory (for temporary large files)."
         default: 
             eval: |
                 ana.os.paths('tmpdir')
     -   key: cache
         type: map
-        comment: 
+        label: Cache directory and size
+        contents:
+        -   key: path
+            type: path
+            label: Path
+            comment: |
+                Cache directory.
+    
+                FIXME
+            default: 
+                eval: |
+                    ana.os.paths('cachedir')
+        -   key: size
+            type: number
+            label: Size
+            commend: |
+                Maximum size of the cache directory.
 
-
-        type: path
-        comment: "Cache directory."
-        default: 
-            eval: |
-                ana.os.paths('cachedir')
-
+                FIXME
