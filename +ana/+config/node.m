@@ -5,9 +5,28 @@ classdef node < handle
     %   These nodes may be accompanied by schemes. 
     %
     
-    properties(Hidden,Access=protected)
+    properties(Hidden)
         Parent = [];                    % Parent node.
+    end
+
+    properties
         Scheme = [];                    % Scheme node (if available).
+    end
+
+    methods
+        function set.Scheme(obj,scheme)
+            arguments
+                obj ana.config.node;
+                scheme 
+            end
+
+            if isempty(scheme)
+                return
+            end
+
+            % FIXME
+
+        end
     end
 
     methods(Hidden)
