@@ -79,3 +79,5 @@ classdef shared < handle & matlab.mixin.indexing.RedefinesDot
         end
     end
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later

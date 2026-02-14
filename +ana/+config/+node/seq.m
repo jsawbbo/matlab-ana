@@ -161,4 +161,6 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
         end
     end
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
 

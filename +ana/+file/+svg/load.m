@@ -22,6 +22,8 @@ function [layers,raw] = load(filename)
     raw = ana.file.xml.load(filename);
     layers = extractLayers(raw(1));
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
 
 function g = extractLayers(svg)
     assert(strcmp(svg.Name,'svg'), "not an SVG document");
