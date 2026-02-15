@@ -37,7 +37,7 @@ function s = paths(what)
                     if isempty(s) % older than Vista
                         s = getenv('APPDATA');
                         if isempty(s)
-                            error('ANA:SYSTEM', 'Configuration directory could not be identified.');
+                            error('ANA:OS:APPDATA', 'Configuration directory could not be identified.');
                         end
                     end
                 elseif ismac
