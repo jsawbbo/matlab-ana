@@ -10,10 +10,15 @@ function init()
     if ~ischar(version) | ~strcmp(ana.version(),version)
         mfile = mfilename('fullpath');
 
+        init_storage();
         init_snakeyaml(mfile);
 
         version = ana.version();
     end
+end
+
+function init_storage()
+    ana.fs.storage.init();
 end
 
 function init_snakeyaml(mfile)
@@ -22,6 +27,7 @@ function init_snakeyaml(mfile)
         javaaddpath(folder);
     end
 end
+
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):

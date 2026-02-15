@@ -11,13 +11,27 @@ classdef storage
     end
 
     methods(Static)
+        function init()
+            %INIT   Initialize from configuration.
+            %
+            %TODO
+            %- load general config instead of hard-coded paths.
+            ana.fs.storage.set('S:','/gpfs/soma_fs/bbo');
+        end
+
         function set(varargin)
             %SET    Set storage search path.
-            ana.fs.storage.Data.searchpath = ana.fs.searchpath(varargin{:});
+            %
+            %   Note: the storage search path is usually loaded from the configuration.
+            %   Use this function with care.
+            data = ana.fs.storage.Data;
+            data.searchpath = ana.fs.searchpath(varargin{:});
         end
 
         function add(varargin)
             %ADD    Add search paths elements.
+            %
+            %See also: ana.fs.storage.set
             data = ana.fs.storage.Data;
             if isempty(data.paths)
                 data.paths = ana.fs.searchpath();
