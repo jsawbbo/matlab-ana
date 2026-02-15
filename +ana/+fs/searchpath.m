@@ -120,3 +120,5 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace ...
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski
