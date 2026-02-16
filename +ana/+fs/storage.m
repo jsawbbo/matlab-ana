@@ -11,14 +11,6 @@ classdef storage
     end
 
     methods(Static)
-        function init()
-            %INIT   Initialize from configuration.
-            %
-            %TODO
-            %- load general config instead of hard-coded paths.
-            ana.fs.storage.set('S:','/gpfs/soma_fs/bbo');
-        end
-
         function set(varargin)
             %SET    Set storage search path.
             %
@@ -39,6 +31,12 @@ classdef storage
             for i = 1:numel(varargin)
                 data.paths{end+1} = varargin{i};
             end
+        end
+
+        function searchPartial(flag)
+            %SEARCHPARTIAL      Set "partial" path resolution flag.
+            data = ana.fs.storage.Data;
+            data.partial = flag;
         end
 
         function res = resolve(path,options)

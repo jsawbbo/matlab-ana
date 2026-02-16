@@ -18,7 +18,9 @@ function init()
 end
 
 function init_storage()
-    ana.fs.storage.init();
+    %TODO
+    %- load from config instead of static init 
+    ana.fs.storage.set('S:','/gpfs/soma_fs/bbo');
 end
 
 function init_snakeyaml(mfile)

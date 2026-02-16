@@ -107,8 +107,8 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace ...
 
                 for i = 1:numel(obj.Paths)
                     p = obj.Paths{i} / path;
-                    if exist(obj.Paths{i} / path, options.Type)
-                        res = obj.Paths{i} / path;
+                    if isfile(p) || isfolder(p)
+                        res = p;
                         return;
                     end
                 end

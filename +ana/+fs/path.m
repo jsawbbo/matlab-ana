@@ -3,7 +3,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     %
     %   This class represents a file system path agnostic to operating system 
     %   (Windows uses, both, forward and backward slash). In addition, it
-    %   enables storage management (see ANA.FS.STORAGE.PATH).
+    %   enables storage management (see ANA.FS.STORAGE).
     %
     %   Paths may be concatenated using the division operator (alternatively
     %   left divide or plus).
@@ -22,8 +22,15 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     end
     
     methods
-        function out = cat(dim,varargin)
-            error("FIXME")
+        function out = cat(~,varargin)
+            out = varargin{1};
+            for i = 2:numel(varargin)
+                p = ana.fs.path(varargin{i});
+                if ~p.isrelative()
+                    error("Cannot concatenate non-relative paths.")
+                end
+                out.Parts = [out.Parts,p.Parts];
+            end
         end
 
         function varargout = size(obj,varargin)
