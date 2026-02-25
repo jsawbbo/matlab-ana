@@ -1,58 +1,31 @@
-function save(filePath,data,style)
-    %ANA.FILE.YAML.SAVE Write data to YAML file.
-    %   ANA.FILE.YAML.SAVE(FILE, DATA) converts DATA to YAML and saves it in a new
-    %   file FILE.
+function save(filename,data,options)
+    %ana.file.yaml.save     Save a YAML file.
     %
-    %   ANA.FILE.YAML.SAVE(FILE, DATA, STYLE) uses a specific output style.
-    %   STYLE can be "auto" (default), "block" or "flow".
+    %See also: ana.file.yaml.koch.dump
     %
-    %   The following types are supported for DATA:
-    %       MATLAB type          | YAML type
-    %       ---------------------|----------------------
-    %       vector cell array    | Sequence
-    %       struct               | Mapping
-    %       scalar single/double | Floating-point number
-    %       scalar int8/../int64 | Integer
-    %       scalar logical       | Boolean
-    %       scalar string        | String
-    %       char vector          | String
-    %       any 0-by-0 value     | null
-    %
-    %   Example:
-    %       >> DATA.a = 1
-    %       >> DATA.b = {"text", false}
-    %       >> FILE = ".\test.yaml"
-    %       >> ana.file.yaml.dump(FILE, DATA)
-    %       >> ana.file.yaml.load("test.yaml")
-    %
-    %         struct with fields:
-    %
-    %           a: 1
-    %           b: {["text"]  [0]}
-    %
-    %   See also ANA.FILE.YAML.PARSE, ANA.FILE.YAML.PARSE, ANA.FILE.YAML.LOAD
-    
+    %Note: This file internally uses Martin Koch's Matlab YAML package,
+    %      released under the MIT License.
     arguments
-        filePath (1, 1) string
+        filename (1, 1) string
         data
-        style {mustBeMember(style, ["flow", "block", "auto"])} = "auto"
+        options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "auto"
     end
     
-    % Create YAML string.
-    yamlString = ana.file.yaml.dump(data, style);
-    
-    % Create folder.
-    folder = fileparts(filePath);
+    yamlString = blink.yaml.dump(data, Style=options.Style);
+
+    folder = fileparts(filename);
     if strlength(folder) > 1 && ~isfolder(folder)
         mkdir(folder);
     end
     
-    % Write file.
-    [fid, msg] = fopen(filePath, "wt");
+    [fid, msg] = fopen(filename, "wt");
     if fid == -1
         error(msg)
     end
     fprintf(fid, "%s", yamlString);
     fclose(fid);
 end
-
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski
