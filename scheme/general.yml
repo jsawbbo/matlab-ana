@@ -32,14 +32,16 @@ contents:
             comment: "Local path or remote URL."
         -   key: remote
             label: Remote
-            type: logical
-            default: false
+            type: choice
+            choice:
+            -   value: "local"
+                label: "Local"
+            -   value: "remote"
+                label: "Remote"
+            -   value: "removable"
+                label: "Removable"
+            default: local
             comment: "Search path residing on a remote system."
-        -   key: removable
-            label: Removable
-            type: logical
-            default: true
-            comment: "Storage location resides on a removable device."
     -   key: scratch
         type: path
         label: Scratch directory
