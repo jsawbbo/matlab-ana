@@ -8,10 +8,10 @@ function save(filename,data,options)
     arguments
         filename (1, 1) string
         data
-        options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "auto"
+        options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "block"
     end
     
-    yamlString = blink.yaml.dump(data, Style=options.Style);
+    yamlString = ana.file.yaml.dump(data, Style=options.Style);
 
     folder = fileparts(filename);
     if strlength(folder) > 1 && ~isfolder(folder)

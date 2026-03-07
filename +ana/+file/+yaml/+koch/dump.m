@@ -129,13 +129,19 @@ function result = convertIntegerOrLogical(data)
     result = javaArray("java." + javaType, size_);
 
     % Loop over elements in N-D array via linear indexing.
-    for i = 1 : numel(data)
-
-        % Convert linear index to N-D array subscripts.
-        [subscripts{1:nDims}] = ind2sub(size_, i);
-
-        % Add scalar to Java array.
-        result(subscripts{:}) = converter(data(i));
+    if isvector(data)
+        for i = 1 : numel(data)
+            result(i) = converter(data(i));
+        end
+    else
+        for i = 1 : numel(data)
+    
+            % Convert linear index to N-D array subscripts.
+            [subscripts{1:nDims}] = ind2sub(size_, i);
+    
+            % Add scalar to Java array.
+            result(subscripts{:}) = converter(data(i));
+        end
     end
 end
 

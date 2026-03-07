@@ -11,7 +11,7 @@ function res = dump(data,options)
     end
 
     koch = convertStructureArrays(data);
-    res = blink.yaml.koch.dump(koch,options.Style);
+    res = ana.file.yaml.koch.dump(koch,options.Style);
 end
 
 % While Koch's parser does the ConvertToArray just fine,
@@ -25,7 +25,7 @@ function koch = convertStructureArrays(data)
                 koch.(fn{f}) = convertStructureArrays(data.(fn{f}));
             end
         else
-            koch = cell(1,length(data));
+            koch = cell(length(data),1);
             for i = 1:length(data)
                 koch{i} = convertStructureArrays(data(i));
             end

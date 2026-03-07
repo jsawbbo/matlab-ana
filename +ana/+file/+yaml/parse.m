@@ -9,7 +9,7 @@ function res = parse(s)
         s (1, 1) string
     end
 
-    res = blink.yaml.koch.parse(s,ConvertToArray=true);
+    res = ana.file.yaml.koch.parse(s,ConvertToArray=true);
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later

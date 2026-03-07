@@ -10,7 +10,7 @@ function res = load(filename)
     end
 
     content = string(fileread(string(filename)));
-    res = blink.yaml.parse(content);
+    res = ana.file.yaml.parse(content);
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later
