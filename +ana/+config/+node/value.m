@@ -8,7 +8,7 @@ classdef value < ana.config.node
     end
     
     methods(Hidden, Access=protected)
-        function show(obj,level)
+        function disp_(obj,level)
             arguments
                 obj ana.config.node.value
                 level {mustBeScalarOrEmpty} = 0

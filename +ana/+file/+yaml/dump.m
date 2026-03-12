@@ -5,6 +5,10 @@ function res = dump(data,options)
     %
     %Note: This file internally uses Martin Koch's Matlab YAML package,
     %      released under the MIT License.
+    %
+    %TODO:
+    %- add more dumper options (see
+    %  https://www.javadoc.io/doc/org.yaml/snakeyaml/1.19/org/yaml/snakeyaml/DumperOptions.html)
     arguments
         data
         options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "block"

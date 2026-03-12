@@ -1,4 +1,10 @@
-% General configuration settings.
+% Configuration settings.
+%
+% TODO
+% - hierarchical organization
+% - schemes (also allowing migration...)
+% - abstraction allowing temporary changes (-> UI use, "apply()"/"reset()")
+% - UIs...
 %
 % <a href="matlab:help ana.config.file">file</a> - Configuration file accessor class.
 % <a href="matlab:help ana.config.scheme">scheme</a> - Configuration scheme.

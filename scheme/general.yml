@@ -1,6 +1,6 @@
 version: "1.0"
 
-key: .
+key: /general           # TODO only used with ana.config.
 type: map
 label: General
 contents:

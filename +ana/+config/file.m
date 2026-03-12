@@ -12,19 +12,7 @@ classdef file < ana.config.node.map
         Autosave = true
     end
 
-    properties(SetAccess=private, Hidden)
-        Data = struct();
-    end
-    
     methods(Hidden)
-        function res = properties(obj)
-            res = fieldnames(obj.Properties);
-        end        
-
-        function res = fieldnames(obj)
-            res = fieldnames(obj.Properties);
-        end
-
         function delete(obj)
             %DELETE Destructor.
             if obj.Autosave && obj.ismodified()
@@ -34,15 +22,16 @@ classdef file < ana.config.node.map
     end
 
     methods(Hidden, Access=protected)
-        function show(obj,level)
+        function disp_(obj,level)
             arguments
                 obj ana.config.file
                 level {mustBeScalarOrEmpty} = 0
             end
 
             fprintf(" <a href=""matlab:help ana.config.file"">ana.config.file</a> with contents:\n")
-            % FIXME Path,Autosave
-            show@ana.config.node.map(obj,level+1);
+            fprintf(" Path: %s\n",string(obj.Path))
+            fprintf(" AutoSave: %d\n",obj.Autosave)
+            disp_@ana.config.node.map(obj,level+1);
             fprintf("\n")
         end
     end
@@ -78,30 +67,34 @@ classdef file < ana.config.node.map
             % options
             obj.Autosave = options.Autosave;
             if strlength(options.Scheme) > 0
-                obj.Scheme = ana.fs.path(options.Scheme);
+                options.Scheme = ana.fs.path(options.Scheme);
             else
-                obj.Scheme = [];
+                options.Scheme = [];
             end
 
             % config file
             if isempty(filename)
                 configdir = ana.os.paths('configdir');
                 filename = configdir / 'config.yml';
+                if isempty(options.Scheme) || (strlength(options.Scheme) == 0)
+                    options.Scheme = ana.fs.path("general");
+                end
             end
 
             obj.Path = ana.fs.path(filename);
-
-            % load scheme
-            if ~isempty(obj.Scheme)
-                obj.Scheme = ana.config.scheme(obj.Scheme);
-            end
             
             % load config file
+            ver = "";
             if isfile(filename)
-                obj.set(ana.file.yaml.load(fullfile(filename)));
-                if ~isempty(obj.Scheme)
-                    % FIXME
-                end
+                cfg = ana.file.yaml.load(fullfile(filename));
+                obj.set(cfg);
+                ver = cfg.version;
+            end
+
+            % load scheme
+            if ~isempty(options.Scheme)
+                sch = ana.config.scheme(options.Scheme);
+                sch.apply(obj,Version=ver)
             end
         end
 

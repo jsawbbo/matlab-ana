@@ -9,25 +9,63 @@ classdef node < handle
         Parent = [];                    % Parent node.
     end
 
-    properties
+    properties(Hidden,SetAccess={?ana.config.node,?ana.config.scheme})
         Scheme = [];                    % Scheme node (if available).
     end
 
-    methods
-        function set.Scheme(obj,scheme)
-            arguments
-                obj ana.config.node;
-                scheme 
-            end
-
-            if isempty(scheme)
-                return
-            end
-
-            % FIXME
-
-        end
-    end
+    % methods
+    %     function set.Scheme(obj,scheme)
+    %         arguments
+    %             obj ana.config.node;
+    %             scheme 
+    %         end
+    % 
+    %         assignScheme(obj,scheme);
+    %     end
+    % 
+    %     function assignScheme(obj,scheme)
+    %         arguments
+    %             obj ana.config.node;
+    %             scheme 
+    %         end
+    % 
+    %         if isempty(scheme)
+    %             return
+    %         end
+    % 
+    %         obj.Scheme = scheme;
+    %         tr = scheme.Tree;
+    % 
+    %         if isa(obj, 'ana.config.node.map')
+    %             if ~strcmp(tr.type,"map")
+    %                 error("FIXME error in config file")
+    %             end
+    % 
+    %             pn = properties(obj);
+    % 
+    %             for i = 1:length(tr.contents)
+    %                 cnt = tr.contents(i);
+    % 
+    %                 switch cnt.type
+    %                     case 'map'
+    %                         if ~any(contains(string(pn), cnt.key))
+    %                             obj.(cnt.key) = ana.config.node.map(Parent=obj,Scheme=cnt);
+    %                         else
+    %                             FIXME
+    %                         end
+    %                     otherwise
+    %                         FIXME
+    %                 end
+    %             end            
+    %         elseif isa(obj, 'ana.config.node.seq')
+    %             FIXME
+    %         elseif isa(obj, 'ana.config.node.value')
+    %             FIXME
+    %         else
+    %             error("Internal error: invalid class")
+    %         end
+    %     end
+    % end
 
     methods(Hidden)
         function disp(obj)
@@ -35,19 +73,29 @@ classdef node < handle
                 obj ana.config.node;
             end
 
-            obj.show(0);
+            obj.disp_(0);
         end
     end        
 
     methods(Hidden, Access=protected)
-        function show(obj,level) %#ok<INUSD>
+        function disp_(obj,level) %#ok<INUSD>
             error('internal error: not implemented')
         end
     end
 
     methods (Access=protected)
         function res = wrap(obj, val)
-            %wrap   FIXME
+            %wrap   Helper for assigning values.
+            %
+            %   An value must be encapsulated by a child class of ana.config.node.
+            %   This functions helps to transform, for example, a bare value into
+            %   a ana.config.node.value object.
+            %
+
+            if ~isa(val,'ana.config.node.value')
+                res = val;
+                return
+            end
 
             assert(isempty(obj.Scheme), 'FIXME')
 
@@ -70,6 +118,9 @@ classdef node < handle
 
             obj.Parent = options.Parent;
             obj.Scheme = options.Scheme;
+            if ~isempty(obj.Scheme)
+                obj.Scheme.apply(obj);
+            end
         end
 
         function res = root(obj)

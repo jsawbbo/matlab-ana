@@ -15,7 +15,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
 
     methods (Hidden)
         function result = cat(dim,varargin)
-            FIXME()
+            FIXME
         end
 
         function result = size(obj,varargin)
@@ -24,7 +24,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
     end
 
     methods(Hidden, Access=protected)
-        function show(obj,level)
+        function disp_(obj,level)
             arguments
                 obj ana.config.node.seq
                 level {mustBeScalarOrEmpty} = 1
@@ -32,7 +32,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
 
             for key = 1:numel(obj.Properties)
                 fprintf("\n%s-", pad('',(level-1)*4))
-                show(obj.Properties{key}, level+1);
+                disp_(obj.Properties{key}, level+1);
             end
         end        
     end
