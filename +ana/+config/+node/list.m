@@ -1,17 +1,19 @@
-classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
-    %ana.config.node.seq        Representation of an array.
+classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
+    %ana.config.node.list       Representation of a cell array.
     %
     %   Detailed explanation goes here
     
+    %% class data    
     properties(Hidden,Access=protected)
         Properties = {};          % Internal properties node.
     end
 
-    % methods (Static, Hidden)
-    %     function obj = empty()
-    %         obj = ana.config.node.seq();
-    %     end
-    % end
+    %% "RedefinesParen"
+    methods (Static, Hidden)
+        function obj = empty()
+            obj = ana.config.node.list();
+        end
+    end
 
     methods (Hidden)
         function result = cat(dim,varargin)
@@ -26,7 +28,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
     methods(Hidden, Access=protected)
         function disp_(obj,level)
             arguments
-                obj ana.config.node.seq
+                obj ana.config.node.list
                 level {mustBeScalarOrEmpty} = 1
             end
 
@@ -68,8 +70,9 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
         end
     end    
 
+    %% public
     methods
-        function obj = seq(options)
+        function obj = list(options)
             %seq    Construct an instance of this class
             arguments
                 options.Parent = [];
@@ -77,16 +80,15 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
             end
 
             poptions = ana.util.passoptions(options, {'Parent','Scheme'});
-            obj@ana.config.node(poptions{:});
+            obj@ana.config.node.base(poptions{:});
         end
 
         function res = ismodified(obj)
             arguments
-                obj ana.config.node.map
+                obj ana.config.node.list
             end
            
             res = false;
-
             for key = 1:numel(obj.Properties)
                 if obj.Properties{key}.ismodified()
                     res = true;
@@ -96,22 +98,28 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
         end
 
         function apply(obj)
-            %apply      Apply changes.
             arguments
-                obj ana.config.base.node;
+                obj ana.config.node.list
+            end
+
+            for key = 1:numel(obj.Properties)
+                obj.Properties{key}.apply();
             end
         end
 
         function reset(obj)
-            %reset      Reset changes.
             arguments
-                obj ana.config.base.node;
+                obj ana.config.node.list
+            end
+
+            for key = 1:numel(obj.Properties)
+                obj.Properties{key}.reset();
             end
         end
         
         function set(obj, s)
             arguments
-                obj ana.config.node.seq
+                obj ana.config.node.list
                 s cell
             end
 
@@ -129,7 +137,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
                     if havescheme
                         FIXME()
                     else
-                        map = ana.config.node.map(Parent=obj,Scheme=subscheme);
+                        map = ana.config.node.dict(Parent=obj,Scheme=subscheme);
                         map.set(value);
                         obj.Properties{key} = map;
                     end
@@ -137,9 +145,9 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
                     if havescheme
                         FIXME()
                     else
-                        seq = ana.config.node.seq(Parent=obj,Scheme=subscheme);
-                        seq.set(value);
-                        obj.Properties{key} = seq;
+                        list = ana.config.node.list(Parent=obj,Scheme=subscheme);
+                        list.set(value);
+                        obj.Properties{key} = list;
                     end
                 else
                     obj.Properties{key} = ana.config.node.value(value,Parent=obj,Scheme=subscheme);
@@ -149,7 +157,7 @@ classdef seq < ana.config.node & matlab.mixin.indexing.RedefinesParen
 
         function res = get(obj)
             arguments
-                obj ana.config.node.seq
+                obj ana.config.node.list
             end
 
             N = numel(obj.Properties);

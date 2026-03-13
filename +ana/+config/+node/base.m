@@ -1,10 +1,17 @@
-classdef node < handle
-    %ana.config.node    Configuration node base class.
+classdef base < handle
+    %ana.config.node.base    Configuration node base class.
     %
-    %   A "configuration node" can be a simple branch node or represent a setting.
-    %   These nodes may be accompanied by schemes. 
+    %   Configuration node that abstracts Matlab 
+    %   - cell arrays (ana.config.node.list), 
+    %   - struct arrays (ana.config.node.table),
+    %   - dictionaries (ana.config.node.dict), and,
+    %   - values (ana.config.node.value).
+    %   These plain Matlab types (read from a YAML config file, possibly supplemented
+    %   by a scheme) are abstracted to support user-interfaces that provide a "Cancel"
+    %   mechanism after entries were changed.
     %
     
+    %% internal 
     properties(Hidden)
         Parent = [];                    % Parent node.
     end
@@ -13,67 +20,14 @@ classdef node < handle
         Scheme = [];                    % Scheme node (if available).
     end
 
-    % methods
-    %     function set.Scheme(obj,scheme)
-    %         arguments
-    %             obj ana.config.node;
-    %             scheme 
-    %         end
-    % 
-    %         assignScheme(obj,scheme);
-    %     end
-    % 
-    %     function assignScheme(obj,scheme)
-    %         arguments
-    %             obj ana.config.node;
-    %             scheme 
-    %         end
-    % 
-    %         if isempty(scheme)
-    %             return
-    %         end
-    % 
-    %         obj.Scheme = scheme;
-    %         tr = scheme.Tree;
-    % 
-    %         if isa(obj, 'ana.config.node.map')
-    %             if ~strcmp(tr.type,"map")
-    %                 error("FIXME error in config file")
-    %             end
-    % 
-    %             pn = properties(obj);
-    % 
-    %             for i = 1:length(tr.contents)
-    %                 cnt = tr.contents(i);
-    % 
-    %                 switch cnt.type
-    %                     case 'map'
-    %                         if ~any(contains(string(pn), cnt.key))
-    %                             obj.(cnt.key) = ana.config.node.map(Parent=obj,Scheme=cnt);
-    %                         else
-    %                             FIXME
-    %                         end
-    %                     otherwise
-    %                         FIXME
-    %                 end
-    %             end            
-    %         elseif isa(obj, 'ana.config.node.seq')
-    %             FIXME
-    %         elseif isa(obj, 'ana.config.node.value')
-    %             FIXME
-    %         else
-    %             error("Internal error: invalid class")
-    %         end
-    %     end
-    % end
-
     methods(Hidden)
         function disp(obj)
             arguments
-                obj ana.config.node;
+                obj ana.config.node.base;
             end
 
             obj.disp_(0);
+            fprintf("\n\n")
         end
     end        
 
@@ -91,7 +45,6 @@ classdef node < handle
             %   This functions helps to transform, for example, a bare value into
             %   a ana.config.node.value object.
             %
-
             if ~isa(val,'ana.config.node.value')
                 res = val;
                 return
@@ -99,7 +52,7 @@ classdef node < handle
 
             assert(isempty(obj.Scheme), 'FIXME')
 
-            if isa(val, 'ana.config.node')
+            if isa(val, 'ana.config.base.node')
                 res = val;
             else
                 res = ana.config.node.value(val, Parent=obj);
@@ -107,9 +60,27 @@ classdef node < handle
         end
     end
 
+    %% scheme
+    methods(Hidden)
+        function make(obj,sch)
+            %make   Make, or build, respectively, node from scheme
+            arguments
+                obj
+                sch = []
+            end
+            error("internal error: not implemented")
+        end
+
+        function check(obj,sch)
+            %check  Check node from scheme
+            error("internal error: not implemented")
+        end
+    end
+
+    %% public
     methods
-        function obj = node(options)
-            %node   Construct an instance of this class
+        function obj = base(options)
+            %base   Construct an instance of this class
             %
             arguments
                 options.Parent = [];
@@ -149,27 +120,25 @@ classdef node < handle
         function apply(obj)
             %apply      Apply changes.
             arguments
-                obj ana.config.node;
+                obj ana.config.node.base;
             end
         end
 
         function reset(obj)
             %reset      Reset changes.
             arguments
-                obj ana.config.node;
+                obj ana.config.node.base;
             end
         end
 
-        function res = get(obj)
-            %get    Get content (YAML conforming).
-            arguments
-                obj ana.config.node.value
-            end
-            res = [];
+        function res = get(obj,varargin)
+            %get    Get content (YAML conforming)
+            error('internal error: not implemented')
         end
 
-        function set(obj,v)
-            %set    Set content (YAML conforming).
+        function set(obj,varargin)
+            %set    Set content (YAML conforming)
+            error('internal error: not implemented')
         end
     end
 end

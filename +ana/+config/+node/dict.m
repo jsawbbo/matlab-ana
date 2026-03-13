@@ -1,13 +1,12 @@
-classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
-    %ana.config.node.map        Key-value pair map.
+classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
+    %ana.config.node.dict        Key-value pair map.
     %
     %   This class represents (in JSON jargon) a [key-value pair] map implemented
     %   around Matlab's 'dictionary' (it should be noted, that, especially for
     %   the purpose of use with GUIs, a 'dictionary' is sorted by order of first 
     %   time key insertion).
     %
-    %   FIXME
-    %
+    %   See also: ana.config.node.base
     
     %% class data
     properties(Hidden,Access=protected)
@@ -28,8 +27,13 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
     methods(Hidden, Access=protected)
         function disp_(obj,level)
             arguments
-                obj ana.config.node.map
-                level {mustBeScalarOrEmpty} = 1
+                obj ana.config.node.dict
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            if level == 0
+                fprintf("  <a href=""matlab:help ana.config.node.dict"">ana.config.node.dict</a> with contents:\n")
+                level = level + 1;
             end
 
             fn = keys(obj.Properties);
@@ -84,7 +88,7 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
                     catch
                         switch indexOp(i).Type
                             case 'Dot'
-                                node = ana.config.node.map(Parent=tmp); % FIXME Scheme
+                                node = ana.config.node.dict(Parent=tmp); % FIXME Scheme
                                 tmp.Properties(indexOp(i).Name) = {node};
                                 tmp = node;
                             otherwise
@@ -107,9 +111,9 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
         end
     end
 
-    %% methods:
+    %% public
     methods
-        function obj = map(options)
+        function obj = dict(options)
             %MAP Construct an instance of this class
             arguments
                 options.Parent = [];
@@ -117,14 +121,12 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
             end
 
             poptions = ana.util.passoptions(options, {'Parent','Scheme'});
-            obj@ana.config.node(poptions{:});
+            obj@ana.config.node.base(poptions{:});
         end
 
         function res = ismodified(obj)
-            %ISMODIFIED Check if modified.
-            %
             arguments
-                obj ana.config.node.map
+                obj ana.config.node.dict
             end
            
             res = false;
@@ -138,68 +140,67 @@ classdef map < ana.config.node & matlab.mixin.indexing.RedefinesDot
         end
 
         function apply(obj)
-            %apply      Apply changes.
             arguments
-                obj ana.config.base.node;
+                obj ana.config.base.dict
+            end
+
+            f = fieldnames(obj);
+            for k = 1:numel(f)
+                obj.Properties.(f{k}).apply();
             end
         end
 
         function reset(obj)
-            %reset      Reset changes.
             arguments
-                obj ana.config.base.node;
+                obj ana.config.base.dict
+            end
+
+            f = fieldnames(obj);
+            for k = 1:numel(f)
+                obj.Properties.(f{k}).reset();
             end
         end
         
         function set(obj, v)
             arguments
-                obj ana.config.node.map
+                obj ana.config.node.dict
                 v struct
             end
 
-            % fill map
             havescheme = ~isempty(obj.Scheme);
             subscheme = [];
+            
             fn = fieldnames(v);
             for i = 1:numel(fn)
-                key = fn{i};
+                key = string(fn{i});
                 value = v.(key);
 
+                % get subscheme
                 if havescheme
-                    % FIXME
-                    subscheme = [];
+                    subscheme = obj.Scheme.findkey(key);
+                    if isempty(subscheme) 
+                        % FIXME warning
+                    end
                 end
-
+                
+                % assign
                 if isstruct(value)
-                    if havescheme
-                        FIXME()
-                    else
-                        map = ana.config.node.map(Parent=obj,Scheme=subscheme);
-                        map.set(value);
-                        obj.Properties.(key) = map;
-                    end
+                    dict = ana.config.node.dict(Parent=obj,Scheme=subscheme);
+                    dict.set(value);
+                    obj.Properties(key) = {dict};
                 elseif iscell(value)
-                    if havescheme
-                        FIXME()
-                    else
-                        seq = ana.config.node.seq(Parent=obj,Scheme=subscheme);
-                        seq.set(value);
-                        obj.Properties.(key) = seq;
-                    end
+                    list = ana.config.node.list(Parent=obj,Scheme=subscheme);
+                    list.set(value);
+                    obj.Properties(key) = {list};
                 else
-                    obj.Properties.(key) = ana.config.node.value(value,Parent=obj,Scheme=subscheme);
+                    obj.Properties(key) = {ana.config.node.value(value,Parent=obj,Scheme=subscheme)};
                 end
-            end
-
-            % fill missing keys from scheme
-            if havescheme
-                FIXME()
             end
         end
 
         function res = get(obj)
             arguments
-                obj ana.config.node.map
+                obj ana.config.node.dict
             end
 
             res = struct();

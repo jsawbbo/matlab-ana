@@ -67,8 +67,8 @@ classdef scheme < handle
             end
         end
 
-        function apply(obj,node,options)
-            %APPLY      Apply scheme to node (possibly filling defaults).
+        function cascade(obj,node,options)
+            %cascade    Apply scheme to node (possibly filling defaults).
             arguments
                 obj ana.config.scheme
                 node ana.config.node

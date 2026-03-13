@@ -1,4 +1,4 @@
-classdef file < ana.config.node.map
+classdef file < ana.config.node.dict
     %ana.config.file     Configuration file accessor class.
     %
     %   Detailed explanation goes here

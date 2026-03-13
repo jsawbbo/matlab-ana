@@ -1,12 +1,15 @@
-classdef value < ana.config.node
+classdef value < ana.config.node.base
     %VALUE      Representation of a value.
+    %
     %   Detailed explanation goes here
     
+    %% class data
     properties(Hidden, Access=protected)
         Value = []
         LastValue = []
     end
     
+    %% internal
     methods(Hidden, Access=protected)
         function disp_(obj,level)
             arguments
@@ -28,6 +31,46 @@ classdef value < ana.config.node
         end
     end
 
+    %% scheme
+    methods(Hidden)
+        function make(obj,sch)
+            %make   Make, or build, respectively, node from scheme
+            arguments
+                obj ana.config.node.value
+                sch = []
+            end
+
+            if isempty(sch)
+                if isempty(obj.Scheme)
+                    return
+                end
+                sch = obj.Scheme;
+            end
+
+
+        end
+
+        function res = check(obj,sch)
+            %check  Check node from scheme
+            arguments
+                obj ana.config.node.value
+                sch = []
+            end
+
+            if isempty(sch)
+                if isempty(obj.Scheme)
+                    res = true;
+                    return
+                end
+                sch = obj.Scheme;
+            end
+
+            res = false;
+            error("internal error: not implemented")
+        end
+    end
+    
+    %% public
     methods
         function obj = value(value,options)
             arguments
@@ -37,7 +80,7 @@ classdef value < ana.config.node
             end
 
             poptions = ana.util.passoptions(options, {'Parent','Scheme'});
-            obj@ana.config.node(poptions{:});
+            obj@ana.config.node.base(poptions{:});
 
             obj.Value = value;
             obj.LastValue = value;
