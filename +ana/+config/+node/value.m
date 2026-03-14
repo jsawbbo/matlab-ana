@@ -33,8 +33,7 @@ classdef value < ana.config.node.base
 
     %% scheme
     methods(Hidden)
-        function make(obj,sch)
-            %make   Make, or build, respectively, node from scheme
+        function build(obj,sch)
             arguments
                 obj ana.config.node.value
                 sch = []
@@ -50,8 +49,7 @@ classdef value < ana.config.node.base
 
         end
 
-        function res = check(obj,sch)
-            %check  Check node from scheme
+        function res = validate(obj,sch)
             arguments
                 obj ana.config.node.value
                 sch = []
@@ -74,7 +72,7 @@ classdef value < ana.config.node.base
     methods
         function obj = value(value,options)
             arguments
-                value  = []
+                value  = {}
                 options.Parent = [];
                 options.Scheme = [];
             end

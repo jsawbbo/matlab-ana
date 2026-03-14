@@ -37,33 +37,33 @@ classdef base < handle
         end
     end
 
-    methods (Access=protected)
-        function res = wrap(obj, val)
-            %wrap   Helper for assigning values.
-            %
-            %   An value must be encapsulated by a child class of ana.config.node.
-            %   This functions helps to transform, for example, a bare value into
-            %   a ana.config.node.value object.
-            %
-            if ~isa(val,'ana.config.node.value')
-                res = val;
-                return
-            end
-
-            assert(isempty(obj.Scheme), 'FIXME')
-
-            if isa(val, 'ana.config.base.node')
-                res = val;
-            else
-                res = ana.config.node.value(val, Parent=obj);
-            end
-        end
-    end
+    % methods (Access=protected)
+    %     function res = wrap(obj, val)
+    %         %wrap   Helper for assigning values.
+    %         %
+    %         %   An value must be encapsulated by a child class of ana.config.node.
+    %         %   This functions helps to transform, for example, a bare value into
+    %         %   a ana.config.node.value object.
+    %         %
+    %         if ~isa(val,'ana.config.node.value')
+    %             res = val;
+    %             return
+    %         end
+    % 
+    %         assert(isempty(obj.Scheme), 'FIXME')
+    % 
+    %         if isa(val, 'ana.config.base.node')
+    %             res = val;
+    %         else
+    %             res = ana.config.node.value(val, Parent=obj);
+    %         end
+    %     end
+    % end
 
     %% scheme
     methods(Hidden)
-        function make(obj,sch)
-            %make   Make, or build, respectively, node from scheme
+        function build(obj,sch)
+            %build   Build node from scheme.
             arguments
                 obj
                 sch = []
@@ -71,7 +71,7 @@ classdef base < handle
             error("internal error: not implemented")
         end
 
-        function check(obj,sch)
+        function validate(obj,sch)
             %check  Check node from scheme
             error("internal error: not implemented")
         end

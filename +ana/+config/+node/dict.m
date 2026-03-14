@@ -111,6 +111,30 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end
     end
 
+    %% protected
+    methods (Access=protected)
+        function set_(obj,key,value,scheme)
+            arguments
+                obj ana.config.node.dict
+                key string
+                value 
+                scheme = []
+            end
+
+            if isstruct(value)
+                dict = ana.config.node.dict(Parent=obj,Scheme=scheme);
+                dict.set(value);
+                obj.Properties(key) = {dict};
+            elseif iscell(value)
+                list = ana.config.node.list(Parent=obj,Scheme=scheme);
+                list.set(value);
+                obj.Properties(key) = {list};
+            else
+                obj.Properties(key) = {ana.config.node.value(value,Parent=obj,Scheme=scheme)};
+            end
+        end
+    end
+
     %% public
     methods
         function obj = dict(options)
@@ -161,10 +185,12 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             end
         end
         
-        function set(obj, v)
+        function obj = set(obj,v,options)
+            %set    
             arguments
                 obj ana.config.node.dict
                 v struct
+                options.Key string = []
             end
 
             havescheme = ~isempty(obj.Scheme);
@@ -182,19 +208,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                         % FIXME warning
                     end
                 end
-                
-                % assign
-                if isstruct(value)
-                    dict = ana.config.node.dict(Parent=obj,Scheme=subscheme);
-                    dict.set(value);
-                    obj.Properties(key) = {dict};
-                elseif iscell(value)
-                    list = ana.config.node.list(Parent=obj,Scheme=subscheme);
-                    list.set(value);
-                    obj.Properties(key) = {list};
-                else
-                    obj.Properties(key) = {ana.config.node.value(value,Parent=obj,Scheme=subscheme)};
-                end
+
+                obj.set_(key,value,subscheme);
             end
         end
 

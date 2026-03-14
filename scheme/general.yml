@@ -1,72 +1,85 @@
 version: "1.0"
 
-key: /general           # TODO only used with ana.config.
+key: /general
 type: map
-label: General
-contents:
+meta:
+    label: General
+content:
 -   key: storage
     type: map
-    label: Storage
-    comment: |
-        Local and remote storage locations.
-    ui: ana.config.general
-    actions:
-    contents:
+    meta:
+        label: Storage
+        comment: |
+            Local and remote storage locations.
+        ui: ana.config.general
+        actions:
+    content:
     -   key: searchpath
         type: table
-        label: Search paths
-        comment: |
-            File storage search path.
-
-            Depending on the computing environment, files may be stored in locations with
-            a different root (for example when moving from a Microscoft Windows to a
-            Linux workstation). This allows files to be represented as, for example
-
-                {storage}/rawdata/datafile-01.data
-
-            so that a configuration file must not be edited.
-        contents:
+        meta:
+            label: Search paths
+            comment: |
+                File storage search path.
+    
+                Depending on the computing environment, files may be stored in locations with
+                a different root (for example when moving from a Microscoft Windows to a
+                Linux workstation). This allows files to be represented as, for example
+    
+                    {storage}/rawdata/datafile-01.data
+    
+                so that a configuration file must not be edited.
+        content:
         -   key: location
-            label: Location
             type: path
-            comment: "Local path or remote URL."
+            meta:
+                label: Location
+                comment: "Local path or remote URL."
         -   key: remote
-            label: Remote
             type: choice
-            choice:
-            -   value: "local"
-                label: "Local"
-            -   value: "remote"
-                label: "Remote"
-            -   value: "removable"
-                label: "Removable"
-            default: local
-            comment: "Search path residing on a remote system."
+            meta:
+                label: Remote
+                choice:
+                -   value: "local"
+                    label: "Local"
+                -   value: "remote"
+                    label: "Remote"
+                -   value: "removable"
+                    label: "Removable"
+                default: local
+                comment: "Search path residing on a remote system."
     -   key: scratch
         type: path
-        label: Scratch directory
-        comment: "Local scratch directory (for temporary large files)."
-        default: 
-            eval: |
-                ana.os.paths('tmpdir')
-    -   key: cache
-        type: map
-        label: Cache directory and size
-        contents:
-        -   key: path
-            type: path
-            label: Path
-            comment: |
-                Cache directory.
-    
-                FIXME
+        meta:
+            label: Scratch directory
+            comment: "Local scratch directory (for temporary large files)."
             default: 
                 eval: |
-                    ana.os.paths('cachedir')
+                    ana.os.paths('tmpdir')
+    -   key: cache
+        type: map
+        meta:
+            label: Cache directory and size
+        content:
+        -   key: path
+            type: path
+            meta:
+                label: Path
+                comment: |
+                    Cache directory.
+        
+                    FIXME
+                default: 
+                    eval: |
+                        ana.os.paths('cachedir')
         -   key: size
             type: number
-            label: Size
-            commend: |
-                Maximum size of the cache directory.
-
-                FIXME
+            meta:
+                label: Size
+                comment: |
+                    Maximum size of the cache directory.
+    
+                    FIXME
+# FIXME external programs
+#           - python
+#           - conda
+#           ...

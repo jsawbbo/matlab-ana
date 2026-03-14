@@ -6,6 +6,8 @@ classdef unified < handle & matlab.mixin.indexing.RedefinesDot
     %   user interface. Also, it avoids concurrent access to configuration files
     %   (this is restricted to a single Matlab instance).
     %
+    %   FIXME
+    %
     
     %% class data
     properties(Hidden,Access=protected)

@@ -1,4 +1,4 @@
-classdef table < ana.config.node.list
+classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     %ana.config.node.table      FIXME
     %
     %   Detailed explanation goes here
