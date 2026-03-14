@@ -90,7 +90,7 @@ classdef base < handle
             obj.Parent = options.Parent;
             obj.Scheme = options.Scheme;
             if ~isempty(obj.Scheme)
-                obj.Scheme.apply(obj);
+                obj.build(obj);
             end
         end
 

@@ -40,13 +40,13 @@ classdef value < ana.config.node.base
             end
 
             if isempty(sch)
-                if isempty(obj.Scheme)
+                sch = obj.Scheme;
+                if isempty(sch)
                     return
                 end
-                sch = obj.Scheme;
             end
 
-
+            
         end
 
         function res = validate(obj,sch)
