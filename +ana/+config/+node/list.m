@@ -70,6 +70,43 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
     end    
 
+    %% scheme
+    methods(Hidden)
+        function build(obj,sch)
+            arguments
+                obj ana.config.node.list
+                sch = []
+            end
+
+            if isempty(sch)
+                sch = obj.Scheme;
+                if isempty(sch)
+                    return
+                end
+            end
+
+            FIXME
+        end
+
+        function res = validate(obj,sch)
+            arguments
+                obj ana.config.node.list
+                sch = []
+            end
+
+            if isempty(sch)
+                if isempty(obj.Scheme)
+                    res = true;
+                    return
+                end
+                sch = obj.Scheme;
+            end
+
+            res = false;
+            FIXME
+        end
+    end
+    
     %% public
     methods
         function obj = list(options)

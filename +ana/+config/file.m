@@ -1,9 +1,10 @@
 classdef file < ana.config.node.dict
-    %ana.config.file     Configuration file accessor class.
+    %ana.config.file     Configuration file.
     %
-    %   Detailed explanation goes here
+    %   FIXME
     %
 
+    %% class data
     properties (SetAccess=protected)
         Path
     end
@@ -12,9 +13,27 @@ classdef file < ana.config.node.dict
         Autosave = true
     end
 
+    methods
+        function set.Autosave(obj,value)
+            arguments
+                obj ana.config.file;
+                value {mustBeNumericOrLogical}
+            end
+
+            if ~obj.Autosave && value
+                obj.Autosave = true;
+                if obj.ismodified()
+                    obj.save()
+                end
+            else
+                obj.Autosave = value;
+            end
+        end
+    end
+    
+    %% internal
     methods(Hidden)
         function delete(obj)
-            %DELETE Destructor.
             if obj.Autosave && obj.ismodified()
                 obj.save()
             end
@@ -36,24 +55,7 @@ classdef file < ana.config.node.dict
         end
     end
 
-    methods
-        function set.Autosave(obj,value)
-            arguments
-                obj ana.config.file;
-                value {mustBeNumericOrLogical}
-            end
-
-            if ~obj.Autosave && value
-                obj.Autosave = true;
-                if obj.ismodified()
-                    obj.save()
-                end
-            else
-                obj.Autosave = value;
-            end
-        end
-    end
-
+    %% public
     methods
         function obj = file(filename,options)
             %file   Construct an instance of this class
@@ -66,6 +68,7 @@ classdef file < ana.config.node.dict
 
             % options
             obj.Autosave = options.Autosave;
+
             if strlength(options.Scheme) > 0
                 options.Scheme = ana.fs.path(options.Scheme);
             else
@@ -77,7 +80,7 @@ classdef file < ana.config.node.dict
                 configdir = ana.os.paths('configdir');
                 filename = configdir / 'config.yml';
                 if isempty(options.Scheme) || (strlength(options.Scheme) == 0)
-                    options.Scheme = ana.fs.path("general");
+                    options.Scheme = "general";
                 end
             end
 
@@ -93,8 +96,8 @@ classdef file < ana.config.node.dict
 
             % load scheme
             if ~isempty(options.Scheme)
-                sch = ana.config.scheme(options.Scheme);
-                sch.apply(obj,Version=ver)
+                sch = ana.config.scheme.load(options.Scheme);
+                FIXME
             end
         end
 
