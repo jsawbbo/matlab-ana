@@ -50,7 +50,7 @@ classdef file < ana.config.node.dict
             fprintf(" <a href=""matlab:help ana.config.file"">ana.config.file</a> with contents:\n")
             fprintf(" Path: %s\n",string(obj.Path))
             fprintf(" AutoSave: %d\n",obj.Autosave)
-            disp_@ana.config.node.map(obj,level+1);
+            disp_@ana.config.node.dict(obj,level+1);
             fprintf("\n")
         end
     end
@@ -97,7 +97,24 @@ classdef file < ana.config.node.dict
             % load scheme
             if ~isempty(options.Scheme)
                 sch = ana.config.scheme.load(options.Scheme);
-                FIXME
+
+                if ~isfile(filename)
+                    obj.build(sch);
+                else
+                    % check version
+                    if ~strcmp(ver, sch.version)
+                        error("ANA:CONFIG:FILE:SCHEMEVER", "Scheme version mismatch: expected %s, got %s", sch.version, ver);
+                    end
+
+                    % validate
+                    assert(obj.validate(sch));
+                end
+
+                obj.Scheme = sch;
+
+                % unified config
+                % u = ana.config.unified();
+                % u.add ...
             end
         end
 

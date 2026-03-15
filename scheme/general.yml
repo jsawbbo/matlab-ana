@@ -14,39 +14,39 @@ content:
         ui: ana.config.general
         actions:
     content:
-    -   key: searchpath
-        type: table
-        meta:
-            label: Search paths
-            comment: |
-                File storage search path.
-    
-                Depending on the computing environment, files may be stored in locations with
-                a different root (for example when moving from a Microscoft Windows to a
-                Linux workstation). This allows files to be represented as, for example
-    
-                    {storage}/rawdata/datafile-01.data
-    
-                so that a configuration file must not be edited.
-        content:
-        -   key: location
-            type: path
-            meta:
-                label: Location
-                comment: "Local path or remote URL."
-        -   key: remote
-            type: category
-            meta:
-                label: Remote
-                choice:
-                -   value: "local"
-                    label: "Local"
-                -   value: "remote"
-                    label: "Remote"
-                -   value: "removable"
-                    label: "Removable"
-                default: local
-                comment: "Search path residing on a remote system."
+    # -   key: searchpath
+    #     type: table
+    #     meta:
+    #         label: Search paths
+    #         comment: |
+    #             File storage search path.
+    # 
+    #             Depending on the computing environment, files may be stored in locations with
+    #             a different root (for example when moving from a Microscoft Windows to a
+    #             Linux workstation). This allows files to be represented as, for example
+    # 
+    #                 {storage}/rawdata/datafile-01.data
+    # 
+    #             so that a configuration file must not be edited.
+    #     content:
+    #     -   key: location
+    #         type: path
+    #         meta:
+    #             label: Location
+    #             comment: "Local path or remote URL."
+    #     -   key: remote
+    #         type: category
+    #         meta:
+    #             label: Remote
+    #             choice:
+    #             -   value: "local"
+    #                 label: "Local"
+    #             -   value: "remote"
+    #                 label: "Remote"
+    #             -   value: "removable"
+    #                 label: "Removable"
+    #             default: local
+    #             comment: "Search path residing on a remote system."
     -   key: scratch
         type: path
         meta:

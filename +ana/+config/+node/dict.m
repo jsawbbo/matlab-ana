@@ -12,7 +12,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     properties(Hidden,Access=protected)
         Properties = dictionary(string([]), {});    % Internal storage.
     end
-    
+        
     %% "RedefinesDot"
     methods(Hidden)
         function res = properties(obj)
@@ -21,28 +21,6 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
         function res = fieldnames(obj)
             res = keys(obj.Properties);
-        end
-    end
-
-    methods(Hidden, Access=protected)
-        function disp_(obj,level)
-            arguments
-                obj ana.config.node.dict
-                level {mustBeScalarOrEmpty} = 0
-            end
-
-            if level == 0
-                fprintf("  <a href=""matlab:help ana.config.node.dict"">ana.config.node.dict</a> with contents:\n")
-                level = level + 1;
-            end
-
-            fn = keys(obj.Properties);
-            for i = 1:numel(fn)
-                key = fn{i};
-                value = obj.Properties(key);
-                fprintf("\n%s%s", pad('',level*4), key)
-                disp_(value{1}, level+1);
-            end
         end
     end
 
@@ -111,6 +89,29 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end
     end
 
+    %% internal
+    methods(Hidden, Access=protected)
+        function disp_(obj,level)
+            arguments
+                obj ana.config.node.dict
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            if level == 0
+                fprintf("  <a href=""matlab:help ana.config.node.dict"">ana.config.node.dict</a> with contents:\n")
+                level = level + 1;
+            end
+
+            fn = keys(obj.Properties);
+            for i = 1:numel(fn)
+                key = fn{i};
+                value = obj.Properties(key);
+                fprintf("\n%s%s", pad('',level*4), key)
+                disp_(value{1}, level+1);
+            end
+        end
+    end
+   
     %% scheme
     methods(Hidden)
         function build(obj,sch)
@@ -126,7 +127,21 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 end
             end
 
-            FIXME
+            cnt = sch.content;
+            for i = 1:length(cnt)
+                switch (cnt(i).type)
+                    case 'dict'
+                        obj.Properties.insert(cnt(i).key, ...
+                            {ana.config.node.dict(Parent=obj,Scheme=cnt(i))});
+                    case 'list'
+                        FIXME
+                    case 'table'
+                        FIXME
+                    otherwise
+                        obj.Properties.insert(cnt(i).key, ...
+                            {ana.config.node.value(Parent=obj,Scheme=cnt(i))});
+                end
+            end
         end
 
         function res = validate(obj,sch)

@@ -16,7 +16,7 @@ classdef base < handle
         Parent = [];                    % Parent node.
     end
 
-    properties(Hidden,SetAccess={?ana.config.node,?ana.config.scheme})
+    properties(Hidden,SetAccess=protected)
         Scheme = [];                    % Scheme node (if available).
     end
 
@@ -37,28 +37,29 @@ classdef base < handle
         end
     end
 
-    % methods (Access=protected)
-    %     function res = wrap(obj, val)
-    %         %wrap   Helper for assigning values.
-    %         %
-    %         %   An value must be encapsulated by a child class of ana.config.node.
-    %         %   This functions helps to transform, for example, a bare value into
-    %         %   a ana.config.node.value object.
-    %         %
-    %         if ~isa(val,'ana.config.node.value')
-    %             res = val;
-    %             return
-    %         end
-    % 
-    %         assert(isempty(obj.Scheme), 'FIXME')
-    % 
-    %         if isa(val, 'ana.config.base.node')
-    %             res = val;
-    %         else
-    %             res = ana.config.node.value(val, Parent=obj);
-    %         end
-    %     end
-    % end
+    methods (Access=protected)
+        function res = wrap(obj, val)
+            %wrap   Helper for assigning values.
+            %
+            %   An value must be encapsulated by a child class of ana.config.node.
+            %   This functions helps to transform, for example, a bare value into
+            %   a ana.config.node.value object.
+            %
+            if ~isa(val,'ana.config.node.value')
+                res = val;
+                return
+            end
+
+            assert(isempty(obj.Scheme), 'FIXME')
+
+            if isa(val, 'ana.config.base.node')
+                res = val;
+            else
+                FIXME scheme !!!!!
+                res = ana.config.node.value(val,Parent=obj);
+            end
+        end
+    end
 
     %% scheme
     methods(Hidden)
@@ -136,7 +137,7 @@ classdef base < handle
             error('internal error: not implemented')
         end
 
-        function set(obj,varargin)
+        function set(obj,value,varargin)
             %set    Set content (YAML conforming)
             error('internal error: not implemented')
         end
