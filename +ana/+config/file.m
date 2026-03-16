@@ -100,30 +100,30 @@ classdef file < ana.config.node.dict
             end
            
             %%% load config file, get version
-            ver = "";
+            cfg = [];
             if isfile(filename)
                 cfg = ana.file.yaml.load(fullfile(filename));
-                obj.set(cfg);
-                ver = cfg.version;
             end
 
             %%% handle scheme (if applicable)
             if ~isempty(options.Scheme)
                 sch = ana.config.scheme.load(options.Scheme);
+                obj.build(sch);
 
-                if isfile(filename)
+                if ~isempty(cfg)
                     % check version
-                    if ~strcmp(ver, sch.version)
+                    if ~strcmp(cfg.version, sch.version)
                         error("ANA:CONFIG:FILE:SCHEMEVER", "Scheme version mismatch: expected %s, got %s", sch.version, ver);
                     end
-
-                    % validate
-                    % FIXME assert(obj.validate(sch));
-                else
-                    obj.build(sch);
                 end
 
                 obj.Scheme = sch;
+
+                if ~isempty(cfg)
+                    cfg = rmfield(cfg,"version");
+                    obj.set(cfg);
+                    obj.apply();
+                end
 
                 % unified config
                 % u = ana.config.unified();

@@ -10,6 +10,8 @@ classdef base < handle
     %   by a scheme) are abstracted to support user-interfaces that provides a "Cancel"
     %   mechanism after entries were changed.
     %
+    %   Note: this class also serves as placeholder.
+    %
     
     %% internal 
     properties

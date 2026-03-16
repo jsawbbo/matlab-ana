@@ -30,8 +30,13 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
     methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
-            tmp = obj.Value.(indexOp(1:end));
-            [varargout{1:nargout}] = tmp{1};
+            assert(isscalar(indexOp));
+            switch (indexOp.Type)
+                case 'Paren'
+                    [varargout{1:nargout}] = table2cell(obj.Value(indexOp.Indices{:}));
+                otherwise
+                    error("invalid indexing operation")
+            end
         end
 
         function obj = parenAssign(obj,indexOp,varargin)
@@ -67,11 +72,57 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 level {mustBeScalarOrEmpty} = 1
             end
 
-            for key = 1:numel(obj.Value)
-                fprintf("\n%s-", pad('',(level-1)*4))
-                disp_(obj.Value{key}, level+1);
+            s = table2struct(obj.Value);
+            fn = fieldnames(s);
+            fnlen = max(strlength(fn));
+            indent_s = strjoin(repmat(" ", 1, 4*(level-1)),""); % FIXME number of spaces, also below
+
+            N = size(s,1);
+            for row = 1:N
+                fprintf("\n%s-   %s: %s", indent_s, pad(fn{1},fnlen), string(s(row).(fn{1})));
+                for i = 2:numel(fn)
+                    fprintf("\n%s    %s: %s", indent_s, pad(fn{i},fnlen), string(s(row).(fn{i})));
+                end
             end
-        end        
+        end
+
+        function save_(obj,fd,level)
+            arguments
+                obj ana.config.node.table
+                fd (1,1) double
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            s = table2struct(obj.Value);
+            fn = fieldnames(s);
+           
+            indent_s = strjoin(repmat(" ", 1, 4*(level-1)),""); % FIXME number of spaces
+            N = size(obj.Value,1);
+
+            if N > 0
+                fprintf(fd,"\n%s",strjoin(repmat(" ", 1, 4*(level-2)),""));
+            end                
+
+            for row = 1:N
+                for col = 1:length(fn)
+                    if col == 1
+                        c = '-';
+                    else
+                        c = '';
+                    end
+
+                    fprintf(fd, "%s%s%s: %s", indent_s, pad(c,4), fn{col}, string(obj.Value.(fn{col})(row)));
+
+                    if col < length(fn)
+                        fprintf(fd,"\n");
+                    end
+                end
+
+                if row < N
+                    fprintf(fd,"\n");
+                end
+            end 
+        end
     end
 
     %% scheme
@@ -186,13 +237,28 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 options.Row (1,1) {mustBeInteger} = -1
             end
 
-            havescheme = ~isempty(obj.Scheme);
+            if isempty(v)
+                obj.Value(:,:) = [];
+                return
+            end
 
-            
+            if isstruct(v)
+                % FIXME check field names
 
+                for i = 1:length(v)
+                    row = struct2cell(v(i));
+                    obj.add(row');
+                end
+            else
+                FIXME
+            end
+        end
 
+        function obj = add(obj,row)
+            %add    Add a row.
 
-            FIXME
+            % FIXME validate
+            obj.Value(end+1,:) = row;
         end
 
         function res = get(obj)
