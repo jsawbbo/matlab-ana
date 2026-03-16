@@ -9,12 +9,12 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     %   See also: ana.config.node.base
     
     %% class data
-    properties(Hidden,Access=protected)
+    properties(Access=protected)
         Properties = dictionary(string([]), {});    % Internal storage.
     end
         
     %% "RedefinesDot"
-    methods(Hidden)
+    methods
         function res = properties(obj)
             res = keys(obj.Properties);
         end        
@@ -24,7 +24,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end
     end
 
-    methods (Hidden, Access = protected)
+    methods (Access = protected)
         function res = dotIndexOp(obj,scalarIndexOp)
             switch scalarIndexOp.Type
                 case 'Dot'
@@ -128,7 +128,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     end
    
     %% scheme
-    methods(Hidden)
+    methods (Access = protected)
         function build(obj,sch)
             arguments
                 obj ana.config.node.dict
@@ -146,15 +146,17 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             for i = 1:length(cnt)
                 switch (cnt(i).type)
                     case 'dict'
-                        obj.Properties(cnt(i).key) = ...
-                            {ana.config.node.dict(Parent=obj,Scheme=cnt(i))};
+                        obj.insert(cnt(i).key, ...
+                            ana.config.node.dict(Parent=obj,Scheme=cnt(i)));
                     case 'list'
-                        FIXME
+                        obj.insert(cnt(i).key, ...
+                            ana.config.node.list(Parent=obj,Scheme=cnt(i)));
                     case 'table'
-                        FIXME
+                        obj.insert(cnt(i).key, ...
+                            ana.config.node.table(Parent=obj,Scheme=cnt(i)));
                     otherwise
-                        obj.Properties(cnt(i).key) = ...
-                            {ana.config.node.value(Parent=obj,Scheme=cnt(i))};
+                        obj.insert(cnt(i).key, ...
+                            ana.config.node.value(Parent=obj,Scheme=cnt(i)));
                 end
             end
         end

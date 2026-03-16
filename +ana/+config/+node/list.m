@@ -4,7 +4,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     %   Detailed explanation goes here
     
     %% class data    
-    properties(Hidden,Access=protected)
+    properties(Access=protected)
         Properties = {};          % Internal properties node.
     end
 
@@ -16,12 +16,12 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     end
 
     methods (Hidden)
-        function result = cat(dim,varargin)
+        function res = cat(dim,varargin)
             FIXME
         end
 
-        function result = size(obj,varargin)
-            result = numel(obj.Properties);
+        function res = size(obj,varargin)
+            res = numel(obj.Properties);
         end
     end
 

@@ -12,15 +12,15 @@ classdef base < handle
     %
     
     %% internal 
-    properties(Hidden)
+    properties
         Parent = [];                    % Parent node.
     end
 
-    properties(Hidden,SetAccess=protected)
+    properties (SetAccess=protected)
         Scheme = [];                    % Scheme node (if available).
     end
 
-    methods(Hidden)
+    methods (Hidden)
         function disp(obj)
             arguments
                 obj ana.config.node.base;
@@ -31,14 +31,14 @@ classdef base < handle
         end
     end        
 
-    methods(Hidden, Access=protected)
+    methods (Hidden, Access=protected)
         function disp_(obj,level) %#ok<INUSD>
             error('internal error: not implemented')
         end
     end
 
     %% scheme
-    methods(Hidden)
+    methods (Access = protected)
         function res = hasscheme(obj)
             %hasscheme      Check, if a scheme is present.
             arguments

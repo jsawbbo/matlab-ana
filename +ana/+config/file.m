@@ -34,8 +34,12 @@ classdef file < ana.config.node.dict
     %% internal
     methods(Hidden)
         function delete(obj)
-            if obj.Autosave && obj.ismodified()
-                obj.save()
+            try
+                if obj.Autosave && obj.ismodified()
+                    obj.save()
+                end
+            catch
+                % FIXME why???
             end
         end
     end

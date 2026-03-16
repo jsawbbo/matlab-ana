@@ -4,13 +4,13 @@ classdef value < ana.config.node.base
     %   Detailed explanation goes here
     
     %% class data
-    properties(Hidden, Access=protected)
+    properties (Access=protected)
         Value = []
         LastValue = []
     end
     
     %% internal
-    methods(Hidden, Access=protected)
+    methods (Hidden, Access=protected)
         function disp_(obj,level)
             arguments
                 obj ana.config.node.value
@@ -32,7 +32,7 @@ classdef value < ana.config.node.base
     end
 
     %% scheme
-    methods(Hidden)
+    methods (Access = protected)
         function build(obj,sch)
             arguments
                 obj ana.config.node.value
@@ -75,12 +75,12 @@ classdef value < ana.config.node.base
 
             res = false;
             switch (sch.type)
-                case 'logical'
+                case "logical"
                     if ~islogical(obj.Value)
                         error("ANA:CONFIG:NODE:VALUE:TYPE", "Invalid type for value ""%s"", expected logical value.", sch.key)
                     end
                     FIXME
-                case 'numeric'
+                case "numeric"
                     if ~isnumeric(obj.Value)
                         error("ANA:CONFIG:NODE:VALUE:TYPE", "Invalid type for value ""%s"", expected numeric value.", sch.key)
                     end
@@ -94,14 +94,14 @@ classdef value < ana.config.node.base
                             obj.Value = sch.meta.max;
                         end
                     end
-                case 'string'
+                case "string"
                     if ~isstring(obj.Value)
                         error("ANA:CONFIG:NODE:VALUE:TYPE", "Invalid type for value ""%s"", expected string value.", sch.key)
                     end
                     FIXME
-                case 'path'
+                case "path"
                     FIXME
-                case 'category'
+                case "category"
                     FIXME
                 otherwise
                     FIXME
