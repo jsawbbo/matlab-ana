@@ -8,7 +8,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         Value = []                  % The internal table.
         LastValue = []              % Unmodified table.
 
-        VariableScheme = []
+        VariableSchemes = []
     end
 
     %% "RedefinesParen"
@@ -89,7 +89,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 end
             end
 
-            obj.VariableScheme = sch.content;
+            obj.VariableSchemes = sch.content;
 
             % create table
             keys = [sch.content(:).key];
@@ -145,6 +145,11 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
             poptions = ana.util.passoptions(options, {'Parent','Scheme'});
             obj@ana.config.node.base(poptions{:});
+
+            if isempty(options.Scheme)
+                obj.Value = table();
+                obj.LastValue = table();
+            end
         end
 
         function res = ismodified(obj)
@@ -152,13 +157,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 obj ana.config.node.table
             end
            
-            res = false;
-            for key = 1:numel(obj.Value)
-                if obj.Value{key}.ismodified()
-                    res = true;
-                    return
-                end
-            end
+            res = ~isequal(obj.Value, obj.LastValue);
         end
 
         function apply(obj)
@@ -166,9 +165,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 obj ana.config.node.table
             end
 
-            for key = 1:numel(obj.Value)
-                obj.Value{key}.apply();
-            end
+            obj.LastValue = obj.Value;
         end
 
         function reset(obj)
@@ -176,13 +173,13 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 obj ana.config.node.table
             end
 
-            for key = 1:numel(obj.Value)
-                obj.Value{key}.reset();
-            end
+            obj.Value = obj.LastValue;
         end
         
         function obj = set(obj,v,options)
-            %set    FIXME
+            %set    Set table rows
+            %
+            %   FIXME
             arguments
                 obj ana.config.node.table
                 v 
@@ -190,23 +187,10 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
 
             havescheme = ~isempty(obj.Scheme);
-            subscheme = [];
+
             
-            % fn = fieldnames(v);
-            % for i = 1:numel(fn)
-            %     key = string(fn{i});
-            %     value = v.(key);
-            % 
-            %     % get subscheme
-            %     if havescheme
-            %         subscheme = obj.Scheme.findkey(key);
-            %         if isempty(subscheme) 
-            %             % FIXME warning
-            %         end
-            %     end
-            % 
-            %     obj.set_(key,value,subscheme);
-            % end
+
+
 
             FIXME
         end
@@ -216,7 +200,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 obj ana.config.node.table
             end
 
-            % FIXME
+            res = table2struct(obj.Value);
         end
     end
 end

@@ -29,6 +29,41 @@ classdef value < ana.config.node.base
                 fprintf("%s", string(obj.Value));
             end
         end
+
+        function save_(obj,fd,level)
+            arguments
+                obj ana.config.node.value
+                fd (1,1) double
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            switch (class(obj.Value))
+                case "string"
+                    % FIXME multiline ? wrap ? need quotes?
+                    fprintf(fd, " %s", obj.Value);
+                otherwise
+                    fprintf(fd, " %s", string(obj.Value));
+            end
+            % indent_s = strjoin(repmat(" ",1,4*level)); % FIXME number of spaces
+            % key = keys(obj.Properties);
+            % N = length(key);
+            % for i = 1:N
+            %     if (level > 0) && (i == 1)
+            %         fprintf(fd,"\n");
+            %     end
+            %     fprintf(fd, "%s%s:", indent_s, key(i));
+            % 
+            %     try
+            %         obj.lookup(key(i)).save_(fd,level+1);
+            %     catch me
+            %         disp(me)
+            %     end
+            % 
+            %     if (i < N) || (level == 0)
+            %         fprintf(fd, "\n");
+            %     end
+            % end
+        end
     end
 
     %% scheme
@@ -142,6 +177,7 @@ classdef value < ana.config.node.base
             arguments
                 obj ana.config.node.value
             end
+
             obj.Value = obj.LastValue;
         end
 
@@ -149,6 +185,7 @@ classdef value < ana.config.node.base
             arguments
                 obj ana.config.node.value
             end
+
             obj.LastValue = obj.Value;
         end
 

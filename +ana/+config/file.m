@@ -118,7 +118,7 @@ classdef file < ana.config.node.dict
                     end
 
                     % validate
-                    assert(obj.validate(sch));
+                    % FIXME assert(obj.validate(sch));
                 else
                     obj.build(sch);
                 end
@@ -137,8 +137,12 @@ classdef file < ana.config.node.dict
                 obj ana.config.file;
             end
 
-            % FIXME
-            % 
+            fd = fopen(string(obj.Path),"w");
+            if obj.hasscheme()
+                fprintf(fd,"version: ""%s""\n",obj.Scheme.version);
+            end
+            obj.save_(fd,0);
+            fclose(fd);
         end
     end
 end

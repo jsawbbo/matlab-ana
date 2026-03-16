@@ -54,7 +54,7 @@ content:
             comment: "Local scratch directory (for temporary large files)."
             default: 
                 eval: |
-                    ana.os.paths('tmpdir')
+                    string(ana.os.paths('tmpdir'))
     -   key: cache
         type: dict
         meta:
@@ -70,7 +70,7 @@ content:
                     FIXME
                 default: 
                     eval: |
-                        ana.os.paths('cachedir')
+                        string(ana.os.paths('cachedir'))
         -   key: size
             type: numeric
             meta:

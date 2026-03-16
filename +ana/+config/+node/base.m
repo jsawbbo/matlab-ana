@@ -35,6 +35,10 @@ classdef base < handle
         function disp_(obj,level) %#ok<INUSD>
             error('internal error: not implemented')
         end
+
+        function save_(obj,fd,level)
+            error('internal error: not implemented')
+        end
     end
 
     %% scheme

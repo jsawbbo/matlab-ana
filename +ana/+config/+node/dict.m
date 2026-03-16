@@ -125,6 +125,34 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 disp_(value{1}, level+1);
             end
         end
+
+        function save_(obj,fd,level)
+            arguments
+                obj ana.config.node.dict
+                fd (1,1) double
+                level {mustBeScalarOrEmpty} = 0
+            end
+
+            indent_s = strjoin(repmat(" ", 1, 4*level),""); % FIXME number of spaces
+            key = keys(obj.Properties);
+            N = length(key);
+            for i = 1:N
+                if (level > 0) && (i == 1)
+                    fprintf(fd,"\n");
+                end
+                fprintf(fd, "%s%s:", indent_s, key(i));
+
+                try
+                    obj.lookup(key(i)).save_(fd,level+1);
+                catch me
+                    disp(me)
+                end
+        
+                if (i < N) || (level == 0)
+                    fprintf(fd, "\n");
+                end
+            end
+        end
     end
    
     %% scheme
@@ -176,7 +204,6 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             end
 
             res = false;
-            FIXME
         end
     end
 
@@ -304,7 +331,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             res = struct();
             fn = keys(obj.Properties);
             for i = 1:numel(fn)
-                key = fn{i};
+                key = matlab.lang.makeValidName(fn{i});
                 value = obj.lookup(key).get();
                 res.(key) = value;
             end
