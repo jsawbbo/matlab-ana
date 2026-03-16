@@ -401,3 +401,6 @@ FodyWeavers.xsd
 
 # Matlab
 *.asv
+
+# User
+**/__[Aa][Tt][Tt][Ii][Cc]__/
