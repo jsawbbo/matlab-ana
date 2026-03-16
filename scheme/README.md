@@ -1,13 +1,14 @@
 # Schemes
 
-The configuration provided with ANA (see 'ana.config') FIXME
-
-
-TODO:
-- versioning (major change requires migration...)
-- ???
+The configuration provided with ANA (see ''ana.config'') is organized in a hierarchical structure,
+that may consist of several configuration files. To allow validation, as well as (graphical) 
+user-interface integration, configurations are accompanied by scheme files. In addition to validation
+this allows also to implement migration techniques.
 
 ## Format
+
+
+
 
 The configuration knows 4 fundamental types of configuration nodes or entries, respectively:
 - **dictionaries** (ana.config.node.dict),
