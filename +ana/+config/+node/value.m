@@ -135,7 +135,7 @@ classdef value < ana.config.node.base
                 obj ana.config.node.value
             end
 
-            res = (obj.Value ~= obj.LastValue);
+            res = ~isequal(obj.Value, obj.LastValue);
         end
 
         function reset(obj)

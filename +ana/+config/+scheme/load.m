@@ -18,7 +18,6 @@ function sch = load(file)
     path = toolboxdir / "scheme" / (string(file) + ".yml");
     if isfile(path)
         sch = convert(ana.file.yaml.load(path));
-
         return
     end
 

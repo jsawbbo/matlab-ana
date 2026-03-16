@@ -66,27 +66,36 @@ classdef file < ana.config.node.dict
                 options.Scheme (1,1) string = '';
             end
 
-            % options
-            obj.Autosave = options.Autosave;
+            obj@ana.config.node.dict();
 
-            if strlength(options.Scheme) > 0
-                options.Scheme = ana.fs.path(options.Scheme);
-            else
-                options.Scheme = [];
-            end
-
-            % config file
+            %%% check arguments
+            % check/auto-fill "filename"
             if isempty(filename)
                 configdir = ana.os.paths('configdir');
                 filename = configdir / 'config.yml';
                 if isempty(options.Scheme) || (strlength(options.Scheme) == 0)
                     options.Scheme = "general";
                 end
+            else
+                filename = ana.fs.path(filename);
+            end
+            if isrelative(filename)
+                filename = ana.fs.pwd() / filename;
             end
 
-            obj.Path = ana.fs.path(filename);
-            
-            % load config file
+            obj.Path = filename;
+
+            % auto-save option
+            obj.Autosave = options.Autosave;
+
+            % scheme
+            if strlength(options.Scheme) > 0
+                options.Scheme = ana.fs.path(options.Scheme);
+            else
+                options.Scheme = [];
+            end
+           
+            %%% load config file, get version
             ver = "";
             if isfile(filename)
                 cfg = ana.file.yaml.load(fullfile(filename));
@@ -94,13 +103,11 @@ classdef file < ana.config.node.dict
                 ver = cfg.version;
             end
 
-            % load scheme
+            %%% handle scheme (if applicable)
             if ~isempty(options.Scheme)
                 sch = ana.config.scheme.load(options.Scheme);
 
-                if ~isfile(filename)
-                    obj.build(sch);
-                else
+                if isfile(filename)
                     % check version
                     if ~strcmp(ver, sch.version)
                         error("ANA:CONFIG:FILE:SCHEMEVER", "Scheme version mismatch: expected %s, got %s", sch.version, ver);
@@ -108,6 +115,8 @@ classdef file < ana.config.node.dict
 
                     % validate
                     assert(obj.validate(sch));
+                else
+                    obj.build(sch);
                 end
 
                 obj.Scheme = sch;

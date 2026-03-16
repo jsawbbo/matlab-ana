@@ -7,7 +7,7 @@ classdef base < handle
     %   - dictionaries (ana.config.node.dict), and,
     %   - values (ana.config.node.value).
     %   These plain Matlab types (read from a YAML config file, possibly supplemented
-    %   by a scheme) are abstracted to support user-interfaces that provide a "Cancel"
+    %   by a scheme) are abstracted to support user-interfaces that provides a "Cancel"
     %   mechanism after entries were changed.
     %
     
@@ -37,32 +37,37 @@ classdef base < handle
         end
     end
 
-    methods (Access=protected)
-        function res = wrap(obj, val)
-            %wrap   Helper for assigning values.
-            %
-            %   An value must be encapsulated by a child class of ana.config.node.
-            %   This functions helps to transform, for example, a bare value into
-            %   a ana.config.node.value object.
-            %
-            if ~isa(val,'ana.config.node.value')
-                res = val;
+    %% scheme
+    methods(Hidden)
+        function res = hasscheme(obj)
+            %hasscheme      Check, if a scheme is present.
+            arguments
+                obj ana.config.node.base
+            end
+            res = ~isempty(obj.Scheme);
+        end
+
+        function res = select(obj,key)
+            %select     Select scheme sub-node by key.
+            arguments
+                obj ana.config.node.base
+                key string
+            end
+            res = [];
+
+            if ~obj.hasscheme()
                 return
             end
 
-            assert(isempty(obj.Scheme), 'FIXME')
-
-            if isa(val, 'ana.config.base.node')
-                res = val;
-            else
-                FIXME scheme !!!!!
-                res = ana.config.node.value(val,Parent=obj);
+            cnt = obj.Scheme.content;
+            for i = 1:length(cnt)
+                if isequal(cnt(i).key, key)
+                    res = cnt(i);
+                    return
+                end
             end
         end
-    end
 
-    %% scheme
-    methods(Hidden)
         function build(obj,sch)
             %build   Build node from scheme.
             arguments
@@ -90,7 +95,7 @@ classdef base < handle
 
             obj.Parent = options.Parent;
             obj.Scheme = options.Scheme;
-            if ~isempty(obj.Scheme)
+            if isstruct(obj.Scheme)
                 obj.build(obj.Scheme);
             end
         end

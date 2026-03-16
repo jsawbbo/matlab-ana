@@ -24,12 +24,11 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end
     end
 
-    methods (Static, Access = protected)
-        function res = dotIndexOp(dict,scalarIndexOp)
+    methods (Hidden, Access = protected)
+        function res = dotIndexOp(obj,scalarIndexOp)
             switch scalarIndexOp.Type
                 case 'Dot'
-                    tmp = dict(scalarIndexOp.Name);
-                    res = tmp{1};
+                    res = obj.lookup(scalarIndexOp.Name);
                 otherwise
                     error('internal error: expected dot operation')
             end
@@ -46,11 +45,9 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end
 
         function varargout = dotReference(obj,indexOp)
-            tmp = obj.dotIndexOp(obj.Properties,indexOp(1));
-            if numel(indexOp) > 1
-                for i = 2:numel(indexOp)
-                    tmp = tmp.(indexOp(i));
-                end
+            tmp = obj;
+            for i = 1:numel(indexOp)
+                tmp = tmp.dotIndexOp(indexOp(i));
             end
             [varargout{1:nargout}] = tmp;
         end
@@ -79,9 +76,27 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             if numel(varargin) > 1
                 error('internal error: multiple assignments are not supported')
             else
+                key = indexOp(end).Name;
+                value = varargin{1};
+                if isa(value,'ana.config.node.value')
+                    FIXME
+                end
+
                 switch indexOp(end).Type
                     case 'Dot'
-                        tmp.Properties(indexOp(end).Name) = {obj.wrap(varargin{1})};
+                        if tmp.haskey(key)
+                            tmp.lookup(key).set(value);
+                        else
+                            sch = [];
+                            if ~isempty(tmp.Scheme)
+                                sch = tmp.select(key);
+                                if isempty(sch)
+                                    warning("Insert a key (%s) for no scheme is present.", key)
+                                end
+                            end
+                            tmp.insert(key, ...
+                                ana.config.node.value(value,Parent=tmp,Scheme=sch));
+                        end
                     otherwise
                         error('internal error: expected dot operation')
                 end
@@ -131,15 +146,15 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             for i = 1:length(cnt)
                 switch (cnt(i).type)
                     case 'dict'
-                        obj.Properties.insert(cnt(i).key, ...
-                            {ana.config.node.dict(Parent=obj,Scheme=cnt(i))});
+                        obj.Properties(cnt(i).key) = ...
+                            {ana.config.node.dict(Parent=obj,Scheme=cnt(i))};
                     case 'list'
                         FIXME
                     case 'table'
                         FIXME
                     otherwise
-                        obj.Properties.insert(cnt(i).key, ...
-                            {ana.config.node.value(Parent=obj,Scheme=cnt(i))});
+                        obj.Properties(cnt(i).key) = ...
+                            {ana.config.node.value(Parent=obj,Scheme=cnt(i))};
                 end
             end
         end
@@ -165,6 +180,19 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
     %% protected
     methods (Access=protected)
+        function insert(obj,k,v)
+            obj.Properties(k) = {v};
+        end
+
+        function res = lookup(obj,k)
+            res = obj.Properties(k);
+            res = res{1};
+        end
+
+        function res = haskey(obj,k)
+            res = obj.Properties.isKey(k);
+        end
+
         function set_(obj,key,value,scheme)
             arguments
                 obj ana.config.node.dict
@@ -176,13 +204,13 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             if isstruct(value)
                 dict = ana.config.node.dict(Parent=obj,Scheme=scheme);
                 dict.set(value);
-                obj.Properties(key) = {dict};
+                obj.insert(key,dict);
             elseif iscell(value)
                 list = ana.config.node.list(Parent=obj,Scheme=scheme);
                 list.set(value);
-                obj.Properties(key) = {list};
+                obj.insert(key,list);
             else
-                obj.Properties(key) = {ana.config.node.value(value,Parent=obj,Scheme=scheme)};
+                obj.insert(key, ana.config.node.value(value,Parent=obj,Scheme=scheme));
             end
         end
     end
@@ -208,7 +236,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             res = false;
             f = fieldnames(obj);
             for k = 1:numel(f)
-                if obj.Properties.(f{k}).ismodified()
+                node = obj.lookup(f{k});
+                if node.ismodified()
                     res = true;
                     break;
                 end
@@ -222,7 +251,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
             f = fieldnames(obj);
             for k = 1:numel(f)
-                obj.Properties.(f{k}).apply();
+                obj.lookup(f{k}).apply();
             end
         end
 
@@ -233,12 +262,12 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
             f = fieldnames(obj);
             for k = 1:numel(f)
-                obj.Properties.(f{k}).reset();
+                obj.lookup(f{k}).reset();
             end
         end
         
         function obj = set(obj,v,options)
-            %set    
+            %set    FIXME
             arguments
                 obj ana.config.node.dict
                 v struct
@@ -271,10 +300,10 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             end
 
             res = struct();
-            fn = fieldnames(obj.Properties);
+            fn = keys(obj.Properties);
             for i = 1:numel(fn)
                 key = fn{i};
-                value = obj.Properties.(key).get();
+                value = obj.lookup(key).get();
                 res.(key) = value;
             end
         end

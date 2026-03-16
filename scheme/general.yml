@@ -76,9 +76,10 @@ content:
             meta:
                 label: Size
                 comment: |
-                    Maximum size of the cache directory.
+                    Maximum size of the cache directory (GiB).
     
                     FIXME
+                default: 256
 # FIXME external programs
 #           - python
 #           - conda
