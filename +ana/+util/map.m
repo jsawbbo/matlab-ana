@@ -1,5 +1,5 @@
 classdef map < matlab.mixin.indexing.RedefinesDot
-    %MAPPING    Dictionary with struct-like data access.
+    %ana.util.map       Dictionary with struct-like data access.
     %
     %   This class wraps a dictionary with dot-notation access to fields, as with structs.
     %
@@ -114,3 +114,7 @@ classdef map < matlab.mixin.indexing.RedefinesDot
         end
     end
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski
