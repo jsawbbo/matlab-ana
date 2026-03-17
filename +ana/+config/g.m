@@ -18,7 +18,18 @@ classdef g < handle
     %% INTERFACE
     methods
         function obj = g()
-            %G Construct an instance of this class
+            %G  Construct a singleton instance of this class
+            arguments
+            end
+
+            persistent singleton
+            if ~isempty(singleton)
+                obj = singleton;
+                return
+            end
+            singleton = obj;
+
+            
         end
     end
 end

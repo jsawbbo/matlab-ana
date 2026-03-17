@@ -1,7 +1,8 @@
-classdef mapping < matlab.mixin.indexing.RedefinesDot
+classdef map < matlab.mixin.indexing.RedefinesDot
     %MAPPING    Dictionary with struct-like data access.
     %
-    %   Detailed explanation goes here
+    %   This class wraps a dictionary with dot-notation access to fields, as with structs.
+    %
 
     %% PROPERTIES
     properties(Hidden,Access=protected)
@@ -10,17 +11,11 @@ classdef mapping < matlab.mixin.indexing.RedefinesDot
 
     %% RedefinesDot
     methods(Access=protected)
-        function retval = dotReferenceField(obj,field)
-            assert(isKey(obj.PrivateData_, field));
-            retval = obj.PrivateData_(field);
-            retval = retval{1};
-        end
-
         function varargout = dotReference(obj, indexOp)
             field = indexOp(1).Name;
             
             if isKey(obj.PrivateData_, field)
-                retval = obj.dotReferenceField(field);
+                retval = obj.get(field);
                 
                 if numel(indexOp) > 1
                     retval = retval.(indexOp(2:end));
@@ -34,20 +29,20 @@ classdef mapping < matlab.mixin.indexing.RedefinesDot
         
         function obj = dotAssign(obj, indexOp, varargin)
             field = indexOp(1).Name;
-            newValue = varargin(1);
+            newValue = varargin{1};
             
             if isscalar(indexOp)
-                obj.PrivateData_(field) = newValue;
+                obj = obj.set(field, newValue);
             else
                 if isKey(obj.PrivateData_, field)
-                    currentValue = obj.PrivateData_(field);
+                    currentValue = obj.get(field);
                 else
                     currentValue = ana.util.mapping();
                 end
                 
                 try
                     currentValue.(indexOp(2:end)) = newValue;
-                    obj.PrivateData_(field) = currentValue;
+                    obj = obj.set(field,currentValue);
                 catch ME
                     rethrow(ME);
                 end
@@ -58,7 +53,7 @@ classdef mapping < matlab.mixin.indexing.RedefinesDot
             field = indexOp(1).Name;
             
             if isKey(obj.PrivateData_, field)
-                value = obj.dotReferenceField(field);
+                value = obj.get(field);
                 
                 if numel(indexOp) > 1
                     n = matlab.mixin.indexing.RedefinesDot.dotListLength(value, ...
@@ -98,8 +93,24 @@ classdef mapping < matlab.mixin.indexing.RedefinesDot
     end
     
     methods
-        function obj = mapping()
-            %MAPPING Construct an instance of this class
+        function obj = map()
+            %ana.util.map   Construct an instance of this class
+        end
+
+        function retval = get(obj,field)
+            %get            Get content of an existing field.
+            arguments
+                obj ana.util.map
+                field string
+            end
+            assert(isKey(obj.PrivateData_, field),'ana:util:mapping:FieldNotFound', 'Field ''%s'' not found.', field);
+            retval = obj.PrivateData_(field);
+            retval = retval{1};
+        end
+
+        function obj = set(obj,field,value)
+            %set            Set content of a field.
+            obj.PrivateData_(field) = {value};
         end
     end
 end
