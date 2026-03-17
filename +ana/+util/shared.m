@@ -23,6 +23,13 @@ classdef shared < handle & matlab.mixin.indexing.RedefinesDot
     %           end
     %       end
     %
+    %   Note: Handling the shared data should always be handled by making a copy. 
+    %   In the example above, use 
+    %
+    %       appdata = path.to.MyClass.AppData;
+    %
+    %   before accessing it. Otherwise Matlab will not recognize "path.to.".
+    %
 
     properties (Hidden,Access=private)
         InternalData = struct()
