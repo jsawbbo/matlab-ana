@@ -18,13 +18,13 @@ classdef carray < matlab.mixin.indexing.RedefinesParen
                 fprintf('  Contents (internal cell array):\n');
                 
                 % Show a preview of the data
-                maxDisplay = 5; % Maximum elements to show per dimension
+                maxDisplay = 5; 
                 dims = size(obj.data);
                 
                 if numel(dims) == 2
                     % 2D display
                     for i = 1:min(dims(1), maxDisplay)
-                        rowStr = '';
+                        rowStr = ''; %#ok<*AGROW>
                         for j = 1:min(dims(2), maxDisplay)
                             elem = obj.data{i,j};
                             elemStr = getElementDisplay(elem);
@@ -139,7 +139,7 @@ classdef carray < matlab.mixin.indexing.RedefinesParen
             % Horizontal concatenation
             obj = carray.cat(2, varargin{:});
         end
-        
+        1
         function obj = vertcat(varargin)
             % Vertical concatenation
             obj = carray.cat(1, varargin{:});
@@ -238,7 +238,11 @@ classdef carray < matlab.mixin.indexing.RedefinesParen
                 if isscalar(indices) && ischar(indices{1}) && strcmp(indices{1}, ':')
                     obj.data = value;
                 else
-                    obj.data(indices{:}) = mat2cell(value);
+                    try
+                        obj.data(indices{:}) = mat2cell(value);
+                    catch
+                        obj.data(indices{:}) = {value};
+                    end
                 end
             end
         end
