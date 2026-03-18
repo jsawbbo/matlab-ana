@@ -28,9 +28,9 @@ classdef g < handle
                 return
             end
             singleton = obj;
-
-            
         end
+
+        
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar

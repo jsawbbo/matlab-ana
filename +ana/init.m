@@ -7,7 +7,7 @@ function init()
     %
     persistent version
 
-    if ~ischar(version) | ~strcmp(ana.version(),version)
+    if ~ischar(version) | ~isequal(ana.version(),version)
         mfile = mfilename('fullpath');
 
         init_storage();

@@ -4,7 +4,7 @@ key: /general
 type: map
 meta:
     label: General
-content:
+children:
 -   key: storage
     type: dict
     meta:
@@ -13,7 +13,7 @@ content:
             Local and remote storage locations.
         ui: ana.config.general
         actions:
-    content:
+    children:
     -   key: searchpath
         type: table
         meta:
@@ -28,7 +28,7 @@ content:
                     {storage}/rawdata/datafile-01.data
 
                 so that a configuration file must not be edited.
-        content:
+        children:
         -   key: location
             type: path
             meta:
@@ -59,7 +59,7 @@ content:
         type: dict
         meta:
             label: Cache directory and size
-        content:
+        children:
         -   key: path
             type: path
             meta:
