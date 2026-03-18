@@ -1,14 +1,6 @@
 classdef common < handle
     %ana.config.node.common         Configuration node base class.
     %
-    %   Configuration node that abstracts Matlab 
-    %   - dictionaries (ana.config.node.map), 
-    %   - struct arrays (ana.config.node.table),
-    %   - cell arrays (ana.config.node.list), and,
-    %   - values (ana.config.node.value).
-    %   These plain Matlab types (read from a YAML config file, possibly supplemented
-    %   by a scheme) are abstracted to support user-interfaces that provides a "Cancel"
-    %   mechanism after entries were changed.
     %
     
     %% PROPERTIES
