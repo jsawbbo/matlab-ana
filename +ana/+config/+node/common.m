@@ -5,37 +5,37 @@ classdef common < handle
     
     %% PROPERTIES
     properties (SetAccess=protected)
-        Parent_ = [];                    % Parent node.
-        Scheme_ = [];                    % Scheme node (if available).
+        PrivateParent_ = [];            % Parent node.
+        PrivateScheme_ = [];            % Scheme node (if available).
+        PrivateData_ = [];              % Representation of encapsulated data.
+        PrivateDataLast_ = [];          % As above, but, before "apply()" - may be unused.
     end
 
-    properties (SetAccess=protected) % TODO make Hidden
-        Value_ = [];                     % Current value.
-        LastValue_ = [];                 % Last value (before change).
+    properties (Hidden,Constant)
+        YAMLIndent_ = 4                 % Default YAML indentation.
     end
 
-    properties (Constant,Hidden)
-        Indent_ = 4                      % Number of spaces for indentation.
+    %% INTERNAL
+    methods (Hidden,Access = protected)
+        function dump_(obj,fd,level)
+            arguments
+                obj (1,1) {mustBeA(obj,"ana.config.node.common")}
+                fd (1,1) double 
+                level (1,1) {mustBeInteger,mustBeGreaterThan(level,-1)}
+            end
+
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+        end
     end
 
     %% HELPER
     methods
         function disp(obj)
-            arguments
-                obj ana.config.node.common
-            end
-
-            fprintf("  <a href=""%s"">%s</a> contains:\n", class(obj), class(obj));
-            obj.save_(1,1);
+            fprintf("  <a href=""%s"">%s</a> contents:\n", class(obj), class(obj));
+            obj.dump_(1,1);
             fprintf("\n")
         end
     end        
-
-    methods (Hidden, Access=protected)
-        function save_(obj,fd,level)
-            error('internal error: not implemented')
-        end
-    end
 
     methods (Access = protected)
         function value = make(obj,value)
@@ -56,11 +56,11 @@ classdef common < handle
             arguments
                 obj ana.config.node.common
             end
-            res = ~isempty(obj.Scheme_);
+            res = ~isempty(obj.PrivateScheme_);
         end
 
         function res = select(obj,key)
-            %select     Select scheme sub-node by key.
+            %select         Select scheme sub-node by key.
             arguments
                 obj ana.config.node.common
                 key string
@@ -71,7 +71,7 @@ classdef common < handle
                 return
             end
 
-            cnt = obj.Scheme_.content;
+            cnt = obj.PrivateScheme_.content;
             for i = 1:length(cnt)
                 if isequal(cnt(i).key, key)
                     res = cnt(i);
@@ -81,16 +81,17 @@ classdef common < handle
         end
 
         function build(obj,sch)
-            %build   Build node from scheme.
+            %build          Build node from scheme.
             arguments
                 obj ana.config.node.common
                 sch = []
             end
-            error("internal error: implementation required")
+
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
         function validate(obj,sch,varargin)
-            %check  Check node from scheme
+            %check          Check node from scheme
             arguments
                 obj ana.config.node.common
                 sch = []
@@ -98,7 +99,8 @@ classdef common < handle
             arguments (Repeating)
                 varargin
             end
-            error("internal error: implementation required")
+
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
     end
 
@@ -112,10 +114,10 @@ classdef common < handle
                 options.Scheme = [];
             end
 
-            obj.Parent_ = options.Parent;
-            obj.Scheme_ = options.Scheme;
-            if isstruct(obj.Scheme_)
-                obj.build(obj.Scheme_);
+            obj.PrivateParent_ = options.Parent;
+            obj.PrivateScheme_ = options.Scheme;
+            if isstruct(obj.PrivateScheme_)
+                obj.build(obj.PrivateScheme_);
             end
         end
 
@@ -139,7 +141,7 @@ classdef common < handle
                 obj ana.config.base.common
             end
             
-            res = ~isequal(obj.Value_,obj.LastValue_);
+            res = ~isequal(obj.PrivateData_,obj.PrivateDataLast_);
         end
 
         function apply(obj)
@@ -148,7 +150,7 @@ classdef common < handle
                 obj ana.config.node.common
             end
             
-            obj.LastValue_ = obj.Value_;
+            obj.PrivateDataLast_ = obj.PrivateData_;
         end
 
         function reset(obj)
@@ -157,7 +159,7 @@ classdef common < handle
                 obj ana.config.node.common
             end
 
-            obj.Value_ = obj.LastValue_;
+            obj.PrivateData_ = obj.PrivateDataLast_;
         end
 
         function dump(obj)
