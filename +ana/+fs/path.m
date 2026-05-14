@@ -10,6 +10,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     %
     %
     %TODO
+    %- allow {storage}, {cache} etc.
     %- parenAssign,parenDelete need checks (e.g. if Drive == true)
 
     properties (SetAccess=protected)
@@ -267,13 +268,21 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         end
 
         function res = resolve(obj,options)
-            %FIND   Find file.
+            %RESOLVE   Find file.
+            %
+            %   If no SearchPath is provided, this method will use ana.fs.storage
+            %   to resolve the file path. Otherwise, the find method is used.
+            %
             arguments
                 obj ana.fs.path;
-                options.SearchPath = [];
+                options.SearchPath ana.fs.searchpath = [];
             end
 
-            % FIXME
+            if isempty(options.SearchPath)
+                res = ana.fs.storage.resolve(obj);
+            else
+                res = options.SearchPath.find(obj);
+            end
         end
     end
 end
