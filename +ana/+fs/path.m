@@ -108,13 +108,28 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 obj.Drive = pathname.Drive;
                 obj.Parts = pathname.Parts;
             else
+                if isa(pathname, 'ana.util.url')
+                    if ~isempty(pathname.Scheme)
+                        switch (pathname.Scheme)
+                            case 'share'
+                                pathname = "//" + pathname.Host + "/" + pathname.Path;
+                            case 'file'
+                                pathname = pathname.Path;
+                            otherwise
+                                error('not a filesystem path')
+                        end
+                    else
+                        pathname = string(pathname);
+                    end
+                end
+
                 if isempty(pathname) || (strlength(pathname) == 0)
                     pathname = pwd();
                 end
    
-                obj.Parts = regexp(string(pathname),'[/\\]','split');
-                if startsWith(pathname,'\\') || startsWith(pathname,'//')
-                    obj.Parts = obj.Parts(3:end);
+                obj.Parts = regexp(string(pathname),'[/\\]+','split');
+                if startsWith(pathname,'\\') || startsWith(pathname,'//')   % Windows share
+                    obj.Parts = obj.Parts(2:end);
                     obj.Parts(1) = "//"+obj.Parts(1);
                 end
                 

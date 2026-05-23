@@ -4,7 +4,7 @@ classdef g < handle
     %   This class provides acccess to the global configuration hierarchy. Internally it also
     %   provides mechanisms to avoid concurrent units (such as configuration files).
     %
-    %   FIXME
+    %   Note: This is intended for use inside ana.config.file etc. only, do not use directly.
 
     %% PROPERTIES
     properties (SetAccess = private)
@@ -27,10 +27,9 @@ classdef g < handle
                 obj = singleton;
                 return
             end
-            singleton = obj;
-        end
 
-        
+            singleton = obj;
+        end        
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
