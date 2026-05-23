@@ -42,6 +42,9 @@ classdef file < ana.config.object
             % load config file if it exists
             obj.PrivateFilename_ = ana.fs.path(pathname);
             if obj.PrivateFilename_.isfile()
+                % check, if we were loaded already
+
+
                 data = ana.file.yaml.load(obj.PrivateFilename_);
                 obj.set(data);
             end

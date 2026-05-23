@@ -180,7 +180,13 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
         end              
 
         function set(obj,varargin)
-            % FIXME
+            if numel(varargin) == 1
+                s = varargin{1};
+                if isstruct(s)
+                    FIXME
+                end
+            elseif bitand(numel(varargin),1)
+            end
         end
     end
 end
