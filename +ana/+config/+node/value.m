@@ -7,13 +7,13 @@ classdef value < ana.config.node.common
     methods (Hidden, Access=protected)
         function save_(obj,fd,level)
             arguments
-                obj ana.config.node.value
+                obj
                 fd (1,1) double
                 level {mustBeScalarOrEmpty} = 0
             end
 
-            assert(~isa(obj.Value_, 'ana.config.node.common'));
-            s = strtrim(ana.file.yaml.dump(obj.Value_));
+            assert(~isa(obj.PrivateData_, 'ana.config.node.common'));
+            s = strtrim(ana.file.yaml.dump(obj.PrivateData_));
             lines = strsplit(s,"\n",CollapseDelimiters=false);
             if length(lines) > 1
                 N = length(lines);
@@ -44,6 +44,26 @@ classdef value < ana.config.node.common
             end
         end
     end
+    
+    %% SCHEME
+    methods (Access = protected)
+        function build(obj,sch)
+            arguments
+                obj 
+                sch = []
+            end
+        end
+
+        function validate(obj,sch,varargin)
+            arguments
+                obj 
+                sch = []
+            end
+            arguments (Repeating)
+                varargin
+            end
+        end        
+    end
 
     %% PUBLIC
     methods
@@ -57,11 +77,19 @@ classdef value < ana.config.node.common
             obj@ana.config.node.common(Parent=options.Parent,Scheme=options.Scheme);
 
             if iscell(value)
-                obj.LastValue_ = obj.Value_;
+                obj.PrivateDataLast_ = obj.PrivateData_;
             else
-                obj.Value_ = value;
-                obj.LastValue_ = value;
+                obj.PrivateData_ = value;
+                obj.PrivateDataLast_ = value;
             end
+        end
+
+        function res = get(obj,varargin)
+            res = obj.PrivateData_;
+        end       
+
+        function set(obj,varargin)
+            % FIXME
         end
     end
 end

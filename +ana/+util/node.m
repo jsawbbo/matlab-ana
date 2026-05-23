@@ -99,7 +99,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
 
         function indented_disp(obj,level)
             arguments
-                obj ana.util.node
+                obj 
                 level (1,1) double {mustBeInteger, mustBeNonnegative} = 1
             end
 

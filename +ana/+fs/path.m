@@ -180,6 +180,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             res = obj;
             res.Parts(end) = res.Parts(end) + string(piece);
         end
+
+        function res = uplus(obj)
+            %UPLUS  Equivalent of string().
+            res = string(obj);
+        end
     end
 
     methods

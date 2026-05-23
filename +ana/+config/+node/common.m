@@ -1,5 +1,5 @@
 classdef common < handle
-    %ana.config.node.common         Configuration node base class.
+    %         Configuration node base class.
     %
     %
     
@@ -17,9 +17,9 @@ classdef common < handle
 
     %% INTERNAL
     methods (Hidden,Access = protected)
-        function dump_(obj,fd,level)
+        function save_(obj,fd,level)
             arguments
-                obj (1,1) {mustBeA(obj,"ana.config.node.common")}
+                obj (1,1) 
                 fd (1,1) double 
                 level (1,1) {mustBeInteger,mustBeGreaterThan(level,-1)}
             end
@@ -32,14 +32,14 @@ classdef common < handle
     methods
         function disp(obj)
             fprintf("  <a href=""%s"">%s</a> contents:\n", class(obj), class(obj));
-            obj.dump_(1,1);
+            obj.save_(1,1);
             fprintf("\n")
         end
     end        
 
     methods (Access = protected)
         function value = make(obj,value)
-            if ~isa(value,'ana.config.node.common')
+            if ~isa(value,'')
                 if obj.hasscheme()
                     FIXME
                 else
@@ -54,7 +54,7 @@ classdef common < handle
         function res = hasscheme(obj)
             %hasscheme      Check, if a scheme is present.
             arguments
-                obj ana.config.node.common
+                obj 
             end
             res = ~isempty(obj.PrivateScheme_);
         end
@@ -62,7 +62,7 @@ classdef common < handle
         function res = select(obj,key)
             %select         Select scheme sub-node by key.
             arguments
-                obj ana.config.node.common
+                obj 
                 key string
             end
             res = [];
@@ -83,7 +83,7 @@ classdef common < handle
         function build(obj,sch)
             %build          Build node from scheme.
             arguments
-                obj ana.config.node.common
+                obj 
                 sch = []
             end
 
@@ -93,7 +93,7 @@ classdef common < handle
         function validate(obj,sch,varargin)
             %check          Check node from scheme
             arguments
-                obj ana.config.node.common
+                obj 
                 sch = []
             end
             arguments (Repeating)
@@ -125,12 +125,12 @@ classdef common < handle
             %root   Find root node.
             %
             arguments
-                obj ana.config.base.common
+                obj 
             end
 
             res = obj;
-            while ~isempty(res.Parent)
-                res = res.Parent;
+            while ~isempty(res.PrivateParent_)
+                res = res.PrivateParent_;
             end
         end
 
@@ -138,7 +138,7 @@ classdef common < handle
             %ismodified     Check if modified.
             %
             arguments
-                obj ana.config.base.common
+                obj 
             end
             
             res = ~isequal(obj.PrivateData_,obj.PrivateDataLast_);
@@ -147,7 +147,7 @@ classdef common < handle
         function apply(obj)
             %apply      Apply changes.
             arguments
-                obj ana.config.node.common
+                obj 
             end
             
             obj.PrivateDataLast_ = obj.PrivateData_;
@@ -156,7 +156,7 @@ classdef common < handle
         function reset(obj)
             %reset      Reset changes.
             arguments
-                obj ana.config.node.common
+                obj 
             end
 
             obj.PrivateData_ = obj.PrivateDataLast_;
@@ -165,6 +165,16 @@ classdef common < handle
         function dump(obj)
             %dump       Dump contents (YAML).
             obj.save_(1,0);
+        end
+
+        function res = get(obj,varargin)
+            %get    Get configuration as Matlab values.
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+        end
+
+        function set(obj,varargin)
+            %set    Set entries.
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
     end
 end

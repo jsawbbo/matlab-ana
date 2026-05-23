@@ -1,0 +1,23 @@
+classdef object < ana.config.node.map
+    %ana.config.object      Configuration object.
+    %
+    %   Configuration objects are, in itself, separate configuration nodes 
+    %   (usually files, see ana.config.file). They can appear in a hierarchical
+    %   tree of configuration objects, but are treated independently.
+    %
+    methods
+        function obj = object(options)
+            %object            Construct an instance of this class
+            arguments
+                options.Parent = [];
+                options.Scheme = [];
+            end
+
+            obj@ana.config.node.map(Parent=options.Parent,Scheme=options.Scheme);
+        end
+    end
+end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski

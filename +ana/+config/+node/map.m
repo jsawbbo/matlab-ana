@@ -7,19 +7,24 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
     methods (Hidden, Access=protected)
         function save_(obj,fd,level)
             arguments
-                obj ana.config.node.map
+                obj
                 fd (1,1) double
                 level {mustBeScalarOrEmpty} = 0
             end
 
-            indent_s = pad("", obj.Indent_*level);
-            key = keys(obj.Value_);
+            indent_s = pad("", obj.YAMLIndent_*level);
+            key = keys(obj.PrivateData_);
             N = length(key);
             for i = 1:N
-                if (level > 0) && (i == 1)
+                if (level > 0) && (i == 1) && ~isa(obj.PrivateParent_, "ana.config.node.seq")
                     fprintf(fd,"\n");
                 end
-                fprintf(fd, "%s%s:", indent_s, key(i));
+
+                if (i == 1) && isa(obj.PrivateParent_, "ana.config.node.seq")
+                    fprintf(fd, "%s:", key(i));
+                else
+                    fprintf(fd, "%s%s:", indent_s, key(i));
+                end
 
                 try
                     obj.getField(key(i)).save_(fd,level+1);
@@ -31,24 +36,44 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
                     fprintf(fd, "\n");
                 end
             end
-        end
+        end        
     end
     
+    %% SCHEME
+    methods (Access = protected)
+        function build(obj,sch)
+            arguments
+                obj 
+                sch = []
+            end
+        end
+
+        function validate(obj,sch,varargin)
+            arguments
+                obj 
+                sch = []
+            end
+            arguments (Repeating)
+                varargin
+            end
+        end        
+    end
+
     %% RedefinesDot
     methods(Access=protected)
         function res = getField(obj,field)
-            res = obj.Value_(field);
+            res = obj.PrivateData_(field);
             res = res{1};
         end
 
         function setField(obj,field,value)
-            obj.Value_(field) = {obj.make(value)};
+            obj.PrivateData_(field) = {obj.make(value)};
         end
 
         function varargout = dotReference(obj, indexOp)
             field = indexOp(1).Name;
             
-            if isKey(obj.Value_, field)
+            if isKey(obj.PrivateData_, field)
                 retval = obj.getField(field);
                 
                 if numel(indexOp) > 1
@@ -69,7 +94,7 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
                 % FIXME wrap value
                 obj.setField(field, newValue);
             else
-                if isKey(obj.Value_, field)
+                if isKey(obj.PrivateData_, field)
                     currentValue = obj.getField(field);
                 else
                     if obj.hasscheme()
@@ -95,7 +120,7 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
         function n = dotListLength(obj, indexOp, indexContext)
             field = indexOp(1).Name;
             
-            if isKey(obj.Value_, field)
+            if isKey(obj.PrivateData_, field)
                 value = obj.getField(field);
                 
                 if numel(indexOp) > 1
@@ -112,16 +137,16 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
     
     methods
         function fields = fieldnames(obj)
-            fields = keys(obj.Value_);
+            fields = keys(obj.PrivateData_);
         end
         
         function tf = isfield(obj, field)
-            tf = isKey(obj.Value_, field);
+            tf = isKey(obj.PrivateData_, field);
         end
         
         function obj = rmfield(obj, field)
-            if isKey(obj.Value_, field)
-                remove(obj.Value_, field);
+            if isKey(obj.PrivateData_, field)
+                remove(obj.PrivateData_, field);
             end
         end
     end
@@ -137,7 +162,25 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
 
             obj@ana.config.node.common(Parent=options.Parent,Scheme=options.Scheme);
 
-            obj.Value_ = dictionary(string([]), {});
+            obj.PrivateData_ = dictionary(string([]), {});
+        end
+
+        function res = get(obj,varargin)
+            try
+                res = struct();
+                fn = keys(obj.PrivateData_);
+                for k = 1:numel(fn)
+                    node = obj.PrivateData_(fn{k});
+                    res.(fn{k}) = node{1}.get();
+                end
+            catch(me)
+                % struct was not possible, return dictionary
+                res = obj.PrivateData_;
+            end
+        end              
+
+        function set(obj,varargin)
+            % FIXME
         end
     end
 end
