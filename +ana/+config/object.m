@@ -15,6 +15,10 @@ classdef object < ana.config.node.map
             end
 
             obj@ana.config.node.map(Parent=options.Parent,Scheme=options.Scheme);
+
+            if ~isempty(obj.PrivateScheme_)
+                obj.PrivateScheme_.build(obj);
+            end           
         end
     end
 end

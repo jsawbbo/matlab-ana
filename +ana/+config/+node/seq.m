@@ -1,7 +1,6 @@
 classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
     %ana.config.node.seq       Array-like configuration node (sequence in YAML terms).
     %
-    %   FIXME
 
     %% HELPER
     methods (Hidden, Access=protected)
@@ -24,14 +23,7 @@ classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
     
     %% SCHEME
     methods (Access = protected)
-        function build(obj,sch)
-            arguments
-                obj 
-                sch = []
-            end
-        end
-
-        function validate(obj,sch,varargin)
+        function [res,msg] = validate(obj,sch,varargin)
             arguments
                 obj 
                 sch = []
@@ -39,6 +31,8 @@ classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
             arguments (Repeating)
                 varargin
             end
+            res = false;
+            msg = "not supported";
         end        
     end
 
@@ -118,7 +112,7 @@ classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
     %% PUBLIC
     methods
         function obj = seq(options)
-            %map            Construct an instance of this class
+            %SEQ            Construct an instance of this class
             arguments
                 options.Parent = [];
                 options.Scheme = [];

@@ -38,15 +38,15 @@ classdef common < handle
     end        
 
     methods (Access = protected)
-        function value = make(obj,value)
-            if ~isa(value,'')
-                if obj.hasscheme()
-                    FIXME
-                else
-                    value = ana.config.node.value(value,Parent=obj);
-                end
-            end
-        end
+        % function value = make(obj,value)
+        %     if ~isa(value,'')
+        %         if obj.hasscheme()
+        %             FIXME
+        %         else
+        %             value = ana.config.node.value(value,Parent=obj);
+        %         end
+        %     end
+        % end
     end
 
     %% SCHEME
@@ -59,39 +59,7 @@ classdef common < handle
             res = ~isempty(obj.PrivateScheme_);
         end
 
-        function res = select(obj,key)
-            %select         Select scheme sub-node by key.
-            arguments
-                obj 
-                key string
-            end
-            res = [];
-
-            if ~obj.hasscheme()
-                return
-            end
-
-            cnt = obj.PrivateScheme_.content;
-            for i = 1:length(cnt)
-                if isequal(cnt(i).key, key)
-                    res = cnt(i);
-                    return
-                end
-            end
-        end
-
-        function build(obj,sch)
-            %build          Build node from scheme.
-            arguments
-                obj 
-                sch = []
-            end
-
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
-        end
-
-        function validate(obj,sch,varargin)
-            %check          Check node from scheme
+        function [res,msg] = validate(obj,sch,varargin)
             arguments
                 obj 
                 sch = []
@@ -99,9 +67,9 @@ classdef common < handle
             arguments (Repeating)
                 varargin
             end
-
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
-        end
+            res = false;
+            msg = "not supported";
+        end        
     end
 
     %% PUBLIC
@@ -117,7 +85,6 @@ classdef common < handle
             obj.PrivateParent_ = options.Parent;
             if ~isempty(options.Scheme)
                 obj.PrivateScheme_ = ana.config.scheme(options.Scheme);
-                obj.build(obj.PrivateScheme_);
             end
         end
 

@@ -7,21 +7,15 @@ this allows also to implement migration techniques.
 
 ## Format
 
-The top-level entry of a scheme file consists of
+The top-level entry of a scheme file consists of a version entry 
 
     version: "<version-string>"
     
-    key: "key-name"
-    children:
-        <list of sub-nodes>
-
-
-FIXME
-
+Followed by the configuration structure.
 
 The configuration knows 4 fundamental types of configuration nodes or entries, respectively:
-- **dictionaries** (ana.config.node.dict),
-- **lists** (ana.config.node.list),
+- **maps** (ana.config.node.map),
+- **sequences** (ana.config.node.seq),
 - **tables** (ana.config.node.table), and,
 - **values** (ana.config.node.value).
 

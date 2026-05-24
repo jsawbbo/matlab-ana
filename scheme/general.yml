@@ -6,7 +6,7 @@ meta:
     label: General
 children:
 -   key: storage
-    type: dict
+    type: map
     meta:
         label: Storage
         comment: |
@@ -56,7 +56,7 @@ children:
                 eval: |
                     string(ana.os.paths('tmpdir'))
     -   key: cache
-        type: dict
+        type: map
         meta:
             label: Cache directory and size
         children:

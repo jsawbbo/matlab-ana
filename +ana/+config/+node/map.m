@@ -1,7 +1,6 @@
 classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
     %ana.config.node.map       Dictionary with struct-like data access.
     %
-    %   FIXME
 
     %% HELPER
     methods (Hidden, Access=protected)
@@ -41,14 +40,7 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
     
     %% SCHEME
     methods (Access = protected)
-        function build(obj,sch)
-            arguments
-                obj 
-                sch = []
-            end
-        end
-
-        function validate(obj,sch,varargin)
+        function [res,msg] = validate(obj,sch,varargin)
             arguments
                 obj 
                 sch = []
@@ -56,6 +48,8 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
             arguments (Repeating)
                 varargin
             end
+            res = false;
+            msg = "not supported";
         end        
     end
 
@@ -180,12 +174,17 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
         end              
 
         function set(obj,varargin)
-            if numel(varargin) == 1
+            if isscalar(varargin)
                 s = varargin{1};
                 if isstruct(s)
-                    FIXME
+                    % FIXME
                 end
-            elseif bitand(numel(varargin),1)
+            elseif bitand(numel(varargin),1) == 0
+                for k = 1:2:nargin-1
+                    obj.PrivateData_(varargin{k}) = varargin(k+1);
+                end
+            else
+                error("invalid arguments")
             end
         end
     end

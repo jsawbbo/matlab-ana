@@ -85,6 +85,63 @@ classdef scheme
         end
     end
 
+    %% SCHEME
+    methods
+        function build(obj, node)
+            arguments
+                obj
+                node {mustBeAConfigNode(node)}
+            end
+    
+            assert(~isempty(obj.Scheme));
+
+            % check type
+            % (FIXME this is not necessary, we are building it....)
+            switch (obj.Scheme.type)
+                case "map"
+                    assert(isa(node,"ana.config.node.map"));
+                case "sequence"
+                    assert(isa(node,"ana.config.node.seq"));
+                case "table"
+                    assert(isa(node,"ana.config.node.table"));
+                otherwise
+                    assert(isa(node,"ana.config.node.value"));
+            end
+
+            % handle children
+            children = obj.Scheme.children;
+            nchildren = numel(children);
+
+            for k = 1:nchildren
+                child = children(k);
+
+                switch (child.type)
+                    case "map"
+                        node.set(child.key, ...
+                            ana.config.node.map(Parent=node, Scheme=child));
+                    % case "sequence"
+                    % case "table"
+                    otherwise
+                        FIXME()
+                end
+            end
+        end
+
+        function res = validate(obj,node,varargin)
+            arguments
+                obj
+                node {mustBeAConfigNode(node)}
+            end
+
+            arguments(Repeating)
+                varargin
+            end
+            
+            % FIXME 
+            res = false;
+        end
+    end
+
     %% INTERFACE
     methods
         function obj = scheme(doc)
@@ -112,6 +169,12 @@ classdef scheme
         end        
     end
 end
+
+function res = mustBeAConfigNode(obj)
+    % FIXME
+    res = true;
+end
+
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):

@@ -47,14 +47,7 @@ classdef value < ana.config.node.common
     
     %% SCHEME
     methods (Access = protected)
-        function build(obj,sch)
-            arguments
-                obj 
-                sch = []
-            end
-        end
-
-        function validate(obj,sch,varargin)
+        function [res,msg] = validate(obj,sch,varargin)
             arguments
                 obj 
                 sch = []
@@ -62,6 +55,8 @@ classdef value < ana.config.node.common
             arguments (Repeating)
                 varargin
             end
+            res = false;
+            msg = "not supported";
         end        
     end
 
