@@ -6,11 +6,12 @@ function save(filename,data,options)
     %Note: This file internally uses Martin Koch's Matlab YAML package,
     %      released under the MIT License.
     arguments
-        filename (1, 1) string
+        filename (1, :) 
         data
         options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "block"
     end
     
+    filename = ana.fs.path(filename);
     yamlString = ana.file.yaml.dump(data, Style=options.Style);
 
     folder = fileparts(filename);
@@ -18,7 +19,7 @@ function save(filename,data,options)
         mkdir(folder);
     end
     
-    [fid, msg] = fopen(filename, "wt");
+    [fid, msg] = fopen(+filename, "wt");
     if fid == -1
         error(msg)
     end

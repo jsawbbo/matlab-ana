@@ -11,6 +11,7 @@ classdef object < ana.config.node.map
             arguments
                 options.Parent = [];
                 options.Scheme = [];
+                options.Tag = []; % FIXME not implemented currently!
             end
 
             obj@ana.config.node.map(Parent=options.Parent,Scheme=options.Scheme);

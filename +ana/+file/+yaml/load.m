@@ -6,9 +6,10 @@ function res = load(filename)
     %Note: This file internally uses Martin Koch's Matlab YAML package,
     %      released under the MIT License.
     arguments
-        filename (1, 1) string
+        filename (1, :)
     end
 
+    filename = ana.fs.path(filename);
     content = string(fileread(string(filename)));
     res = ana.file.yaml.parse(content);
 end

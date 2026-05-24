@@ -115,8 +115,8 @@ classdef common < handle
             end
 
             obj.PrivateParent_ = options.Parent;
-            obj.PrivateScheme_ = options.Scheme;
-            if isstruct(obj.PrivateScheme_)
+            if ~isempty(options.Scheme)
+                obj.PrivateScheme_ = ana.config.scheme(options.Scheme);
                 obj.build(obj.PrivateScheme_);
             end
         end

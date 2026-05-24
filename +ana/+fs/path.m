@@ -162,7 +162,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
            
             if ~part.isrelative()
-                error('ANA:FS:RELATIVE', 'path to append must be relative')
+                error('ANA:FS:EXPECTED_RELATIVE', 'expected a relative path')
             end
 
             res = obj;

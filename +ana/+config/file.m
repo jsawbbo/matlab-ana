@@ -26,25 +26,13 @@ classdef file < ana.config.object
                 options.Scheme = "/general";
             end
 
-            % load scheme
-            if ~isempty(options.Scheme)
-                scheme = ana.fs.path(options.Scheme);
-                assert(~scheme.isrelative())
-                if ~scheme.isfile()
-                    scheme(end) = scheme(end) + ".yml";
-                    scheme = ana.os.paths('toolboxdir') / "scheme" / scheme(2:end);
-                end
-                options.Scheme = ana.file.yaml.load(+scheme);
-            end
+            % FIXME check ana.config.g, if we were loaded already
             
             obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme);
 
             % load config file if it exists
             obj.PrivateFilename_ = ana.fs.path(pathname);
             if obj.PrivateFilename_.isfile()
-                % check, if we were loaded already
-
-
                 data = ana.file.yaml.load(obj.PrivateFilename_);
                 obj.set(data);
             end

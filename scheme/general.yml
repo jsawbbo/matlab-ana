@@ -1,6 +1,6 @@
 version: "1.0"
 
-key: /general
+scheme: /general
 type: map
 meta:
     label: General
