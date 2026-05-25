@@ -46,7 +46,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         function init(obj)
         end
 
-        function [value,msg] = validate(obj,key,value)
+        function [value,msg] = validate(obj,value,key)
             sch = obj.PrivateScheme_.get(key);
             if isempty(sch)
                 msg = sprintf("invalid key: %s", string(key));
@@ -59,10 +59,11 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 elseif isstruct(value)
                     FIXME % -> dict
                 else
-                    value = 
+                    value = ana.config.node.leaf(value,Parent=obj,Scheme=sch);
                 end
+            else
+                FIXME()
             end
-
         end        
     end
 
@@ -187,9 +188,10 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end              
 
         function set(obj,varargin)
-            %SET    Assign value(s).
+            %SET    Set key-value pairs.
             %
             %   node.set(key,value,...)
+            %   node.set(key=value,...)
             %   node.set(struct)
             %
             if isscalar(varargin)
@@ -205,8 +207,9 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     key = varargin{k};
                     value = varargin{k+1};
 
-                    [value,msg] = obj.validate(key, value);
+                    [value,msg] = obj.validate(value,key);
                     if ~isempty(msg)
+                        % FIXME be more elaborate...
                         error(msg)
                     end
                     

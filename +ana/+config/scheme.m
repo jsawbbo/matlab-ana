@@ -92,18 +92,21 @@ classdef scheme
                 return
             end
 
-            FIXME();
-        end
+            usecell = iscell(obj.Scheme.content);
+            for k = 1:numel(obj.Scheme.content)
+                if usecell
+                    child = obj.Scheme.content{k};
+                else
+                    child = obj.Scheme.content(k);
+                end
 
-        function validate(obj,node,value,key)
-            arguments
-                obj ana.config.scheme
-                node {mustBeA(node,"ana.config.node.base")}
-                value 
-                key = []
+                if isequal(child.key, key)
+                    sch = child;
+                    return;
+                end
             end
 
-            FIXME 
+            sch = [];
         end
     end
 

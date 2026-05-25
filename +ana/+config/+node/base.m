@@ -47,7 +47,7 @@ classdef base < handle
             error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
-        function [res,msg] = validate(obj,varargin) %#ok<STOUT,INUSD>
+        function [res,msg] = validate(obj,value,key) %#ok<STOUT,INUSD>
             %VALIDATE   Validate an assignment.
             error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end        

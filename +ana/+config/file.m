@@ -14,7 +14,7 @@ classdef file < ana.config.object
     methods (Hidden,Access = protected)
         function autosave(obj)
             if obj.PrivateAutosave_
-                error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+                FIXME()
             end
         end
     end
@@ -42,7 +42,7 @@ classdef file < ana.config.object
             % do not load twice
             % FIXME implement a singleton mechanism
 
-            % initialize
+            % initialize (delayed for singleton mechanism)
             obj.init()                     
             
             % load config file if it exists

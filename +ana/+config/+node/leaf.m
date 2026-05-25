@@ -57,7 +57,7 @@ classdef leaf < ana.config.node.base
                 return
             end
 
-            % FIXME
+            FIXME
         end        
     end
 
@@ -81,11 +81,14 @@ classdef leaf < ana.config.node.base
         end
 
         function res = get(obj,varargin)
+            %GET    Get Matlab value.
             res = obj.PrivateData_;
         end       
 
         function set(obj,value)
-            [value,msg] = obj.validate(key, value);
+            %SET    Set value.
+            %
+            [value,msg] = obj.validate(value);
             if ~isempty(msg)
                 error(msg)
             end
