@@ -1,5 +1,5 @@
-classdef value < ana.config.node.common
-    %ana.config.node.value      Representation of a value.
+classdef leaf < ana.config.node.base
+    %ana.config.node.leaf      Representation of a value.
     %
     %   Detailed explanation goes here
 
@@ -12,7 +12,7 @@ classdef value < ana.config.node.common
                 level {mustBeScalarOrEmpty} = 0
             end
 
-            assert(~isa(obj.PrivateData_, 'ana.config.node.common'));
+            assert(~isa(obj.PrivateData_, 'ana.config.node.base'));
             s = strtrim(ana.file.yaml.dump(obj.PrivateData_));
             lines = strsplit(s,"\n",CollapseDelimiters=false);
             if length(lines) > 1
@@ -62,14 +62,14 @@ classdef value < ana.config.node.common
 
     %% PUBLIC
     methods
-        function obj = value(value,options)
+        function obj = leaf(value,options)
             arguments
                 value  = {}
                 options.Parent = [];
                 options.Scheme = [];
             end
 
-            obj@ana.config.node.common(Parent=options.Parent,Scheme=options.Scheme);
+            obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
 
             if iscell(value)
                 obj.PrivateDataLast_ = obj.PrivateData_;

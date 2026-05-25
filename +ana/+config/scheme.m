@@ -98,27 +98,27 @@ classdef scheme
             % check type
             % (FIXME this is not necessary, we are building it....)
             switch (obj.Scheme.type)
-                case "map"
-                    assert(isa(node,"ana.config.node.map"));
-                case "sequence"
-                    assert(isa(node,"ana.config.node.seq"));
+                case "dict"
+                    assert(isa(node,"ana.config.node.dict"));
+                case "list"
+                    assert(isa(node,"ana.config.node.list"));
                 case "table"
-                    assert(isa(node,"ana.config.node.table"));
+                    assert(isa(node,"ana.config.node.list"));
                 otherwise
-                    assert(isa(node,"ana.config.node.value"));
+                    assert(isa(node,"ana.config.node.leaf"));
             end
 
-            % handle children
-            children = obj.Scheme.children;
-            nchildren = numel(children);
+            % handle content
+            content = obj.Scheme.content;
+            ncontent = numel(content);
 
-            for k = 1:nchildren
-                child = children(k);
+            for k = 1:ncontent
+                child = content(k);
 
                 switch (child.type)
-                    case "map"
+                    case "dict"
                         node.set(child.key, ...
-                            ana.config.node.map(Parent=node, Scheme=child));
+                            ana.config.node.dict(Parent=node, Scheme=child));
                     % case "sequence"
                     % case "table"
                     otherwise

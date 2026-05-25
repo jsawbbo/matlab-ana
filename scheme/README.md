@@ -13,16 +13,15 @@ The top-level entry of a scheme file consists of a version entry
     
 Followed by the configuration structure.
 
-The configuration knows 4 fundamental types of configuration nodes or entries, respectively:
-- **maps** (ana.config.node.map),
-- **sequences** (ana.config.node.seq),
-- **tables** (ana.config.node.table), and,
-- **values** (ana.config.node.value).
+There are three fundamental node types:
+- **dict** (ana.config.node.dict), 
+- **list** (ana.config.node.list), 
+- **value** (ana.config.node.value).
 
-Each of these entries may be described in the scheme file using:
+Each node is described in the scheme file using:
 
     key: "key-name"
-    type: type-of-entry
+    type: <type-of-entry>
     meta:
         <meta information...>
     content:

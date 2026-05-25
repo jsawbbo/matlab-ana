@@ -1,5 +1,7 @@
-classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
-    %ana.config.node.seq       Array-like configuration node (sequence in YAML terms).
+classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
+    %ana.config.node.list       Array-like configuration node.
+    %
+    %   FIXME
     %
 
     %% HELPER
@@ -48,7 +50,7 @@ classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
         end
 
         function obj = parenAssign(obj, indexOp, varargin)
-            if numel(indexOp) == 1
+            if isscalar(indexOp)
                 for k = 1:numel(varargin)
                     varargin{k}.PrivateParent_ = obj;
                 end
@@ -64,7 +66,7 @@ classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
             obj.PrivateData_(indexOp.Indices{:}) = [];
         end
 
-        function n = parenListLength(obj, indexOp, context)
+        function n = parenListLength(obj, indexOp, context) %#ok<INUSD>
             n = numel(obj.PrivateData_(indexOp.Indices{:}));
         end
     end
@@ -105,20 +107,20 @@ classdef seq < ana.config.node.common & matlab.mixin.indexing.RedefinesParen
 
     methods (Static, Access=public)
         function obj = empty()
-            obj = ana.config.node.seq();
+            obj = ana.config.node.list();
         end
     end
     
     %% PUBLIC
     methods
-        function obj = seq(options)
+        function obj = list(options)
             %SEQ            Construct an instance of this class
             arguments
                 options.Parent = [];
                 options.Scheme = [];
             end
 
-            obj@ana.config.node.common(Parent=options.Parent,Scheme=options.Scheme);
+            obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
 
             obj.PrivateData_ = {};
         end

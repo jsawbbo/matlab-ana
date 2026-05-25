@@ -1,5 +1,8 @@
-classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
-    %ana.config.node.map       Dictionary with struct-like data access.
+classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
+    %ana.config.node.dict       A key-value pair mapping.
+    %
+    %   This node wraps an underlying dictionary, allowing non-standard keys. If possible, though,
+    %   it may behave like a normal `struct` for accessing values.
     %
 
     %% HELPER
@@ -15,11 +18,11 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
             key = keys(obj.PrivateData_);
             N = length(key);
             for i = 1:N
-                if (level > 0) && (i == 1) && ~isa(obj.PrivateParent_, "ana.config.node.seq")
+                if (level > 0) && (i == 1) && ~isa(obj.PrivateParent_, "ana.config.node.list")
                     fprintf(fd,"\n");
                 end
 
-                if (i == 1) && isa(obj.PrivateParent_, "ana.config.node.seq")
+                if (i == 1) && isa(obj.PrivateParent_, "ana.config.node.list")
                     fprintf(fd, "%s:", key(i));
                 else
                     fprintf(fd, "%s%s:", indent_s, key(i));
@@ -94,7 +97,7 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
                     if obj.hasscheme()
                         FIXME
                     else
-                        currentValue = ana.config.node.map(Parent=obj);
+                        currentValue = ana.config.node.dict(Parent=obj);
                     end
                 end
                 
@@ -147,14 +150,14 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
     
     %% PUBLIC
     methods
-        function obj = map(options)
+        function obj = dict(options)
             %map            Construct an instance of this class
             arguments
                 options.Parent = [];
                 options.Scheme = [];
             end
 
-            obj@ana.config.node.common(Parent=options.Parent,Scheme=options.Scheme);
+            obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
 
             obj.PrivateData_ = dictionary(string([]), {});
         end
@@ -167,7 +170,7 @@ classdef map < ana.config.node.common & matlab.mixin.indexing.RedefinesDot
                     node = obj.PrivateData_(fn{k});
                     res.(fn{k}) = node{1}.get();
                 end
-            catch(me)
+            catch me
                 % struct was not possible, return dictionary
                 res = obj.PrivateData_;
             end

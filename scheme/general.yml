@@ -1,19 +1,19 @@
 version: "1.0"
 
 scheme: /general
-type: map
+type: dict
 meta:
     label: General
-children:
+content:
 -   key: storage
-    type: map
+    type: dict
     meta:
         label: Storage
         comment: |
             Local and remote storage locations.
         ui: ana.config.general
         actions:
-    children:
+    content:
     -   key: searchpath
         type: table
         meta:
@@ -28,7 +28,7 @@ children:
                     {storage}/rawdata/datafile-01.data
 
                 so that a configuration file must not be edited.
-        children:
+        content:
         -   key: location
             type: path
             meta:
@@ -59,7 +59,7 @@ children:
         type: map
         meta:
             label: Cache directory and size
-        children:
+        content:
         -   key: path
             type: path
             meta:

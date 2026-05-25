@@ -1,4 +1,4 @@
-classdef object < ana.config.node.map
+classdef object < ana.config.node.dict
     %ana.config.object      Configuration object.
     %
     %   Configuration objects are, in itself, separate configuration nodes 
@@ -9,14 +9,15 @@ classdef object < ana.config.node.map
         function obj = object(options)
             %object            Construct an instance of this class
             arguments
-                options.Parent = [];
-                options.Scheme = [];
-                options.Tag = []; % FIXME not implemented currently!
+                options.Parent = []
+                options.Scheme = []
+                options.Tag = [] % FIXME not implemented currently!
+                options.Build = true
             end
 
-            obj@ana.config.node.map(Parent=options.Parent,Scheme=options.Scheme);
+            obj@ana.config.node.dict(Parent=options.Parent,Scheme=options.Scheme);
 
-            if ~isempty(obj.PrivateScheme_)
+            if ~isempty(obj.PrivateScheme_) && options.Build
                 obj.PrivateScheme_.build(obj);
             end           
         end

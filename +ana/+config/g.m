@@ -29,7 +29,23 @@ classdef g < handle
             end
 
             singleton = obj;
-        end        
+        end
+
+        function res = has(obj,name)
+            %HAS    Check if object is stored.
+            res = obj.Instance.isKey(name);
+        end
+
+        function s = get(obj, name)
+            %GET    Get object instance by name.
+            s = obj.Instance(name);
+            s = s{:};
+        end
+
+        function set(obj, name, s)
+            %SET    Get object instance by name.
+            obj.Instance(name) = {s};
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar

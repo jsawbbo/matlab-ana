@@ -1,6 +1,5 @@
-classdef common < handle
-    %         Configuration node base class.
-    %
+classdef base < handle
+    %ana.config.node.base               Configuration node base class.
     %
     
     %% PROPERTIES
@@ -74,7 +73,7 @@ classdef common < handle
 
     %% PUBLIC
     methods
-        function obj = common(options)
+        function obj = base(options)
             %common   Construct an instance of this class
             %
             arguments

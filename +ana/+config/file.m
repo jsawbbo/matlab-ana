@@ -24,12 +24,24 @@ classdef file < ana.config.object
             if isempty(pathname)
                 pathname = ana.os.paths('configdir') / "config.yml";
                 options.Scheme = "/general";
+            else
+                pathname = ana.fs.path(pathname);
             end
 
-            % FIXME check ana.config.g, if we were loaded already
-            
-            obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme);
+            obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme,Build=false);
 
+            % do not load twice
+            g = ana.config.g();
+            if g.has(+pathname)
+                obj = g.get(+pathname);
+                return
+            end
+            g.set(+pathname,obj);
+
+            if ~isempty(obj.PrivateScheme_)
+                obj.PrivateScheme_.build(obj);
+            end                      
+            
             % load config file if it exists
             obj.PrivateFilename_ = ana.fs.path(pathname);
             if obj.PrivateFilename_.isfile()
