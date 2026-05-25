@@ -22,7 +22,7 @@ classdef scheme
             if isempty(static_data)
                 static_data = struct(...
                         paths = dictionary(string([]),false), ...
-                        schemes = struct(name = {}, data={})... % FIXME currently unused
+                        schemes = dictionary(string([]),{})... % FIXME currently unused
                     );
 
                 if isfile(cfgfile)
@@ -30,7 +30,6 @@ classdef scheme
                     for k = 1:numel(cfg.paths)
                         static_data.paths(cfg.paths{k}) = true;
                     end
-                    static_data.schemes = cfg.schemes;
                 else
                     static_data.paths(+(ana.os.paths('toolboxdir')/"scheme")) = true;
                 end
@@ -42,7 +41,6 @@ classdef scheme
                 static_data = data;
 
                 cfg.paths = keys(data.paths);
-                cfg.schemes = data.schemes;
                 ana.file.yaml.save(cfgfile,cfg);
             end
 
@@ -96,6 +94,17 @@ classdef scheme
 
             FIXME();
         end
+
+        function validate(obj,node,value,key)
+            arguments
+                obj ana.config.scheme
+                node {mustBeA(node,"ana.config.node.base")}
+                value 
+                key = []
+            end
+
+            FIXME 
+        end
     end
 
     %% INTERFACE
@@ -116,7 +125,15 @@ classdef scheme
                     error("ANA:CONFIG:SCHEME_NOT_FOUND", "could not find scheme file")
                 end
 
-                doc = ana.file.yaml.load(schemefile);
+                internal = obj.static();
+                if internal.schemes.isKey(+schemefile)
+                    doc = internal.schemes(+schemefile);
+                    doc = doc{1};
+                else
+                    doc = ana.file.yaml.load(schemefile);
+                    internal.schemes(+schemefile) = {doc};
+                    obj.static(internal);
+                end
             end
 
             if ~isstruct(doc)

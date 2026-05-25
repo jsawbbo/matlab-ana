@@ -298,6 +298,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 options.SearchPath ana.fs.searchpath = [];
             end
 
+            if ~obj.isrelative()
+                res = obj;
+                return
+            end
+
             if isempty(options.SearchPath)
                 res = ana.fs.storage.resolve(obj);
             else

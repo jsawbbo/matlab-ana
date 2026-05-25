@@ -40,12 +40,7 @@ classdef file < ana.config.object
             obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme,Init=false);
 
             % do not load twice
-            g = ana.config.g();
-            if g.has(+pathname)
-                obj = g.get(+pathname);
-                return
-            end
-            g.set(+pathname,obj);
+            % FIXME implement a singleton mechanism
 
             % initialize
             obj.init()                     
