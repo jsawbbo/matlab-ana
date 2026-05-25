@@ -43,16 +43,26 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     
     %% SCHEME
     methods (Access = protected)
-        function [res,msg] = validate(obj,sch,varargin)
-            arguments
-                obj 
-                sch = []
+        function init(obj)
+        end
+
+        function [value,msg] = validate(obj,key,value)
+            sch = obj.PrivateScheme_.get(key);
+            if isempty(sch)
+                msg = sprintf("invalid key: %s", string(key));
+                return
             end
-            arguments (Repeating)
-                varargin
+
+            if ~isa(value,'ana.config.node.base')
+                if iscell(value)
+                    FIXME() % -> list
+                elseif isstruct(value)
+                    FIXME % -> dict
+                else
+                    value = 
+                end
             end
-            res = false;
-            msg = "not supported";
+
         end        
     end
 
@@ -61,10 +71,6 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         function res = getField(obj,field)
             res = obj.PrivateData_(field);
             res = res{1};
-        end
-
-        function setField(obj,field,value)
-            obj.PrivateData_(field) = {obj.make(value)};
         end
 
         function varargout = dotReference(obj, indexOp)
@@ -79,7 +85,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
                 varargout{1} = retval;
             else
-                error('ana:config:node:map:FieldNotFound', 'Field ''%s'' not found.', field);
+                error('ana:config:node:dict:FieldNotFound', 'Field ''%s'' not found.', field);
             end
         end
         
@@ -88,9 +94,9 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             newValue = varargin{1};
             
             if isscalar(indexOp)
-                % FIXME wrap value
-                obj.setField(field, newValue);
+                obj.set(field, newValue);
             else
+                % FIXME multiple indexOp, need to handle scheme
                 if isKey(obj.PrivateData_, field)
                     currentValue = obj.getField(field);
                 else
@@ -106,7 +112,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     if obj.hasscheme()
                         FIXME
                     else
-                        obj.setField(field,currentValue);
+                        obj.set(field,currentValue);
                     end
                 catch ME
                     rethrow(ME);
@@ -127,7 +133,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     n = length(value);
                 end
             else
-                error('ana:config:node:map:FieldNotFound', 'Field ''%s'' not found.', field);
+                error('ana:config:node:dict:FieldNotFound', 'Field ''%s'' not found.', field);
             end
         end
     end
@@ -151,7 +157,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     %% PUBLIC
     methods
         function obj = dict(options)
-            %map            Construct an instance of this class
+            %DICT           Construct an instance of this class
             arguments
                 options.Parent = [];
                 options.Scheme = [];
@@ -162,7 +168,9 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             obj.PrivateData_ = dictionary(string([]), {});
         end
 
-        function res = get(obj,varargin)
+        function res = get(obj)
+            %GET    Get content as Matlab value.
+            %
             try
                 res = struct();
                 fn = keys(obj.PrivateData_);
@@ -170,25 +178,45 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     node = obj.PrivateData_(fn{k});
                     res.(fn{k}) = node{1}.get();
                 end
-            catch me
-                % struct was not possible, return dictionary
+            catch 
                 res = obj.PrivateData_;
+                for k = 1:numel(res)
+                    res(fn{k}) = res(fn{k}).get();
+                end
             end
         end              
 
         function set(obj,varargin)
+            %SET    Assign value(s).
+            %
+            %   node.set(key,value,...)
+            %   node.set(struct)
+            %
             if isscalar(varargin)
                 s = varargin{1};
                 if isstruct(s)
-                    % FIXME
+                    fn = fieldnames(s);
+                    for k = 1:numel(fn)
+                        obj.set(fn{k},s.(fn{k}))
+                    end
                 end
             elseif bitand(numel(varargin),1) == 0
                 for k = 1:2:nargin-1
-                    obj.PrivateData_(varargin{k}) = varargin(k+1);
+                    key = varargin{k};
+                    value = varargin{k+1};
+
+                    [value,msg] = obj.validate(key, value);
+                    if ~isempty(msg)
+                        error(msg)
+                    end
+                    
+                    obj.PrivateData_(key) = value;
                 end
             else
                 error("invalid arguments")
             end
+
+            obj.autosave();
         end
     end
 end

@@ -5,6 +5,17 @@ classdef object < ana.config.node.dict
     %   (usually files, see ana.config.file). They can appear in a hierarchical
     %   tree of configuration objects, but are treated independently.
     %
+
+    %% SCHEME
+    methods (Access = protected)
+        function init(obj)
+        end
+
+        function [res,msg] = validate(obj,varargin)
+        end        
+    end
+    
+    %% PUBLIC
     methods
         function obj = object(options)
             %object            Construct an instance of this class
@@ -12,14 +23,13 @@ classdef object < ana.config.node.dict
                 options.Parent = []
                 options.Scheme = []
                 options.Tag = [] % FIXME not implemented currently!
-                options.Build = true
+                options.Init = true
             end
 
             obj@ana.config.node.dict(Parent=options.Parent,Scheme=options.Scheme);
-
-            if ~isempty(obj.PrivateScheme_) && options.Build
-                obj.PrivateScheme_.build(obj);
-            end           
+            if options.Init
+                obj.init()
+            end
         end
     end
 end

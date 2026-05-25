@@ -47,16 +47,17 @@ classdef leaf < ana.config.node.base
     
     %% SCHEME
     methods (Access = protected)
-        function [res,msg] = validate(obj,sch,varargin)
-            arguments
-                obj 
-                sch = []
+        function init(obj)
+        end
+
+        function [value,msg] = validate(obj,value)
+            sch = obj.PrivateScheme_.get(key);
+            if isempty(sch)
+                msg = sprintf("invalid key: %s", string(key));
+                return
             end
-            arguments (Repeating)
-                varargin
-            end
-            res = false;
-            msg = "not supported";
+
+            % FIXME
         end        
     end
 
@@ -72,7 +73,7 @@ classdef leaf < ana.config.node.base
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
 
             if iscell(value)
-                obj.PrivateDataLast_ = obj.PrivateData_;
+                FIXME
             else
                 obj.PrivateData_ = value;
                 obj.PrivateDataLast_ = value;
@@ -83,8 +84,13 @@ classdef leaf < ana.config.node.base
             res = obj.PrivateData_;
         end       
 
-        function set(obj,varargin)
-            % FIXME
+        function set(obj,value)
+            [value,msg] = obj.validate(key, value);
+            if ~isempty(msg)
+                error(msg)
+            end
+            obj.PrivateData_ = value;
+            obj.autosave();
         end
     end
 end

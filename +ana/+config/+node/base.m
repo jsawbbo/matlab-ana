@@ -25,6 +25,10 @@ classdef base < handle
 
             error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
+
+        function autosave(obj)
+            obj.root().autosave();
+        end
     end
 
     %% HELPER
@@ -36,38 +40,16 @@ classdef base < handle
         end
     end        
 
-    methods (Access = protected)
-        % function value = make(obj,value)
-        %     if ~isa(value,'')
-        %         if obj.hasscheme()
-        %             FIXME
-        %         else
-        %             value = ana.config.node.value(value,Parent=obj);
-        %         end
-        %     end
-        % end
-    end
-
     %% SCHEME
     methods (Access = protected)
-        function res = hasscheme(obj)
-            %hasscheme      Check, if a scheme is present.
-            arguments
-                obj 
-            end
-            res = ~isempty(obj.PrivateScheme_);
+        function res = init(obj) %#ok<STOUT,MANU>
+            %INIT   Initialize (if scheme is present)
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
-        function [res,msg] = validate(obj,sch,varargin)
-            arguments
-                obj 
-                sch = []
-            end
-            arguments (Repeating)
-                varargin
-            end
-            res = false;
-            msg = "not supported";
+        function [res,msg] = validate(obj,varargin) %#ok<STOUT,INUSD>
+            %VALIDATE   Validate an assignment.
+            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end        
     end
 
@@ -82,13 +64,11 @@ classdef base < handle
             end
 
             obj.PrivateParent_ = options.Parent;
-            if ~isempty(options.Scheme)
-                obj.PrivateScheme_ = ana.config.scheme(options.Scheme);
-            end
+            obj.PrivateScheme_ = ana.config.scheme(options.Scheme);
         end
 
         function res = root(obj)
-            %root   Find root node.
+            %ROOT   Find root node.
             %
             arguments
                 obj 
@@ -101,7 +81,7 @@ classdef base < handle
         end
 
         function res = ismodified(obj)
-            %ismodified     Check if modified.
+            %ISMODIFIED     Check if modified.
             %
             arguments
                 obj 
@@ -111,7 +91,7 @@ classdef base < handle
         end
 
         function apply(obj)
-            %apply      Apply changes.
+            %APPLY      Apply changes.
             arguments
                 obj 
             end
@@ -120,7 +100,7 @@ classdef base < handle
         end
 
         function reset(obj)
-            %reset      Reset changes.
+            %RESET      Reset changes.
             arguments
                 obj 
             end
@@ -129,17 +109,17 @@ classdef base < handle
         end
 
         function dump(obj)
-            %dump       Dump contents (YAML).
+            %DUMP       Dump contents (YAML).
             obj.save_(1,0);
         end
 
-        function res = get(obj,varargin)
-            %get    Get configuration as Matlab values.
+        function res = get(obj)
+            %GET    Get configuration as Matlab values.
             error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
         function set(obj,varargin)
-            %set    Set entries.
+            %SET    Set entries.
             error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
         end
     end

@@ -25,16 +25,10 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     
     %% SCHEME
     methods (Access = protected)
-        function [res,msg] = validate(obj,sch,varargin)
-            arguments
-                obj 
-                sch = []
-            end
-            arguments (Repeating)
-                varargin
-            end
-            res = false;
-            msg = "not supported";
+        function init(obj)
+        end
+
+        function [res,msg] = validate(obj,varargin)
         end        
     end
 

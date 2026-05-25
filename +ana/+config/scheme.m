@@ -87,58 +87,14 @@ classdef scheme
 
     %% SCHEME
     methods
-        function build(obj, node)
-            arguments
-                obj
-                node {mustBeAConfigNode(node)}
-            end
-    
-            assert(~isempty(obj.Scheme));
-
-            % check type
-            % (FIXME this is not necessary, we are building it....)
-            switch (obj.Scheme.type)
-                case "dict"
-                    assert(isa(node,"ana.config.node.dict"));
-                case "list"
-                    assert(isa(node,"ana.config.node.list"));
-                case "table"
-                    assert(isa(node,"ana.config.node.list"));
-                otherwise
-                    assert(isa(node,"ana.config.node.leaf"));
+        function sch = get(obj,key)
+            %GET    Get scheme by key.
+            if isempty(obj.Scheme)
+                sch = ana.config.scheme();
+                return
             end
 
-            % handle content
-            content = obj.Scheme.content;
-            ncontent = numel(content);
-
-            for k = 1:ncontent
-                child = content(k);
-
-                switch (child.type)
-                    case "dict"
-                        node.set(child.key, ...
-                            ana.config.node.dict(Parent=node, Scheme=child));
-                    % case "sequence"
-                    % case "table"
-                    otherwise
-                        FIXME()
-                end
-            end
-        end
-
-        function res = validate(obj,node,varargin)
-            arguments
-                obj
-                node {mustBeAConfigNode(node)}
-            end
-
-            arguments(Repeating)
-                varargin
-            end
-            
-            % FIXME 
-            res = false;
+            FIXME();
         end
     end
 
@@ -147,7 +103,11 @@ classdef scheme
         function obj = scheme(doc)
             %SCHEME     Construct a singleton instance of this class
             arguments
-                doc (1,:)
+                doc (1,:) = []
+            end
+
+            if isempty(doc)
+                return
             end
 
             if ischar(doc) || isstring(doc)
@@ -163,18 +123,10 @@ classdef scheme
                 error('ANA:CONFIG:SCHEME:ARGUMENTS', 'neither name of scheme nor scheme struct')
             end
 
-            % FIXME do some checks...
-
             obj.Scheme = doc;
         end        
     end
 end
-
-function res = mustBeAConfigNode(obj)
-    % FIXME
-    res = true;
-end
-
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):

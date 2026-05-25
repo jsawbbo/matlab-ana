@@ -10,8 +10,8 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     %
     %
     %TODO
-    %- allow {storage}, {cache} etc.
     %- parenAssign,parenDelete need checks (e.g. if Drive == true)
+    %- add "~" for $HOME
 
     properties (SetAccess=protected)
         Drive   % Boolean value indicating that a Windows® drive letter is used.
@@ -182,8 +182,8 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         end
 
         function res = uplus(obj)
-            %UPLUS  Equivalent of string().
-            res = string(obj);
+            %UPLUS  Equivalent of string() but with path resolution (see resolve()).
+            res = string(obj.resolve());
         end
     end
 

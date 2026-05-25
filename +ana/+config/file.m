@@ -10,6 +10,15 @@ classdef file < ana.config.object
         PrivateAutosave_ = false;
     end
 
+    %% INTERNAL
+    methods (Hidden,Access = protected)
+        function autosave(obj)
+            if obj.PrivateAutosave_
+                error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            end
+        end
+    end
+    
     %% INTERFACE
     methods
         function obj = file(pathname,options)
@@ -28,7 +37,7 @@ classdef file < ana.config.object
                 pathname = ana.fs.path(pathname);
             end
 
-            obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme,Build=false);
+            obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme,Init=false);
 
             % do not load twice
             g = ana.config.g();
@@ -38,9 +47,8 @@ classdef file < ana.config.object
             end
             g.set(+pathname,obj);
 
-            if ~isempty(obj.PrivateScheme_)
-                obj.PrivateScheme_.build(obj);
-            end                      
+            % initialize
+            obj.init()                     
             
             % load config file if it exists
             obj.PrivateFilename_ = ana.fs.path(pathname);
@@ -55,7 +63,7 @@ classdef file < ana.config.object
         % FIXME add delete for Autosave
 
         function save(obj)
-            %save   Save data to associated file.
+            %SAVE   Save data to associated file.
             %FIXME
         end
     end
