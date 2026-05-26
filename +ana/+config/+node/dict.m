@@ -47,6 +47,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         end
 
         function [value,msg] = validate(obj,value,key)
+            msg = [];
             sch = obj.PrivateScheme_.get(key);
             if isempty(sch)
                 msg = sprintf("invalid key: %s", string(key));

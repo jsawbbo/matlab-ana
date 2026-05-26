@@ -120,6 +120,10 @@ classdef scheme
 
             if isempty(doc)
                 return
+            elseif isa(doc, "ana.config.scheme")
+                % FIXME should we warn/error if it's already a scheme?
+                obj = doc;
+                return
             end
 
             if ischar(doc) || isstring(doc)
