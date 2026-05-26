@@ -1,7 +1,6 @@
 classdef leaf < ana.config.node.base
     %ana.config.node.leaf      Representation of a value.
     %
-    %   Detailed explanation goes here
 
     %% HELPER
     methods (Hidden, Access=protected)
@@ -51,7 +50,7 @@ classdef leaf < ana.config.node.base
         end
 
         function [value,msg] = validate(obj,value)
-            sch = obj.PrivateScheme_.get(key);
+            sch = obj.PrivateScheme_;
             if isempty(sch)
                 msg = sprintf("invalid key: %s", string(key));
                 return
