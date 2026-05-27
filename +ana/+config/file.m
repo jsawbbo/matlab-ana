@@ -12,9 +12,16 @@ classdef file < ana.config.object
 
     %% INTERNAL
     methods (Hidden,Access = protected)
-        function autosave(obj)
-            if obj.PrivateAutosave_
-                FIXME()
+        function autosave(obj,force)
+            arguments
+                obj
+                force = false
+            end
+
+            if force || (obj.PrivateAutosave_ && obj.ismodified())
+                fd = fopen(+obj.PrivateFilename_,"w");
+                obj.save_(fd);
+                fclose(fd);
             end
         end
     end
@@ -33,6 +40,7 @@ classdef file < ana.config.object
             if isempty(pathname)
                 pathname = ana.os.paths('configdir') / "config.yml";
                 options.Scheme = "/general";
+                options.Autosave = true;
             else
                 pathname = ana.fs.path(pathname);
             end
@@ -49,10 +57,12 @@ classdef file < ana.config.object
             obj.PrivateFilename_ = ana.fs.path(pathname);
             if obj.PrivateFilename_.isfile()
                 data = ana.file.yaml.load(obj.PrivateFilename_);
+                % FIXME check/set version 
                 obj.set(data);
             end
 
-            obj.PrivateAutosave_ = options.Autosave;            
+            obj.PrivateAutosave_ = options.Autosave;
+            obj.autosave(~isempty(options.Scheme));
         end
 
         % FIXME add delete for Autosave

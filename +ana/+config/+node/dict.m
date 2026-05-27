@@ -29,7 +29,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 end
 
                 try
-                    obj.getField(key(i)).save_(fd,level+1);
+                    node = obj.PrivateData_(key(i));
+                    node{1}.save_(fd,level+1);
                 catch me
                     disp(me)
                 end
@@ -44,6 +45,28 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     %% SCHEME
     methods (Access = protected)
         function init(obj)
+            sch = obj.PrivateScheme_;
+
+            content = sch.content();
+            for k = 1:numel(content)
+                child = content{k};
+
+                key = child.key;
+                switch(child.type)
+                    case 'dict'
+                        value = ana.config.node.dict(Parent=obj,Scheme=child);
+                    case 'list'
+                        value = ana.config.node.list(Parent=obj,Scheme=child,Uniform=false);
+                    case 'table'
+                        value = ana.config.node.list(Parent=obj,Scheme=child,Uniform=true);
+                    otherwise
+                        value = ana.config.node.leaf(Parent=obj,Scheme=child);
+                end
+
+                obj.PrivateData_(key) = {value};
+            end
+
+            obj.apply();
         end
 
         function [value,msg] = validate(obj,value,key)
@@ -56,9 +79,15 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
             if ~isa(value,'ana.config.node.base')
                 if iscell(value)
-                    FIXME() % -> list
+                    node = ana.config.node.dict(Parent=obj,Scheme=sch);
+                    node.set(value);
+
+                    value = node;
                 elseif isstruct(value)
-                    FIXME % -> dict
+                    node = ana.config.node.dict(Parent=obj,Scheme=sch);
+                    node.set(value);
+
+                    value = node;
                 else
                     value = ana.config.node.leaf(value,Parent=obj,Scheme=sch);
                 end
@@ -168,6 +197,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
 
             obj.PrivateData_ = dictionary(string([]), {});
+            obj.init();
         end
 
         function res = get(obj)
@@ -183,7 +213,11 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             catch 
                 res = obj.PrivateData_;
                 for k = 1:numel(res)
-                    res(fn{k}) = res(fn{k}).get();
+                    if ~isa(res(fn{k}), 'ana.config.node.base')
+                        warning("field %s is not a config node", fn{k})
+                    else
+                        res(fn{k}) = res(fn{k}).get();
+                    end
                 end
             end
         end              
@@ -202,19 +236,22 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     for k = 1:numel(fn)
                         obj.set(fn{k},s.(fn{k}))
                     end
+                else
+                    FIXME
                 end
             elseif bitand(numel(varargin),1) == 0
                 for k = 1:2:nargin-1
                     key = varargin{k};
                     value = varargin{k+1};
 
+                    FIXME obj.PrivateData_(key) might be already there, then, set() must be used
                     [value,msg] = obj.validate(value,key);
                     if ~isempty(msg)
                         % FIXME be more elaborate...
                         error(msg)
                     end
                     
-                    obj.PrivateData_(key) = value;
+                    obj.PrivateData_(key) = {value};
                 end
             else
                 error("invalid arguments")

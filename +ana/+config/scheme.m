@@ -92,13 +92,8 @@ classdef scheme
                 return
             end
 
-            usecell = iscell(obj.Scheme.content);
             for k = 1:numel(obj.Scheme.content)
-                if usecell
-                    child = obj.Scheme.content{k};
-                else
-                    child = obj.Scheme.content(k);
-                end
+                child = obj.Scheme.content{k};
 
                 if isequal(child.key, key)
                     sch = child;
@@ -148,7 +143,53 @@ classdef scheme
             end
 
             obj.Scheme = doc;
-        end        
+
+            % ensure, content is a cell
+            if isfield(doc,'content') && ~iscell(doc.content)
+                N = numel(doc.content);
+                content = cell(N,1);
+                for k = 1:N
+                    content{k} = doc.content(k);
+                end
+                obj.Scheme.content = content;
+            end
+        end
+
+        function res = key(obj)
+            %KEY        Get key of current node.
+            if isfield(obj.Scheme, 'key')
+                res = obj.Scheme.key;
+            else
+                res = [];
+            end
+        end
+
+        function res = type(obj)
+            %TYPE       Get type for current node.
+            if isfield(obj.Scheme, 'type')
+                res = obj.Scheme.type;
+            else
+                res = 'any';
+            end
+        end
+
+        function res = meta(obj)
+            %META       Get meta description for current node.
+            if isfield(obj.Scheme, 'meta')
+                res = obj.Scheme.meta;
+            else
+                res = [];
+            end
+        end
+
+        function res = content(obj)
+            %CONTENT    Get contents of current node (always as cell).
+            if isfield(obj.Scheme, 'content')
+                res = obj.Scheme.content;
+            else
+                res = [];
+            end
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar

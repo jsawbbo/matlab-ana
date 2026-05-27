@@ -12,7 +12,12 @@ classdef leaf < ana.config.node.base
             end
 
             assert(~isa(obj.PrivateData_, 'ana.config.node.base'));
-            s = strtrim(ana.file.yaml.dump(obj.PrivateData_));
+            if isobject(obj.PrivateData_)
+                value = string(obj.PrivateData_);
+            else
+                value = obj.PrivateData_;
+            end
+            s = strtrim(ana.file.yaml.dump(value));
             lines = strsplit(s,"\n",CollapseDelimiters=false);
             if length(lines) > 1
                 N = length(lines);
@@ -47,16 +52,85 @@ classdef leaf < ana.config.node.base
     %% SCHEME
     methods (Access = protected)
         function init(obj)
+            meta = obj.PrivateScheme_.meta();
+            if ~isempty(meta)
+                if isfield(meta,'default')
+                    value = [];
+                    if isstruct(meta.default)
+                        if isfield(meta.default, 'eval')
+                            value = eval(meta.default.eval);
+                        else
+                            FIXME()
+                        end
+                    else
+                        value = meta.default;
+                    end
+
+                    obj.PrivateData_ = value;
+                    obj.PrivateDataLast_ =value;                    
+                end
+            end
         end
 
         function [value,msg] = validate(obj,value)
+            msg = [];
             sch = obj.PrivateScheme_;
-            if isempty(sch)
-                msg = sprintf("invalid key: %s", string(key));
-                return
+            switch (sch.type())
+                case 'boolean'
+                    if ~islogical(value)
+                        msg = "not a boolean value";
+                    end
+
+                case 'integral'
+                    if ~isinteger(value)
+                        if ~isnumeric(value) || (round(value) ~= value)
+                            msg = "not an integral value";
+                        else
+                            value = int64(value);
+                        end
+                    end
+
+                case 'numeric'
+                    if ~isnumeric(value)
+                        msg = "not a numeric value";
+                    end
+
+                case 'string'
+                    if ~ischar(value) && ~isstring(value)
+                        msg = "not a string";
+                    else
+                        value = string(value);
+                    end
+
+                case 'date'
+                    FIXME()
+
+                case 'path'
+                    if ischar(value) || isstring(value)
+                        value = ana.fs.path(value);
+                    elseif ~isa(value,'ana.fs.path')
+                        msg = "not a path";
+                    end
+
+                case 'any' 
+                    % equivalent of "no scheme", nothing to be done
+
+                case 'category'
+                    FIXME
+
+                otherwise
+                    error("ANA:CONFIG:SCHEME:INVALID_TYPE", "Unknown or invalid type in scheme: %s", sch.type());
             end
 
-            FIXME
+            if ~isempty(msg)
+                msg = msg + ", found '" + class(value) + "'";
+            else
+                meta = obj.PrivateScheme_.meta();
+                if ~isempty(meta)
+                    % FIXME check limits, patterns, etc.
+                    warning("FIXME not implemented")
+                end
+            end
         end        
     end
 
@@ -71,9 +145,19 @@ classdef leaf < ana.config.node.base
 
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
 
-            if iscell(value)
-                FIXME
+            if nargin == 0
+                obj.PrivateData_ = [];
+                obj.PrivateDataLast_ = [];
+
+                obj.init();
+            elseif iscell(value)
+                error("ANA:CONFIG:NODE:LEAF:CELL_INVALID", "cannot assign a cell to a leaf");
             else
+                [value,msg] = obj.validate(value);
+                if ~isempty(msg)
+                    error(msg)
+                end
+
                 obj.PrivateData_ = value;
                 obj.PrivateDataLast_ = value;
             end

@@ -34,7 +34,7 @@ content:
             meta:
                 label: Location
                 comment: "Local path or remote URL."
-        -   key: remote
+        -   key: type
             type: category
             meta:
                 label: Remote
@@ -54,9 +54,9 @@ content:
             comment: "Local scratch directory (for temporary large files)."
             default: 
                 eval: |
-                    string(ana.os.paths('tmpdir'))
+                    ana.os.paths('tmpdir')
     -   key: cache
-        type: map
+        type: dict
         meta:
             label: Cache directory and size
         content:
@@ -70,7 +70,7 @@ content:
                     FIXME
                 default: 
                     eval: |
-                        string(ana.os.paths('cachedir'))
+                        ana.os.paths('cachedir')
         -   key: size
             type: numeric
             meta:

@@ -34,4 +34,13 @@ where <tt>content</tt> may be omitted for values.
 
 ### Values
 
+The configuration is aware of the following types:
 
+- **boolean**
+- **integeral**
+- **numeric**
+- **string** 
+- **date** FIXME
+- **path**
+
+...

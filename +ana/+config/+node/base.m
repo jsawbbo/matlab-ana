@@ -27,7 +27,10 @@ classdef base < handle
         end
 
         function autosave(obj)
-            obj.root().autosave();
+            ptr = obj.root();
+            if ptr ~= obj
+                ptr.autosave();
+            end
         end
     end
 

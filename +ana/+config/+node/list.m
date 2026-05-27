@@ -26,6 +26,11 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     %% SCHEME
     methods (Access = protected)
         function init(obj)
+            sch = obj.PrivateScheme_;
+
+            % FIXME
+            
+            obj.PrivateData_ = {};
         end
 
         function [res,msg] = validate(obj,varargin)
@@ -112,11 +117,11 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             arguments
                 options.Parent = [];
                 options.Scheme = [];
+                options.Uniform = true; % FIXME currently unused
             end
 
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
-
-            obj.PrivateData_ = {};
+            obj.init();
         end
 
         function res = get(obj,varargin)

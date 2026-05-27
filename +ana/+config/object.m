@@ -9,9 +9,16 @@ classdef object < ana.config.node.dict
     %% SCHEME
     methods (Access = protected)
         function init(obj)
+            % FIXME handle version
+            init@ana.config.node.dict(obj);
         end
 
-        function [res,msg] = validate(obj,varargin)
+        function [res,msg] = validate(obj,value,key)
+            if strcmp(key,"version")
+                FIXME("must not be changed")
+            else
+                [res,msg] = validate@ana.config.node.dict(obj,value,key);
+            end
         end        
     end
     
