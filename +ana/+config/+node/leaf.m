@@ -51,86 +51,93 @@ classdef leaf < ana.config.node.base
     
     %% SCHEME
     methods (Access = protected)
-        function init(obj)
-            meta = obj.PrivateScheme_.meta();
-            if ~isempty(meta)
-                if isfield(meta,'default')
-                    value = [];
-                    if isstruct(meta.default)
-                        if isfield(meta.default, 'eval')
-                            value = eval(meta.default.eval);
-                        else
-                            FIXME()
-                        end
-                    else
-                        value = meta.default;
-                    end
-
-                    obj.PrivateData_ = value;
-                    obj.PrivateDataLast_ =value;                    
-                end
-            end
+        function initialize(obj)
+            % meta = obj.PrivateScheme_.meta();
+            % if ~isempty(meta)
+            %     if isfield(meta,'default')
+            %         value = [];
+            %         if isstruct(meta.default)
+            %             if isfield(meta.default, 'eval')
+            %                 value = eval(meta.default.eval);
+            %             else
+            %                 FIXME()
+            %             end
+            %         else
+            %             value = meta.default;
+            %         end
+            % 
+            %         obj.PrivateData_ = value;
+            %         obj.PrivateDataLast_ =value;                    
+            %     end
+            % end
         end
 
-        function [value,msg] = validate(obj,value)
-            msg = [];
-            sch = obj.PrivateScheme_;
-            switch (sch.type())
-                case 'boolean'
-                    if ~islogical(value)
-                        msg = "not a boolean value";
-                    end
-
-                case 'integral'
-                    if ~isinteger(value)
-                        if ~isnumeric(value) || (round(value) ~= value)
-                            msg = "not an integral value";
-                        else
-                            value = int64(value);
-                        end
-                    end
-
-                case 'numeric'
-                    if ~isnumeric(value)
-                        msg = "not a numeric value";
-                    end
-
-                case 'string'
-                    if ~ischar(value) && ~isstring(value)
-                        msg = "not a string";
-                    else
-                        value = string(value);
-                    end
-
-                case 'date'
-                    FIXME()
-
-                case 'path'
-                    if ischar(value) || isstring(value)
-                        value = ana.fs.path(value);
-                    elseif ~isa(value,'ana.fs.path')
-                        msg = "not a path";
-                    end
-
-                case 'any' 
-                    % equivalent of "no scheme", nothing to be done
-
-                case 'category'
-                    FIXME
-
-                otherwise
-                    error("ANA:CONFIG:SCHEME:INVALID_TYPE", "Unknown or invalid type in scheme: %s", sch.type());
+        function [valid,reason] = validate(obj,value)
+            if isa(value,"ana.config.node.base")
+                value = value.get();
             end
 
-            if ~isempty(msg)
-                msg = msg + ", found '" + class(value) + "'";
-            else
-                meta = obj.PrivateScheme_.meta();
-                if ~isempty(meta)
-                    % FIXME check limits, patterns, etc.
-                    warning("FIXME not implemented")
-                end
-            end
+            valid = false;
+            reason = "don't know";
+
+            % msg = [];
+            % sch = obj.PrivateScheme_;
+            % switch (sch.type())
+            %     case 'boolean'
+            %         if ~islogical(value)
+            %             msg = "not a boolean value";
+            %         end
+            % 
+            %     case 'integral'
+            %         if ~isinteger(value)
+            %             if ~isnumeric(value) || (round(value) ~= value)
+            %                 msg = "not an integral value";
+            %             else
+            %                 value = int64(value);
+            %             end
+            %         end
+            % 
+            %     case 'numeric'
+            %         if ~isnumeric(value)
+            %             msg = "not a numeric value";
+            %         end
+            % 
+            %     case 'string'
+            %         if ~ischar(value) && ~isstring(value)
+            %             msg = "not a string";
+            %         else
+            %             value = string(value);
+            %         end
+            % 
+            %     case 'date'
+            %         FIXME()
+            % 
+            %     case 'path'
+            %         if ischar(value) || isstring(value)
+            %             value = ana.fs.path(value);
+            %         elseif ~isa(value,'ana.fs.path')
+            %             msg = "not a path";
+            %         end
+            % 
+            %     case 'any' 
+            %         % equivalent of "no scheme", nothing to be done
+            % 
+            %     case 'category'
+            %         FIXME
+            % 
+            %     otherwise
+            %         error("ANA:scheme:invalidArgument", "Unknown or invalid type in scheme: %s", sch.type());
+            % end
+            % 
+            % if ~isempty(msg)
+            %     msg = msg + ", found '" + class(value) + "'";
+            % else
+            %     meta = obj.PrivateScheme_.meta();
+            %     if ~isempty(meta)
+            %         % FIXME check limits, patterns, etc.
+            %         warning("FIXME not implemented")
+            %     end
+            % end
         end        
     end
 
@@ -151,11 +158,11 @@ classdef leaf < ana.config.node.base
 
                 obj.init();
             elseif iscell(value)
-                error("ANA:CONFIG:NODE:LEAF:CELL_INVALID", "cannot assign a cell to a leaf");
+                error("ANA:scheme:invalidType", "cannot assign a cell to a leaf");
             else
                 [value,msg] = obj.validate(value);
                 if ~isempty(msg)
-                    error(msg)
+                    error("ANA:runtime", msg)
                 end
 
                 obj.PrivateData_ = value;
@@ -173,7 +180,7 @@ classdef leaf < ana.config.node.base
             %
             [value,msg] = obj.validate(value);
             if ~isempty(msg)
-                error(msg)
+                error("ANA:runtime", msg)
             end
             obj.PrivateData_ = value;
             obj.autosave();

@@ -15,7 +15,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
             if ~isempty(obj)
                 for k = 1:numel(obj)
-                    fprintf(fd, "-%s",  pad("", obj.YAMLIndent_-1));
+                    fprintf(fd, "-%s",  pad("", ana.internal.indent("YAML")-1));
                     node = obj.PrivateData_{k};
                     node.save_(fd,level);
                 end
@@ -33,7 +33,9 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             obj.PrivateData_ = {};
         end
 
-        function [res,msg] = validate(obj,varargin)
+        function [valid,reason] = validate(obj,idx)
+            valid = false;
+            reason = "don't know";            
         end        
     end
 
@@ -76,7 +78,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
         
         function out = cat(dim,varargin)
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:internal:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
         function data = cell(obj)

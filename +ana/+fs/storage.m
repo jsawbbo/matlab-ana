@@ -67,7 +67,7 @@ classdef storage
 
     methods
         function obj = storage(varargin)
-            error("This class only has a static interface.")
+            error("ANA:logic", "This class only has a static interface.")
         end
     end
 end

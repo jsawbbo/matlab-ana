@@ -20,7 +20,7 @@ classdef version < matlab.mixin.Copyable
             p = strsplit(s, '.');
             n = numel(p);
             if (n < 1) || (n>4) 
-                error('ana:util:version:format', 'invalid version format')
+                error("ANA:runtime:invalidArguments", "invalid version format")
             elseif n < 2
                 obj.Number = [str2double(p{1}), 0];
             else
@@ -28,7 +28,7 @@ classdef version < matlab.mixin.Copyable
             end
 
             if any(isnan(obj.Number))
-                error('ana:util:version:format', 'invalid version format')
+                error("ANA:runtime:invalidArguments", "invalid version format")
             end
         end
 
@@ -73,11 +73,11 @@ classdef version < matlab.mixin.Copyable
             elseif isa(value,'double')
                 n = numel(value);
                 if (n < 1) || (n>4) 
-                    error('ana:util:version:format', 'invalid version format')
+                    error("ANA:runtime:invalidArguments", "invalid version format")
                 end
                 obj.Number = value;
             else
-                error('ana:util:version:parameter', 'parameter ''value'' must empty, string or version')
+                error("ANA:runtime:invalidArguments", "parameter 'value' must empty, string or version")
             end
         end
 

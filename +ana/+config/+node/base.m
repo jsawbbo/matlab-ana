@@ -6,12 +6,9 @@ classdef base < handle
     properties (SetAccess=protected)
         PrivateParent_ = [];            % Parent node.
         PrivateScheme_ = [];            % Scheme node (if available).
+        PrivateType_ = [];              % Node or data type.
         PrivateData_ = [];              % Representation of encapsulated data.
         PrivateDataLast_ = [];          % As above, but, before "apply()" - may be unused.
-    end
-
-    properties (Hidden,Constant)
-        YAMLIndent_ = 4                 % Default YAML indentation.
     end
 
     %% INTERNAL
@@ -23,7 +20,7 @@ classdef base < handle
                 level (1,1) {mustBeInteger,mustBeGreaterThan(level,-1)}
             end
 
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
         function autosave(obj)
@@ -45,14 +42,20 @@ classdef base < handle
 
     %% SCHEME
     methods (Access = protected)
-        function res = init(obj) %#ok<STOUT,MANU>
+        function res = initialize(obj) %#ok<STOUT,MANU>
             %INIT   Initialize (if scheme is present)
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
-        function [res,msg] = validate(obj,value,key) %#ok<STOUT,INUSD>
+        function [valid,reason] = validate(obj,item) %#ok<STOUT,INUSD>
             %VALIDATE   Validate an assignment.
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            %
+            %   This method shall return the validity of a set() operation, where
+            %   the argument (`item`) depends on the node type.
+            %
+            %   On failure it also returns a reason for failure (as string).
+            %
+            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end        
     end
 
@@ -67,7 +70,7 @@ classdef base < handle
             end
 
             obj.PrivateParent_ = options.Parent;
-            obj.PrivateScheme_ = ana.config.scheme(options.Scheme);
+            obj.PrivateScheme_ = options.Scheme;
         end
 
         function res = root(obj)
@@ -96,7 +99,7 @@ classdef base < handle
         function apply(obj)
             %APPLY      Apply changes.
             arguments
-                obj 
+                obj
             end
             
             obj.PrivateDataLast_ = obj.PrivateData_;
@@ -118,12 +121,12 @@ classdef base < handle
 
         function res = get(obj)
             %GET    Get configuration as Matlab values.
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
         function set(obj,varargin)
             %SET    Set entries.
-            error("ana:internal:RequiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
     end
 end

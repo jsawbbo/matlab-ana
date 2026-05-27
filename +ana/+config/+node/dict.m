@@ -14,7 +14,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 level {mustBeScalarOrEmpty} = 0
             end
 
-            indent_s = pad("", obj.YAMLIndent_*level);
+            indent_s = pad("", ana.internal.indent("YAML")*level);
             key = keys(obj.PrivateData_);
             N = length(key);
             for i = 1:N
@@ -77,23 +77,10 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 return
             end
 
-            if ~isa(value,'ana.config.node.base')
-                if iscell(value)
-                    node = ana.config.node.dict(Parent=obj,Scheme=sch);
-                    node.set(value);
-
-                    value = node;
-                elseif isstruct(value)
-                    node = ana.config.node.dict(Parent=obj,Scheme=sch);
-                    node.set(value);
-
-                    value = node;
-                else
-                    value = ana.config.node.leaf(value,Parent=obj,Scheme=sch);
-                end
-            else
-                FIXME()
-            end
+            function [valid,reason] = validate(obj,key)
+                valid = false;
+                reason = "don't know";            
+            end        
         end        
     end
 
@@ -116,7 +103,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
                 varargout{1} = retval;
             else
-                error('ana:config:node:dict:FieldNotFound', 'Field ''%s'' not found.', field);
+                error("ANA:runtime:fieldNotFound', 'Field ''%s'' not found.', field);
             end
         end
         
@@ -164,7 +151,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     n = length(value);
                 end
             else
-                error('ana:config:node:dict:FieldNotFound', 'Field ''%s'' not found.', field);
+                error("ANA:runtime:invalidKey", "Field '%s' not found.", field);
             end
         end
     end
@@ -248,13 +235,13 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     [value,msg] = obj.validate(value,key);
                     if ~isempty(msg)
                         % FIXME be more elaborate...
-                        error(msg)
+                        error("ANA:runtime", msg)
                     end
                     
                     obj.PrivateData_(key) = {value};
                 end
             else
-                error("invalid arguments")
+                error("ANA:runtime:invalidArgument", "invalid arguments")
             end
 
             obj.autosave();

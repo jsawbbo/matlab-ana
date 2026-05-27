@@ -184,7 +184,7 @@ classdef process < handle
                     FIXME()
                     
                 otherwise
-                    error('Invalid value provided to property ''Type''.')
+                    error("ANA:runtime:invalidArgument", "invalid value provided to property 'Type'.")
             end
             
             if  ~isempty(self.ProgressCb)

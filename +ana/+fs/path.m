@@ -28,7 +28,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             for i = 2:numel(varargin)
                 p = ana.fs.path(varargin{i});
                 if ~p.isrelative()
-                    error("Cannot concatenate non-relative paths.")
+                    error("ANA:runtime", "cannot concatenate non-relative paths.")
                 end
                 out.Parts = [out.Parts,p.Parts];
             end
@@ -116,7 +116,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                             case 'file'
                                 pathname = pathname.Path;
                             otherwise
-                                error('not a filesystem path')
+                                error("ANA:runtime", "not a filesystem path: '" + string(pathname) + "'")
                         end
                     else
                         pathname = string(pathname);
@@ -162,7 +162,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
            
             if ~part.isrelative()
-                error('ANA:FS:EXPECTED_RELATIVE', 'expected a relative path')
+                error("ANA:runtime", "expected a relative path")
             end
 
             res = obj;

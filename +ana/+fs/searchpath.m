@@ -30,7 +30,7 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace ...
         end
 
         function cat(~,~)
-            error('Parentheses indexing is not supported.');
+            error("ANA:runtime","Parentheses indexing is not supported.");
         end
     end
 
@@ -52,11 +52,11 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace ...
         end
 
         function parenReference(~,~)
-            error('Parentheses indexing is not supported.');
+            error("ANA:runtime","Parentheses indexing is not supported.");
         end
 
         function parenAssign(~,~,~)
-            error('Parentheses indexing is not supported.');
+            error("ANA:runtime","Parentheses indexing is not supported.");
         end
 
         function n = parenListLength(~,~,~)
@@ -64,7 +64,7 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace ...
         end
 
         function parenDelete(~,~)
-            error('Parentheses indexing is not supported.');
+            error("ANA:runtime","Parentheses indexing is not supported.");
         end
     end
 

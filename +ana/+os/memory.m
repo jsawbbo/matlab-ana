@@ -15,7 +15,7 @@ function [total,free] = memory()
         try
             [status,cmdout] = system("free -b");
             if status ~= 0
-                error("command 'free -b' failed")
+                error("ANA:logic", "command 'free -b' failed")
             end
             cmdout = strsplit(cmdout);
             total = str2double(cmdout{9});

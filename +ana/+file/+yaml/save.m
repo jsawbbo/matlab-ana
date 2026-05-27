@@ -21,7 +21,7 @@ function save(filename,data,options)
     
     [fid, msg] = fopen(+filename, "wt");
     if fid == -1
-        error(msg)
+        error("ANA:runtime", msg)
     end
     fprintf(fid, "%s", yamlString);
     fclose(fid);

@@ -168,7 +168,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
             elseif iscell(options.Attributes)
                 obj.Attributes = dictionary(options.Attributes{:});
             elseif ~isempty(options.Attributes)
-                error('option ''Attributes'' must be a dictionary')
+                error("ANA:runtime:invalidArguments", "option ''Attributes'' must be a dictionary")
             end
             obj.Children = options.Children;
             if ~iscell(obj.Children)

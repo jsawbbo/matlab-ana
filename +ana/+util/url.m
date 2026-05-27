@@ -123,7 +123,7 @@ classdef url
                 end
 
                 if contains(rest, {'?','#'})
-                    error("internal error: query and fragment not supported")
+                    error("ANA:internal", "internal error: query and fragment not supported")
                 end
 
                 obj.Path = ana.fs.canonicalize(rest);

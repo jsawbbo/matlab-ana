@@ -37,7 +37,7 @@ function s = paths(what)
                     if isempty(s) % older than Vista
                         s = getenv('APPDATA');
                         if isempty(s)
-                            error('ANA:OS:APPDATA', 'Configuration directory could not be identified.');
+                            error("ANA:runtime", "configuration directory could not be identified.");
                         end
                     end
                 elseif ismac
@@ -48,7 +48,7 @@ function s = paths(what)
                         s = fullfile(getenv('HOME'), '.config');
                     end
                 else
-                    error('Unsupported operating system')
+                    error("ANA:logic", "Unsupported operating system")
                 end
             
                 s = fullfile(s, 'ana');
@@ -65,7 +65,7 @@ function s = paths(what)
                 elseif ismac
                     s = getenv('TMPDIR');
                 else
-                    error('Unsupported operating system')
+                    error("ANA:logic", "Unsupported operating system")
                 end
             
                 s = fullfile(s, 'ana');
@@ -80,7 +80,7 @@ function s = paths(what)
                     if isempty(s) % older than Vista
                         s = getenv('APPDATA');
                         if isempty(s)
-                            error('ANA:SYSTEM', 'Configuration directory could not be identified.');
+                            error("ANA:logic", "Configuration directory could not be identified.");
                         end
                     end
                 elseif ismac
@@ -91,7 +91,7 @@ function s = paths(what)
                         s = fullfile(getenv('HOME'), '.cache');
                     end
                 else
-                    error('Unsupported operating system')
+                    error("ANA:logic", "Unsupported operating system")
                 end
             
                 s = fullfile(s, 'ana');

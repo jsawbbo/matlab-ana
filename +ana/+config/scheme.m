@@ -86,9 +86,10 @@ classdef scheme
     %% SCHEME
     methods
         function sch = get(obj,key)
-            %GET    Get scheme by key.
-            if isempty(obj.Scheme)
-                sch = ana.config.scheme();
+            %GET        Get child content by key.
+            sch = [];
+
+            if obj.isempty() || ~isfield(obj.Scheme, 'content')
                 return
             end
 
@@ -100,8 +101,6 @@ classdef scheme
                     return;
                 end
             end
-
-            sch = [];
         end
     end
 
@@ -116,15 +115,15 @@ classdef scheme
             if isempty(doc)
                 return
             elseif isa(doc, "ana.config.scheme")
-                % FIXME should we warn/error if it's already a scheme?
                 obj = doc;
                 return
             end
 
+            % load scheme based on string id
             if ischar(doc) || isstring(doc)
                 schemefile = ana.config.scheme.find(doc);
                 if isempty(schemefile)
-                    error("ANA:CONFIG:SCHEME_NOT_FOUND", "could not find scheme file")
+                    error("ANA:config:noSuchScheme", "could not find scheme file")
                 end
 
                 internal = obj.static();
@@ -139,7 +138,7 @@ classdef scheme
             end
 
             if ~isstruct(doc)
-                error('ANA:CONFIG:SCHEME:ARGUMENTS', 'neither name of scheme nor scheme struct')
+                error("ANA:config:invalidArguments", "neither name of scheme nor scheme struct")
             end
 
             obj.Scheme = doc;
@@ -155,40 +154,9 @@ classdef scheme
             end
         end
 
-        function res = key(obj)
-            %KEY        Get key of current node.
-            if isfield(obj.Scheme, 'key')
-                res = obj.Scheme.key;
-            else
-                res = [];
-            end
-        end
-
-        function res = type(obj)
-            %TYPE       Get type for current node.
-            if isfield(obj.Scheme, 'type')
-                res = obj.Scheme.type;
-            else
-                res = 'any';
-            end
-        end
-
-        function res = meta(obj)
-            %META       Get meta description for current node.
-            if isfield(obj.Scheme, 'meta')
-                res = obj.Scheme.meta;
-            else
-                res = [];
-            end
-        end
-
-        function res = content(obj)
-            %CONTENT    Get contents of current node (always as cell).
-            if isfield(obj.Scheme, 'content')
-                res = obj.Scheme.content;
-            else
-                res = [];
-            end
+        function res = isempty(obj)
+            %ISEMPTY    Check if scheme is empty.
+            res = isempty(obj.Scheme);
         end
     end
 end
