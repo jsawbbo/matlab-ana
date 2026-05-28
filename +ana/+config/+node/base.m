@@ -44,7 +44,7 @@ classdef base < handle
     methods (Access = protected)
         function res = initialize(obj) %#ok<STOUT,MANU>
             %INIT   Initialize (if scheme is present)
-            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:logic:requiresImplementation", "Internal error: method requires implementation.")
         end
 
         function [valid,reason] = validate(obj,item) %#ok<STOUT,INUSD>
@@ -55,7 +55,7 @@ classdef base < handle
             %
             %   On failure it also returns a reason for failure (as string).
             %
-            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
+            error("ANA:logic:requiresImplementation", "Internal error: method requires implementation.")
         end        
     end
 

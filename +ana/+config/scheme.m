@@ -104,6 +104,31 @@ classdef scheme
         end
     end
 
+    methods(Static)
+        function id = type(value)
+            %TYPE   Infer type of Matlab value.
+            if islogical(value)
+                id = "logical";
+            elseif isnumeric(value)
+                if isempty(value)
+                    id = "any";
+                elseif isinteger(value)
+                    id = "integral";
+                else
+                    id = "numeric";
+                end
+            elseif ischar(value) || isstring(value)
+                id = "string";
+            elseif isa(value,"ana.fs.path")
+                id = "path";
+            elseif isa(value,"datetime")
+                id = "time";
+            else
+                id = [];
+            end
+        end
+    end
+
     %% INTERFACE
     methods
         function obj = scheme(doc)

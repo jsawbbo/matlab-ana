@@ -36,11 +36,11 @@ where <tt>content</tt> may be omitted for values.
 
 The configuration is aware of the following types:
 
-- **boolean**
-- **integeral**
+- **logical**
+- **integral**
 - **numeric**
 - **string** 
-- **date** FIXME
+- **time**
 - **path**
 
 ...
