@@ -97,7 +97,7 @@ classdef scheme
                 child = obj.Scheme.content{k};
 
                 if isequal(child.key, key)
-                    sch = child;
+                    sch = ana.config.scheme(child);
                     return;
                 end
             end
@@ -105,8 +105,8 @@ classdef scheme
     end
 
     methods(Static)
-        function id = type(value)
-            %TYPE   Infer type of Matlab value.
+        function id = typeid(value)
+            %TYPEID   Infer type of Matlab value.
             if islogical(value)
                 id = "logical";
             elseif isnumeric(value)
@@ -182,6 +182,39 @@ classdef scheme
         function res = isempty(obj)
             %ISEMPTY    Check if scheme is empty.
             res = isempty(obj.Scheme);
+        end
+
+        function id = type(obj)
+            %TYPE   Get current node type.
+            if isempty(obj.Scheme)
+                id = '*';
+            else
+                id = obj.Scheme.type;
+            end
+        end
+
+        function res = key(obj)
+            %KEY    Get key of current node.
+            assert(~isempty(obj.Scheme));
+            res = obj.Scheme.key;
+        end
+
+        function res = meta(obj)
+            %META    Get meta table of current node.
+            if isfield(obj.Scheme, 'meta')
+                res = obj.Scheme.meta;
+            else
+                res = [];
+            end
+        end
+
+        function res = content(obj)
+            %CONTENT    Get content (ie. children).
+            assert(~isempty(obj.Scheme));
+            res = obj.Scheme.content;
+            for k = 1:numel(res)
+                res{k} = ana.config.scheme(res{k});
+            end
         end
     end
 end

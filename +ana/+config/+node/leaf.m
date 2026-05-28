@@ -41,7 +41,7 @@ classdef leaf < ana.config.node.base
                             end
                         end
                     otherwise
-                        FIXME
+                        error("ANA:logic:requiresImplementation", "internal error: unexpected YAML format")
                 end
             else
                 fprintf(fd, " %s", s);
@@ -79,7 +79,7 @@ classdef leaf < ana.config.node.base
             end
 
             % check, if 'value' is an acceptable type
-            T = ana.config.scheme.type(value);
+            T = ana.config.scheme.typeid(value);
             if isempty(T)
                 valid = false;
                 reason = "invalid value type";
@@ -132,7 +132,23 @@ classdef leaf < ana.config.node.base
                                 reason = "invalid category";
                             end
                         case {"integral","numeric"}
-                            % FIXME check bounds, if given
+                            if isfield(meta,"limit")
+                                if isfield(meta.limit, "min")
+                                    if value < meta.limit.min
+                                        valid = false;
+                                    end
+                                end
+
+                                if isfield(meta.limit, "max")
+                                    if value > meta.limit.max
+                                        valid = false;
+                                    end
+                                end
+
+                                if ~valid
+                                    reason = "value out of bounds";
+                                end
+                            end
                         otherwise
                             % nothing to be done
                     end
@@ -160,9 +176,9 @@ classdef leaf < ana.config.node.base
             elseif iscell(value)
                 error("ANA:scheme:invalidType", "cannot assign a cell to a leaf");
             else
-                [value,msg] = obj.validate(value);
-                if ~isempty(msg)
-                    error("ANA:runtime", msg)
+                [valid,reason] = obj.validate(value);
+                if ~valid
+                    error("ANA:runtime", reason)
                 end
 
                 obj.PrivateData_ = value;
@@ -179,7 +195,12 @@ classdef leaf < ana.config.node.base
             %SET    Set value.
             %
 
-            % FIXME "time" needs special treatment (short ISO8601 format...)
+            switch(obj.PrivateType_)
+                case 'time'
+                    FIXME("requires special treatment for type 'time'")
+                otherwise
+                    % all good
+            end
 
             [valid,reason] = obj.validate(value);
             if ~valid

@@ -70,14 +70,17 @@ classdef base < handle
             end
 
             obj.PrivateParent_ = options.Parent;
-            obj.PrivateScheme_ = options.Scheme;
 
             if ~isempty(options.Scheme)
-                switch(options.Scheme.type)
+                obj.PrivateScheme_ = ana.config.scheme(options.Scheme);
+
+                switch(obj.PrivateScheme_.type())
                     case "category"
+                        % TODO
+                        % - the categories also have the labels, we could also support integers?
                         obj.PrivateType_ = "string";
                     otherwise
-                        obj.PrivateType_ = options.Scheme.type;
+                        obj.PrivateType_ = obj.PrivateScheme_.type();
                 end
             end
         end

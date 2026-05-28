@@ -26,20 +26,21 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     %% SCHEME
     methods (Access = protected)
         function initialize(obj)
-            if ~isempty(obj.PrivateScheme_)
-                % FIXME
-            end
+            obj.PrivateData_ = {};
         end
 
         function [valid,reason] = validate(obj,idx)
             reason = [];
-            sch = obj.PrivateScheme_;
-            if isempty(sch)
-                valid = true;
-            else
-                % FIXME
+            if idx < 1
                 valid = false;
-                reason = "don't know";
+            elseif idx > numel(obj.PrivateData_)+1
+                valid = false;
+            else
+                valid = true;
+            end
+
+            if ~valid
+                reason = "index out of bounds";
             end
         end        
     end
@@ -56,23 +57,23 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
 
         function obj = parenAssign(obj, indexOp, varargin)
-            if isscalar(indexOp)
-                for k = 1:numel(varargin)
-                    varargin{k}.PrivateParent_ = obj;
-                end
-                [obj.PrivateData_{indexOp.Indices{:}}] = varargin{:};
-            else
-                tmp = obj.PrivateData_{indexOp(1).Indices{:}};
-                tmp.(indexOp(2:end)) = varargin{:};
-                % obj.PrivateData_{indexOp(1).Indices{:}} = tmp;
-            end
+            % if isscalar(indexOp)
+            %     for k = 1:numel(varargin)
+            %         varargin{k}.PrivateParent_ = obj;
+            %     end
+            %     [obj.PrivateData_{indexOp.Indices{:}}] = varargin{:};
+            % else
+            %     tmp = obj.PrivateData_{indexOp(1).Indices{:}};
+            %     tmp.(indexOp(2:end)) = varargin{:};
+            %     % obj.PrivateData_{indexOp(1).Indices{:}} = tmp;
+            % end
         end
 
         function obj = parenDelete(obj, indexOp)
             obj.PrivateData_(indexOp.Indices{:}) = [];
         end
 
-        function n = parenListLength(obj, indexOp, context) %#ok<INUSD>
+        function n = parenListLength(obj, indexOp, ~)
             n = numel(obj.PrivateData_(indexOp.Indices{:}));
         end
     end
@@ -128,12 +129,12 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
 
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
-            obj.init();
+            obj.initialize();
         end
 
         function res = get(obj,varargin)
             if isempty(obj)
-                res = [];
+                res = {};
                 return;
             end
 
@@ -146,7 +147,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                     return
                 end
             catch 
-                % struct was not possible, return dictionary
+                % not a struct array
             end
 
             res = cell(numel(obj),1);
@@ -155,8 +156,9 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
         end              
 
-        function set(obj,varargin)
-            % FIXME
+        function obj = set(obj,varargin)
+            %SET    Set entry.
+            
         end
     end
 end

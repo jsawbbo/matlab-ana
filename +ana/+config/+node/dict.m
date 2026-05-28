@@ -45,8 +45,25 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     %% SCHEME
     methods (Access = protected)
         function initialize(obj)
+            obj.PrivateData_ = dictionary(string([]), {});
             if ~isempty(obj.PrivateScheme_)
-                % FIXME
+                content = obj.PrivateScheme_.content();
+                for k = 1:numel(content)
+                    child = content{k};
+
+                    switch (child.type)
+                        case "dict"
+                            node = ana.config.node.dict(Parent=obj,Scheme=child);
+                        case "table"
+                            node = ana.config.node.list(Parent=obj,Scheme=child,Uniform=true);
+                        case "list"
+                            node = ana.config.node.list(Parent=obj,Scheme=child,Uniform=false);
+                        otherwise
+                            node = ana.config.node.leaf(Parent=obj,Scheme=child);
+                    end
+
+                    obj.PrivateData_(child.key) = {node};
+                end
             end
         end
 
@@ -56,9 +73,10 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             if isempty(sch)
                 valid = true;
             else
-                % FIXME
-                valid = false;
-                reason = "don't know";
+                valid = ~isempty(sch.get(key));
+                if ~valid
+                    reason = sprintf("key '%s' is not in scheme", key);
+                end
             end
         end        
     end
@@ -82,53 +100,27 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
                 varargout{1} = retval;
             else
-                error("ANA:runtime:fieldNotFound', 'Field ''%s'' not found.', field);
+                error("ANA:runtime:fieldNotFound", "field '%s' not found.", field);
             end
         end
         
         function obj = dotAssign(obj, indexOp, varargin)
             field = indexOp(1).Name;
             newValue = varargin{1};
-            
+
             if isscalar(indexOp)
                 obj.set(field, newValue);
             else
-                % FIXME multiple indexOp, need to handle scheme
-                if isKey(obj.PrivateData_, field)
-                    currentValue = obj.getField(field);
-                else
-                    if obj.hasscheme()
-                        FIXME
-                    else
-                        currentValue = ana.config.node.dict(Parent=obj);
-                    end
-                end
-                
-                try
-                    currentValue.(indexOp(2:end)) = newValue;
-                    if obj.hasscheme()
-                        FIXME
-                    else
-                        obj.set(field,currentValue);
-                    end
-                catch ME
-                    rethrow(ME);
-                end
+                node = obj.getField(field);
+                node.(indexOp(2:end)) = newValue;
             end
         end
         
-        function n = dotListLength(obj, indexOp, indexContext)
+        function n = dotListLength(obj, indexOp, ~)
             field = indexOp(1).Name;
-            
             if isKey(obj.PrivateData_, field)
-                value = obj.getField(field);
-                
-                if numel(indexOp) > 1
-                    n = matlab.mixin.indexing.RedefinesDot.dotListLength(value, ...
-                        indexOp(2:end), indexContext);
-                else
-                    n = length(value);
-                end
+                % always returning one node
+                n = 1;
             else
                 error("ANA:runtime:invalidKey", "Field '%s' not found.", field);
             end
@@ -161,9 +153,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             end
 
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
-
-            obj.PrivateData_ = dictionary(string([]), {});
-            obj.init();
+            obj.initialize();
         end
 
         function res = get(obj)
@@ -188,42 +178,84 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             end
         end              
 
-        function set(obj,varargin)
+        function obj = set(obj,varargin)
             %SET    Set key-value pairs.
             %
             %   node.set(key,value,...)
             %   node.set(key=value,...)
             %   node.set(struct)
             %
-            if isscalar(varargin)
-                s = varargin{1};
-                if isstruct(s)
-                    fn = fieldnames(s);
-                    for k = 1:numel(fn)
-                        obj.set(fn{k},s.(fn{k}))
-                    end
-                else
-                    FIXME
-                end
-            elseif bitand(numel(varargin),1) == 0
-                for k = 1:2:nargin-1
-                    key = varargin{k};
-                    value = varargin{k+1};
-
-                    FIXME obj.PrivateData_(key) might be already there, then, set() must be used
-                    [value,msg] = obj.validate(value,key);
-                    if ~isempty(msg)
-                        % FIXME be more elaborate...
-                        error("ANA:runtime", msg)
-                    end
-                    
-                    obj.PrivateData_(key) = {value};
-                end
+            persistent scope
+            if isempty(scope)
+                scope = 0;
             else
-                error("ANA:runtime:invalidArgument", "invalid arguments")
+                scope = scope + 1;
             end
 
-            obj.autosave();
+            try
+                if isscalar(varargin)
+                    s = varargin{1};
+                    if isstruct(s) && isscalar(s)
+                        fn = fieldnames(s);
+                        for k = 1:numel(fn)
+                            obj.set(fn{k},s.(fn{k}));
+                        end
+                    else
+                        error("ANA:logic:invalidArgument", "argument not recognized")
+                    end
+                elseif bitand(numel(varargin),1) == 0
+                    for k = 1:2:nargin-1
+                        key = varargin{k};
+                        value = varargin{k+1};
+    
+                        [valid,msg] = obj.validate(key);
+                        if ~valid
+                            error("ANA:runtime:validationFailed", msg)
+                        end
+    
+                        if obj.PrivateData_.isKey(key)
+                            node = obj.getField(key);
+                            node.set(value);
+                        else
+                            if isempty(obj.PrivateScheme_)
+                                sch = [];
+                            else
+                                sch = obj.PrivateScheme_.get(key);
+                            end
+                            
+                            T = ana.config.scheme.typeid(value);
+                            if isempty(T)
+                                if isstruct(value)
+                                    node = ana.config.node.dict(Parent=obj,Scheme=sch);
+                                    node.set(value);
+    
+                                    obj.PrivateData_(key) = {node};
+                                elseif iscell(value)
+                                    node = ana.config.node.list(Parent=obj,Scheme=sch);
+                                    node.set(value);
+    
+                                    obj.PrivateData_(key) = {node};
+                                else
+                                    error("ANA:runtime:invalidType", "trying to assign invalid type for key '%s'", key)
+                                end
+                            else
+                                obj.PrivateData_(key) = {ana.config.node.leaf(value,Parent=obj,Scheme=sch)};
+                            end
+                        end
+                    end
+                else
+                    error("ANA:runtime:invalidArgument", "invalid arguments")
+                end
+    
+                if scope == 0
+                    obj.autosave();
+                else
+                    scope = scope - 1;
+                end
+            catch me
+                scope = 0;
+                rethrow(me);
+            end
         end
     end
 end
