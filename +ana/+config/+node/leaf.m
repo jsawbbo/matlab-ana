@@ -52,24 +52,25 @@ classdef leaf < ana.config.node.base
     %% SCHEME
     methods (Access = protected)
         function initialize(obj)
-            % meta = obj.PrivateScheme_.meta();
-            % if ~isempty(meta)
-            %     if isfield(meta,'default')
-            %         value = [];
-            %         if isstruct(meta.default)
-            %             if isfield(meta.default, 'eval')
-            %                 value = eval(meta.default.eval);
-            %             else
-            %                 FIXME()
-            %             end
-            %         else
-            %             value = meta.default;
-            %         end
-            % 
-            %         obj.PrivateData_ = value;
-            %         obj.PrivateDataLast_ =value;                    
-            %     end
-            % end
+            if ~isempty(obj.PrivateScheme_)
+                if isfield(obj.PrivateScheme_, "meta")
+                    meta = obj.PrivateScheme_.meta;
+                    if isfield(meta,"default")
+                        default = meta.default;
+
+                        if isstruct(default)
+                            if isfield(default,"eval")
+                                default = eval(meta.default);
+                            else
+                                error("ANA:internal", "internal error: should not happend...")
+                            end
+                        end
+
+                        obj.PrivateData_ = default;
+                        obj.PrivateDataLast_ = default;
+                    end
+                end
+            end
         end
 
         function [valid,reason] = validate(obj,value)
@@ -77,67 +78,66 @@ classdef leaf < ana.config.node.base
                 value = value.get();
             end
 
-            valid = false;
-            reason = "don't know";
+            % check, if 'value' is an acceptable type
+            T = ana.config.scheme.type(value);
+            if isempty(T)
+                valid = false;
+                reason = "invalid value type";
+                return;
+            end
+            
+            % check, what can be assigned
+            reason = [];
+            if isempty(obj.PrivateType_)
+                if ~strcmp(T,"*")
+                    % fix type (if value type is not "*", ie. empty)
+                    obj.PrivateType_ = T;
+                end
+                valid = true;
+            else
+                valid = strcmp("*", obj.PrivateType_); % may assign any type
+                if ~valid
+                    valid = strcmp(T, obj.PrivateType_); 
+                    if ~valid
+                        % value types may not change
+                        if strcmp(T,"*")
+                            % except "null"
+                            valid = true;
+                        else
+                            reason = "data type cannot be changed";
+                            return
+                        end
+                    end
+                end
+            end
 
-            % msg = [];
-            % sch = obj.PrivateScheme_;
-            % switch (sch.type())
-            %     case 'boolean'
-            %         if ~islogical(value)
-            %             msg = "not a boolean value";
-            %         end
-            % 
-            %     case 'integral'
-            %         if ~isinteger(value)
-            %             if ~isnumeric(value) || (round(value) ~= value)
-            %                 msg = "not an integral value";
-            %             else
-            %                 value = int64(value);
-            %             end
-            %         end
-            % 
-            %     case 'numeric'
-            %         if ~isnumeric(value)
-            %             msg = "not a numeric value";
-            %         end
-            % 
-            %     case 'string'
-            %         if ~ischar(value) && ~isstring(value)
-            %             msg = "not a string";
-            %         else
-            %             value = string(value);
-            %         end
-            % 
-            %     case 'date'
-            %         FIXME()
-            % 
-            %     case 'path'
-            %         if ischar(value) || isstring(value)
-            %             value = ana.fs.path(value);
-            %         elseif ~isa(value,'ana.fs.path')
-            %             msg = "not a path";
-            %         end
-            % 
-            %     case 'any' 
-            %         % equivalent of "no scheme", nothing to be done
-            % 
-            %     case 'category'
-            %         FIXME
-            % 
-            %     otherwise
-            %         error("ANA:scheme:invalidArgument", "Unknown or invalid type in scheme: %s", sch.type());
-            % end
-            % 
-            % if ~isempty(msg)
-            %     msg = msg + ", found '" + class(value) + "'";
-            % else
-            %     meta = obj.PrivateScheme_.meta();
-            %     if ~isempty(meta)
-            %         % FIXME check limits, patterns, etc.
-            %         warning("FIXME not implemented")
-            %     end
-            % end
+            % additional checks in the scheme's meta struct
+            if ~isempty(obj.PrivateScheme_)
+                if isfield(obj.PrivateScheme_, "meta")
+                    meta = obj.PrivateScheme_.meta;
+
+                    switch (obj.PrivateScheme_.type)
+                        case "category"
+                            assert(isfield(meta,"categories"), "error in scheme, expected field meta.categories")
+
+                            valid = false;
+                            for k = 1:numel(meta.categories)
+                                valid = strcmp(meta.categories(k).value, value);
+                                if valid
+                                    break
+                                end
+                            end
+
+                            if ~valid
+                                reason = "invalid category";
+                            end
+                        case {"integral","numeric"}
+                            % FIXME check bounds, if given
+                        otherwise
+                            % nothing to be done
+                    end
+                end
+            end
         end        
     end
 
@@ -156,7 +156,7 @@ classdef leaf < ana.config.node.base
                 obj.PrivateData_ = [];
                 obj.PrivateDataLast_ = [];
 
-                obj.init();
+                obj.initialize();
             elseif iscell(value)
                 error("ANA:scheme:invalidType", "cannot assign a cell to a leaf");
             else
@@ -175,12 +175,15 @@ classdef leaf < ana.config.node.base
             res = obj.PrivateData_;
         end       
 
-        function set(obj,value)
+        function obj = set(obj,value)
             %SET    Set value.
             %
-            [value,msg] = obj.validate(value);
-            if ~isempty(msg)
-                error("ANA:runtime", msg)
+
+            % FIXME "time" needs special treatment (short ISO8601 format...)
+
+            [valid,reason] = obj.validate(value);
+            if ~valid
+                error("ANA:runtime", reason)
             end
             obj.PrivateData_ = value;
             obj.autosave();

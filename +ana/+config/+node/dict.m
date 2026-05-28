@@ -44,43 +44,22 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     
     %% SCHEME
     methods (Access = protected)
-        function init(obj)
-            sch = obj.PrivateScheme_;
-
-            content = sch.content();
-            for k = 1:numel(content)
-                child = content{k};
-
-                key = child.key;
-                switch(child.type)
-                    case 'dict'
-                        value = ana.config.node.dict(Parent=obj,Scheme=child);
-                    case 'list'
-                        value = ana.config.node.list(Parent=obj,Scheme=child,Uniform=false);
-                    case 'table'
-                        value = ana.config.node.list(Parent=obj,Scheme=child,Uniform=true);
-                    otherwise
-                        value = ana.config.node.leaf(Parent=obj,Scheme=child);
-                end
-
-                obj.PrivateData_(key) = {value};
+        function initialize(obj)
+            if ~isempty(obj.PrivateScheme_)
+                % FIXME
             end
-
-            obj.apply();
         end
 
-        function [value,msg] = validate(obj,value,key)
-            msg = [];
-            sch = obj.PrivateScheme_.get(key);
+        function [valid,reason] = validate(obj,key)
+            reason = [];
+            sch = obj.PrivateScheme_;
             if isempty(sch)
-                msg = sprintf("invalid key: %s", string(key));
-                return
-            end
-
-            function [valid,reason] = validate(obj,key)
+                valid = true;
+            else
+                % FIXME
                 valid = false;
-                reason = "don't know";            
-            end        
+                reason = "don't know";
+            end
         end        
     end
 

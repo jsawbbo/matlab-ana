@@ -38,7 +38,7 @@ content:
             type: category
             meta:
                 label: Remote
-                choice:
+                categories:
                 -   value: "local"
                     label: "Local"
                 -   value: "remote"

@@ -71,6 +71,15 @@ classdef base < handle
 
             obj.PrivateParent_ = options.Parent;
             obj.PrivateScheme_ = options.Scheme;
+
+            if ~isempty(options.Scheme)
+                switch(options.Scheme.type)
+                    case "category"
+                        obj.PrivateType_ = "string";
+                    otherwise
+                        obj.PrivateType_ = options.Scheme.type;
+                end
+            end
         end
 
         function res = root(obj)

@@ -111,7 +111,7 @@ classdef scheme
                 id = "logical";
             elseif isnumeric(value)
                 if isempty(value)
-                    id = "any";
+                    id = "*";
                 elseif isinteger(value)
                     id = "integral";
                 else

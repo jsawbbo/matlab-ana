@@ -25,17 +25,22 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     
     %% SCHEME
     methods (Access = protected)
-        function init(obj)
-            sch = obj.PrivateScheme_;
-
-            % FIXME
-            
-            obj.PrivateData_ = {};
+        function initialize(obj)
+            if ~isempty(obj.PrivateScheme_)
+                % FIXME
+            end
         end
 
         function [valid,reason] = validate(obj,idx)
-            valid = false;
-            reason = "don't know";            
+            reason = [];
+            sch = obj.PrivateScheme_;
+            if isempty(sch)
+                valid = true;
+            else
+                % FIXME
+                valid = false;
+                reason = "don't know";
+            end
         end        
     end
 
