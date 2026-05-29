@@ -181,9 +181,11 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
         function obj = set(obj,varargin)
             %SET    Set key-value pairs.
             %
-            %   node.set(key,value,...)
-            %   node.set(key=value,...)
-            %   node.set(struct)
+            % Usage:
+            %
+            %     node.set(key,value,...)
+            %     node.set(key=value,...)
+            %     node.set(struct)
             %
             persistent scope
             if isempty(scope)

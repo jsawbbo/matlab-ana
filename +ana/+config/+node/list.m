@@ -156,9 +156,64 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
         end              
 
-        function obj = set(obj,varargin)
+        function obj = set(obj,varargin,options)
             %SET    Set entry.
+            %
+            % Usage:
+            %
+            %    node.set(item)
+            %    node.set(item, Index=index)
+            %    node.set(key=value)
+            %    node.set(key=value, Index=index)
+            %
+            arguments
+                obj
+            end
+
+            arguments (Repeating)
+                varargin
+            end
+
+            arguments
+                options.Index = []
+            end
+
+            idx = options.Index;
+            if isempty(idx)
+                idx = numel(obj.PrivateData_)+1;
+            end
             
+            [valid,msg] = obj.validate(idx);
+            if ~valid
+                error("ANA:runtime:validationFailed", msg)
+            end
+
+            
+
+            % if isempty(obj.PrivateScheme_)
+            %     for k = 1:narg
+            %         value = varargin{k};
+            % 
+            %         T = ana.config.scheme.typeid(value);
+            %         if isempty(T)
+            %             if isstruct(value)
+            %                 node = ana.config.node.dict(Parent=obj,Scheme=[]);
+            %                 node.set(value);
+            %             elseif iscell(value)
+            %                 node = ana.config.node.list(Parent=obj,Scheme=[]);
+            %                 node.set(value);
+            %             else
+            %                 error("ANA:runtime:invalidType", "trying to assign invalid type for key '%s'", key)
+            %             end
+            %         else
+            %             node = ana.config.node.leaf(value,Parent=obj,Scheme=[]);
+            %         end
+            % 
+            %         obj.PrivateData_{idx+k-1} = node;
+            %     end
+            % else
+            %     FIXME
+            % end
         end
     end
 end
