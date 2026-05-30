@@ -156,27 +156,23 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
         end              
 
-        function obj = set(obj,varargin,options)
+        function obj = set(obj,varargin)
             %SET    Set entry.
             %
             % Usage:
             %
-            %    node.set(item)
-            %    node.set(item, Index=index)
-            %    node.set(key=value)
-            %    node.set(key=value, Index=index)
+            %     node.set(index,value,...)
             %
-            arguments
-                obj
-            end
-
-            arguments (Repeating)
-                varargin
-            end
-
-            arguments
-                options.Index = []
-            end
+            %   sets individual values by index.
+            %
+            %     node.set({value,...})
+            %
+            %   resets the list and stores the values in the list.
+            %
+            %     node.set(struct-array)
+            %
+            %   resets the list and stores the maps in the list.
+            %
 
             idx = options.Index;
             if isempty(idx)
@@ -187,8 +183,6 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             if ~valid
                 error("ANA:runtime:validationFailed", msg)
             end
-
-            
 
             % if isempty(obj.PrivateScheme_)
             %     for k = 1:narg

@@ -183,9 +183,14 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             %
             % Usage:
             %
-            %     node.set(key,value,...)
             %     node.set(key=value,...)
+            %
+            %   sets individual key-value pairs in the table.
+            %
             %     node.set(struct)
+            %     node.set({key=value,...})
+            %
+            %   resets the map and stores the key-value pairs in the table.
             %
             persistent scope
             if isempty(scope)
@@ -198,10 +203,15 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 if isscalar(varargin)
                     s = varargin{1};
                     if isstruct(s) && isscalar(s)
+                        obj.initialize();
+
                         fn = fieldnames(s);
                         for k = 1:numel(fn)
                             obj.set(fn{k},s.(fn{k}));
                         end
+                    elseif iscell(s)
+                        obj.initialize();
+                        obj.set(s{:});
                     else
                         error("ANA:logic:invalidArgument", "argument not recognized")
                     end

@@ -16,6 +16,7 @@ Followed by the configuration structure.
 There are three fundamental node types:
 - **dict** (ana.config.node.dict), 
 - **list** (ana.config.node.list), 
+- **table** (ana.config.node.table), 
 - **value** (ana.config.node.value).
 
 Each node is described in the scheme file using:
