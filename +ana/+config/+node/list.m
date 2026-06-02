@@ -18,6 +18,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                     fprintf(fd, "-%s",  pad("", ana.internal.indent("YAML")-1));
                     node = obj.PrivateData_{k};
                     node.save_(fd,level);
+                    fprintf(fd, "\n");
                 end
             end
         end        
@@ -68,19 +69,16 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
 
         function obj = parenAssign(obj, indexOp, varargin)
-            assert(isscalar(indexOp(1).Indices), "mulitple indexes not allowed")
-
-            
-
             if isscalar(indexOp)
-                for k = 1:numel(varargin)
-                    varargin{k}.PrivateParent_ = obj;
+                lst = cell(numel(indexOp(1).Indices),2);
+                for k = 1:numel(indexOp(1).Indices)
+                    lst{k,1} = indexOp(1).Indices{k};
                 end
-                [obj.PrivateData_{indexOp.Indices{:}}] = varargin{:};
+                lst(k,2) = varargin(k);
+
+                obj.set(lst{:});
             else
-                tmp = obj.PrivateData_{indexOp(1).Indices{:}};
-                tmp.(indexOp(2:end)) = varargin{:};
-                % obj.PrivateData_{indexOp(1).Indices{:}} = tmp;
+                error("ANA:logic:invalidArgument", "invalid indexing operation")
             end
         end
 
@@ -88,9 +86,8 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             obj.PrivateData_(indexOp.Indices{:}) = [];
         end
 
-        function n = parenListLength(obj, indexOp, ~)
-            % FIXME
-            n = numel(obj.PrivateData_(indexOp(1).Indices{:}));
+        function n = parenListLength(~, indexOp, ~)
+            n = numel(indexOp(1).Indices{:});
         end
     end
     
@@ -173,48 +170,45 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             %
             %   resets the list and stores the values in the list.
             %
-            persistent scope
-            if isempty(scope)
-                scope = 0;
-            else
-                scope = scope + 1;
-            end
 
-            try
-                if isscalar(varargin)
-                    s = varargin{1};
-                    if iscell(s)
-                        obj.initialize();
-                        
-                        obj.set(s{:});
-                    else
-                        error("ANA:logic:invalidArgument", "argument not recognized")
-                    end
-                elseif bitand(numel(varargin),1) == 0
-                    sch = obj.PrivateScheme_;
+            sch = obj.PrivateScheme_;
 
-                    for k = 1:2:nargin-1
-                        idx = varargin{k};
-                        value = varargin{k+1};
-    
-                        if idx > numel(obj)+1
-                            error("ANA:runtime:invalidIndex", "index out of range")
+            if isscalar(varargin)
+                s = varargin{1};
+                if iscell(s)
+                    obj.initialize();
+                    
+                    for k = 1:numel(s)
+                        value = s{k};
+
+                        [valid,msg] = obj.validate(value);
+                        if ~valid
+                            error("ANA:runtime:validationFailed", msg)
                         end
 
-                        obj.PrivateData_{idx} = ana.config.node.leaf(value, Parent = obj, Scheme=sch);
+                        obj.PrivateData_{k} = ana.config.node.leaf(value, Parent = obj, Scheme=sch);
                     end
                 else
-                    error("ANA:runtime:invalidArgument", "invalid arguments")
+                    error("ANA:logic:invalidArgument", "argument not recognized")
                 end
-    
-                if scope == 0
-                    obj.autosave();
-                else
-                    scope = scope - 1;
+            elseif bitand(numel(varargin),1) == 0
+                for k = 1:2:nargin-1
+                    idx = varargin{k};
+                    value = varargin{k+1};
+
+                    if idx > numel(obj)+1
+                        error("ANA:runtime:invalidIndex", "index out of range")
+                    end
+
+                    [valid,msg] = obj.validate(value);
+                    if ~valid
+                        error("ANA:runtime:validationFailed", msg)
+                    end
+                    
+                    obj.PrivateData_{idx} = ana.config.node.leaf(value, Parent = obj, Scheme=sch);
                 end
-            catch me
-                scope = 0;
-                rethrow(me);
+            else
+                error("ANA:runtime:invalidArgument", "invalid arguments")
             end
         end
     end
