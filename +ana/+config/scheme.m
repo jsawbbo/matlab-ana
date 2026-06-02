@@ -126,6 +126,8 @@ classdef scheme
             else
                 id = [];
             end
+            %TODO
+            % - have sth. like "quantity" (value with unit)?
         end
     end
 
