@@ -136,6 +136,11 @@ classdef base < handle
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
+        function clear(obj)
+            %CLEAR  Clear content.
+            obj.initialize();
+        end
+
         function set(obj,varargin)
             %SET    Set entries.
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")

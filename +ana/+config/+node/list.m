@@ -27,20 +27,31 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     methods (Access = protected)
         function initialize(obj)
             obj.PrivateData_ = {};
+            if ~isempty(obj.PrivateScheme_)
+                obj.PrivateType_ = obj.PrivateScheme_.type();
+                % TODO 
+                % - allow a list to have default entries?
+            end
         end
 
-        function [valid,reason] = validate(obj,idx)
+        function [valid,reason] = validate(obj,value)
             reason = [];
-            if idx < 1
-                valid = false;
-            elseif idx > numel(obj.PrivateData_)+1
-                valid = false;
-            else
-                valid = true;
-            end
 
-            if ~valid
-                reason = "index out of bounds";
+            T = ana.config.scheme.typeid(value);
+            if isempty(obj.PrivateType_)
+                obj.PrivateType_ = T;
+                valid = true;
+            else
+                switch (obj.PrivateType_)
+                    case "*"
+                        valid = true;
+                    otherwise
+                        valid = strcmp(T, obj.PrivateType_);
+                end
+
+                if ~valid
+                    reason = "invalid type";
+                end
             end
         end        
     end
@@ -57,16 +68,20 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
 
         function obj = parenAssign(obj, indexOp, varargin)
-            % if isscalar(indexOp)
-            %     for k = 1:numel(varargin)
-            %         varargin{k}.PrivateParent_ = obj;
-            %     end
-            %     [obj.PrivateData_{indexOp.Indices{:}}] = varargin{:};
-            % else
-            %     tmp = obj.PrivateData_{indexOp(1).Indices{:}};
-            %     tmp.(indexOp(2:end)) = varargin{:};
-            %     % obj.PrivateData_{indexOp(1).Indices{:}} = tmp;
-            % end
+            assert(isscalar(indexOp(1).Indices), "mulitple indexes not allowed")
+
+            
+
+            if isscalar(indexOp)
+                for k = 1:numel(varargin)
+                    varargin{k}.PrivateParent_ = obj;
+                end
+                [obj.PrivateData_{indexOp.Indices{:}}] = varargin{:};
+            else
+                tmp = obj.PrivateData_{indexOp(1).Indices{:}};
+                tmp.(indexOp(2:end)) = varargin{:};
+                % obj.PrivateData_{indexOp(1).Indices{:}} = tmp;
+            end
         end
 
         function obj = parenDelete(obj, indexOp)
@@ -74,7 +89,8 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
 
         function n = parenListLength(obj, indexOp, ~)
-            n = numel(obj.PrivateData_(indexOp.Indices{:}));
+            % FIXME
+            n = numel(obj.PrivateData_(indexOp(1).Indices{:}));
         end
     end
     
@@ -125,7 +141,6 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             arguments
                 options.Parent = [];
                 options.Scheme = [];
-                options.Uniform = true; % FIXME currently unused
             end
 
             obj@ana.config.node.base(Parent=options.Parent,Scheme=options.Scheme);
@@ -136,18 +151,6 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             if isempty(obj)
                 res = {};
                 return;
-            end
-
-            try
-                res = obj.PrivateData_{1}.get();
-                if isstruct(res)
-                    for k = 2:numel(obj)
-                        res(k) = obj.PrivateData_{k}.get();
-                    end
-                    return
-                end
-            catch 
-                % not a struct array
             end
 
             res = cell(numel(obj),1);
@@ -163,51 +166,56 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             %
             %     node.set(index,value,...)
             %
-            %   sets individual values by index.
+            %   inserts individual values by index, where negative values count from end
+            %   (1 is front, -1 is end), while
             %
             %     node.set({value,...})
             %
             %   resets the list and stores the values in the list.
             %
-            %     node.set(struct-array)
-            %
-            %   resets the list and stores the maps in the list.
-            %
-
-            idx = options.Index;
-            if isempty(idx)
-                idx = numel(obj.PrivateData_)+1;
-            end
-            
-            [valid,msg] = obj.validate(idx);
-            if ~valid
-                error("ANA:runtime:validationFailed", msg)
+            persistent scope
+            if isempty(scope)
+                scope = 0;
+            else
+                scope = scope + 1;
             end
 
-            % if isempty(obj.PrivateScheme_)
-            %     for k = 1:narg
-            %         value = varargin{k};
-            % 
-            %         T = ana.config.scheme.typeid(value);
-            %         if isempty(T)
-            %             if isstruct(value)
-            %                 node = ana.config.node.dict(Parent=obj,Scheme=[]);
-            %                 node.set(value);
-            %             elseif iscell(value)
-            %                 node = ana.config.node.list(Parent=obj,Scheme=[]);
-            %                 node.set(value);
-            %             else
-            %                 error("ANA:runtime:invalidType", "trying to assign invalid type for key '%s'", key)
-            %             end
-            %         else
-            %             node = ana.config.node.leaf(value,Parent=obj,Scheme=[]);
-            %         end
-            % 
-            %         obj.PrivateData_{idx+k-1} = node;
-            %     end
-            % else
-            %     FIXME
-            % end
+            try
+                if isscalar(varargin)
+                    s = varargin{1};
+                    if iscell(s)
+                        obj.initialize();
+                        
+                        obj.set(s{:});
+                    else
+                        error("ANA:logic:invalidArgument", "argument not recognized")
+                    end
+                elseif bitand(numel(varargin),1) == 0
+                    sch = obj.PrivateScheme_;
+
+                    for k = 1:2:nargin-1
+                        idx = varargin{k};
+                        value = varargin{k+1};
+    
+                        if idx > numel(obj)+1
+                            error("ANA:runtime:invalidIndex", "index out of range")
+                        end
+
+                        obj.PrivateData_{idx} = ana.config.node.leaf(value, Parent = obj, Scheme=sch);
+                    end
+                else
+                    error("ANA:runtime:invalidArgument", "invalid arguments")
+                end
+    
+                if scope == 0
+                    obj.autosave();
+                else
+                    scope = scope - 1;
+                end
+            catch me
+                scope = 0;
+                rethrow(me);
+            end
         end
     end
 end

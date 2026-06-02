@@ -15,8 +15,8 @@ Followed by the configuration structure.
 
 There are three fundamental node types:
 - **dict** (ana.config.node.dict), 
-- **list** (ana.config.node.list), 
 - **table** (ana.config.node.table), 
+- **list** (ana.config.node.list), 
 - **value** (ana.config.node.value).
 
 Each node is described in the scheme file using:
@@ -26,9 +26,11 @@ Each node is described in the scheme file using:
     meta:
         <meta information...>
     content:
-        <list of sub-nodes>
+        <content definition>
 
-where <tt>content</tt> may be omitted for values.
+where <tt>meta</tt> is strictly optional. The entry <tt>content</tt>, though, depends on 
+he node type. For **dict** and **table**, the same form as above is used. For **list**, 
+only the type is given. A **value** does not have a content definition.
 
 ### Meta-information
 

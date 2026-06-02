@@ -404,3 +404,37 @@ FodyWeavers.xsd
 
 # User
 **/__[Aa][Tt][Tt][Ii][Cc]__/
+
+# Kile specific
+*.backup
+.kile/
+
+# Core LaTeX auxiliary files
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+*.lb
+
+# Bibliography and Index
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+*.glo
+*.glg
+*.gls
+
+# SyncTeX
+*.synctex.gz
+
+# Auto-generated directories (if any)
+**/auto/**

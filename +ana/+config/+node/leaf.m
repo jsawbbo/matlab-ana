@@ -52,6 +52,7 @@ classdef leaf < ana.config.node.base
     %% SCHEME
     methods (Access = protected)
         function initialize(obj)
+            obj.PrivateData_ = [];
             if ~isempty(obj.PrivateScheme_)
                 if isfield(obj.PrivateScheme_, "meta")
                     meta = obj.PrivateScheme_.meta;
@@ -188,6 +189,7 @@ classdef leaf < ana.config.node.base
 
         function res = get(obj,varargin)
             %GET    Get Matlab value.
+            %
             res = obj.PrivateData_;
         end       
 

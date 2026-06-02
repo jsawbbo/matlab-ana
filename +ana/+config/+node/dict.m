@@ -176,7 +176,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                     end
                 end
             end
-        end              
+        end
 
         function obj = set(obj,varargin)
             %SET    Set key-value pairs.
@@ -211,6 +211,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                         end
                     elseif iscell(s)
                         obj.initialize();
+                        
                         obj.set(s{:});
                     else
                         error("ANA:logic:invalidArgument", "argument not recognized")
