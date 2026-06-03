@@ -200,7 +200,7 @@ classdef leaf < ana.config.node.base
             %
 
             switch(obj.PrivateType_)
-                case 'time'
+                case 'datetime'
                     value = ana.type.datetime(value);
                 otherwise
                     % all good

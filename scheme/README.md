@@ -43,7 +43,7 @@ The configuration is aware of the following types:
 - **integral**
 - **numeric**
 - **string** 
-- **time**
+- **datetime**
 - **path**
 
 ...
