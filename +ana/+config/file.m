@@ -26,7 +26,7 @@ classdef file < ana.config.object
         end
     end
     
-    %% INTERFACE
+    %% PUBLIC
     methods
         function obj = file(pathname,options)
             %file            Construct an instance of this class

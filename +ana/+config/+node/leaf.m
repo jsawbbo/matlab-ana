@@ -1,6 +1,7 @@
 classdef leaf < ana.config.node.base
     %ana.config.node.leaf      Representation of a value.
     %
+    % See also: ana.config.node.base
 
     %% HELPER
     methods (Hidden, Access=protected)
@@ -190,6 +191,7 @@ classdef leaf < ana.config.node.base
         function res = get(obj,varargin)
             %GET    Get Matlab value.
             %
+            % See also: ana.config.node.base.uplus
             res = obj.PrivateData_;
         end       
 

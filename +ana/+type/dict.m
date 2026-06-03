@@ -54,24 +54,11 @@ classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
         end
     
         function display(obj) %#ok<DISPLAY>
-            name = inputname(1);
-
-            if ~isempty(name)
-                fprintf('%s =\n\n', name);
-            end
-
-            fn = fieldnames(obj);
-            if isempty(fn)
-                fprintf('  <a href="matlab:help">ana.type.dict</a> with no fields.\n');
-                return
-            end
-    
-            fprintf('  <a href="matlab:help">ana.type.dict</a> with fields:\n\n');
-            disp(obj)
+            ana.type.display(obj, inputname(1));
         end
     end
 
-    %% Interface
+    %% PUBLIC
     methods
         function obj = dict(varargin)
             % dict      Construct an ana.type.dict.

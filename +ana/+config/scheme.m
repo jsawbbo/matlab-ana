@@ -131,7 +131,7 @@ classdef scheme
         end
     end
 
-    %% INTERFACE
+    %% PUBLIC
     methods
         function obj = scheme(doc)
             %SCHEME     Construct a singleton instance of this class

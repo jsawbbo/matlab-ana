@@ -34,9 +34,12 @@ classdef base < handle
     %% HELPER
     methods
         function disp(obj)
-            fprintf("  <a href=""%s"">%s</a> contents:\n", class(obj), class(obj));
             obj.save_(1,1);
             fprintf("\n")
+        end
+
+        function display(obj) %#ok<DISPLAY>
+            ana.type.display(obj, inputname(1));
         end
     end        
 
@@ -59,10 +62,18 @@ classdef base < handle
         end        
     end
 
+    %% OPERATORS
+    methods
+        function res = uplus(obj)
+            %UPLUS      Dereference Matlab value.
+            res = obj.get();
+        end
+    end
+
     %% PUBLIC
     methods
         function obj = base(options)
-            %common   Construct an instance of this class
+            %base   Construct an instance of this class
             %
             arguments
                 options.Parent = [];

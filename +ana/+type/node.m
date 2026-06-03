@@ -8,6 +8,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
     %TODO
     %- see ana.type.dict for display/disp and matlab.mixin.Scalar
 
+    %% PROPERTIES
     properties (Access=public)
         Name        = ''            % Node name.
         Attributes  = dictionary    % Attributes.
@@ -22,6 +23,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
         Data                        % Data content (if value node).
     end
 
+    %% HELPER
     methods
         function set.Data(obj,value)
             assert(~iscell(obj.Children), 'cannot assign a value to a branch node')
@@ -33,6 +35,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
         end
     end    
     
+    %% RedefinesParen
     methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
             assert(iscell(obj.Children), 'not a tree node')
@@ -154,6 +157,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
         end
     end
 
+    %% PUBLIC
     methods (Access=public)
         function obj = node(options)
             %NODE           Construct an instance of this class.
