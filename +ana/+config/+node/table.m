@@ -29,9 +29,9 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         function initialize(obj)
             obj.PrivateData_ = {};
             if ~isempty(obj.PrivateScheme_)
-                obj.PrivateType_ = 'dict'
-                % TODO 
-                % - allow a list to have default entries?
+                obj.PrivateType_ = 'dict';
+
+                FIXME("defaults")
             end
         end
 
