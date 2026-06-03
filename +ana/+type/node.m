@@ -5,6 +5,9 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
     %   by attributes. FIXME
     %
 
+    %TODO
+    %- see ana.type.dict for display/disp and matlab.mixin.Scalar
+
     properties (Access=public)
         Name        = ''            % Node name.
         Attributes  = dictionary    % Attributes.

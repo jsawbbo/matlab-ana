@@ -1,10 +1,7 @@
-function res = dump(data,options)
+function result = dump(data,options)
     %ana.file.yaml.dump     Dump to YAML formatted string.
     %
     %See also: ana.file.yaml.koch.dump
-    %
-    %Note: This file internally uses Martin Koch's Matlab YAML package,
-    %      released under the MIT License.
     %
     %TODO:
     %- add more dumper options (see
@@ -14,31 +11,179 @@ function res = dump(data,options)
         options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "block"
     end
 
-    koch = convertStructureArrays(data);
-    res = ana.file.yaml.koch.dump(koch,options.Style);
+    ana.init
+    import org.yaml.snakeyaml.*;
+    
+    try
+        javaData = convert(data);
+    catch exception
+        if string(exception.identifier).startsWith("yaml:dump")
+            error(exception.identifier, exception.message);
+        end
+        exception.rethrow;
+    end
+    dumperOptions = DumperOptions();
+    setFlowStyle(dumperOptions, options.Style);
+    result = Yaml(dumperOptions).dump(javaData);
+    result = string(result);
 end
 
-% While Koch's parser does the ConvertToArray just fine,
-% the opposite is not true, therefore, we convert the data.
-function koch = convertStructureArrays(data)
-    if isstruct(data) 
-        fn = fieldnames(data);
-        if isscalar(data)
-            koch = data;
-            for f = 1:length(fn)
-                koch.(fn{f}) = convertStructureArrays(data.(fn{f}));
-            end
-        else
-            koch = cell(length(data),1);
-            for i = 1:length(data)
-                koch{i} = convertStructureArrays(data(i));
-            end
-        end
+function result = convert(data)
+    if sum(size(data)) == 0 % null
+        result = data;
+    elseif isempty(data)
+        result = java.util.ArrayList();
+    elseif iscell(data)
+        result = convertCell(data);
+    elseif isfloat(data)
+        result = data;
+    elseif isinteger(data) || islogical(data) || isstruct(data) || isa(data,"ana.type.dict")
+        result = convertIntegerOrLogical(data);
+    elseif isstring(data) || (ischar(data) && isrow(data))
+        result = data;
     else
-        koch = data;
+        error("yaml:dump:TypeNotSupported", "Data type '%s' is not supported.", class(data))
     end
 end
-% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
-% SPDX-License-Identifier: GPL-3.0-or-later
+
+function result = convertCell(data)
+    data = nest(data);
+    result = java.util.ArrayList();
+    for i = 1:length(data)
+        result.add(convert(data{i}));
+    end
+end
+
+function result = convertScalar_integer(data, javaType)
+    result = java.(javaType)(data);
+end
+
+function result = convertScalar_uint32_uint64(data)
+    hexStr = dec2hex(data);
+    result = java.math.BigInteger(hexStr, 16);
+end
+
+function result = convertScalar_struct(data)
+    result = java.util.LinkedHashMap();
+    for key = string(fieldnames(data))'
+        value = convert(data.(key));
+        result.put(key, value);
+    end
+end
+
+function result = convertIntegerOrLogical(data)
+    switch class(data)
+        case {"uint32", "uint64"};  javaType = "math.BigInteger";   converter = @convertScalar_uint32_uint64;
+        case "int64";               javaType = "lang.Long";         converter = @(data) convertScalar_integer(data, javaType);
+        case "logical";             javaType = "lang.Boolean";      converter = @(data) convertScalar_integer(data, javaType);
+        case "struct";              javaType = "util.LinkedHashMap"; converter = @convertScalar_struct;
+        case "ana.type.dict";       javaType = "util.LinkedHashMap"; converter = @convertScalar_struct;
+        otherwise;                  javaType = "lang.Integer";      converter = @(data) convertScalar_integer(data, javaType);
+    end
+
+    % Dump MATLAB scalars (i.e. 2-D arrays with one element) as scalars.
+    if isscalar(data)
+        result = converter(data);
+        return
+    end
+
+    % Create Java array.
+    if isvector(data)
+
+        % Dump MATLAB vectors (i.e. 2-D arrays where one dimension has size 1) as a sequences.
+        size_ = numel(data);
+    else
+
+        % Dump MATLAB non-vector, non-scalar arrays as nested sequences.
+        size_ = size(data);
+    end
+    nDims = length(size_);
+    result = javaArray("java." + javaType, size_);
+
+    % Loop over elements in N-D array via linear indexing.
+    if isvector(data)
+        for i = 1 : numel(data)
+            result(i) = converter(data(i));
+        end
+    else
+        for i = 1 : numel(data)
+    
+            % Convert linear index to N-D array subscripts.
+            [subscripts{1:nDims}] = ind2sub(size_, i);
+    
+            % Add scalar to Java array.
+            result(subscripts{:}) = converter(data(i));
+        end
+    end
+end
+
+function result = nest(data)
+    if isvector(data) || isempty(data)
+        result = data;
+        return
+    end
+    n = size(data, 1);
+    nDimensions = length(size(data));
+    result = cell(1, n);
+    if nDimensions == 2
+        for i = 1:n
+            result{i} = data(i, :);
+        end
+    elseif nDimensions == 3
+        for i = 1:n
+            result{i} = squeeze(data(i, :, :));
+        end
+    else
+        error("yaml:dump:HigherDimensionsNotSupported", "Arrays with more than three dimensions are not supported. Use nested cells instead.")
+    end
+end
+
+function setFlowStyle(options, style)
+    import org.yaml.snakeyaml.*;
+    if style == "auto"
+        return
+    end
+    classes = options.getClass.getClasses;
+    classNames = arrayfun(@(c) string(c.getName), classes);
+    styleClassIndex = find(classNames.endsWith("$FlowStyle"), 1);
+    if isempty(styleClassIndex)
+        error("yaml:dump:FlowStyleSelectionFailed", "Unable to select flow style '%s'.", style);
+    end
+    styleFields = classes(styleClassIndex).getDeclaredFields();
+    styleIndex = find(arrayfun(@(f) string(f.getName).lower == style, styleFields));
+    if isempty(styleIndex)
+        error("yaml:dump:FlowStyleSelectionFailed", "Unable to select flow style '%s'.", style);
+    end
+    options.setDefaultFlowStyle(styleFields(styleIndex).get([]));
+end
+
+% SPDX-License-Identifier: MIT
 % Author(s):
+%   Martin Koch
 %   Jürgen "George" Sawinski
+%
+%
+% This implementation is based on MartinKoch123-yaml-1.6.0.0, adapted for use
+% with ana, licensed under:
+% 
+% MIT License
+% 
+% Copyright (c) 2022 Martin Koch
+% 
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+% 
+% The above copyright notice and this permission notice shall be included in all
+% copies or substantial portions of the Software.
+% 
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+% SOFTWARE.
