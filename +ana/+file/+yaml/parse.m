@@ -54,7 +54,7 @@ function result = convertMap(map, convertToArray)
     result = struct();
 
     keys = string(map.keySet().toArray())';
-    if ~isvarname(keys)
+    if ~all(cellfun(@isvarname,keys))
         result = ana.type.dict();
     end
 
@@ -82,6 +82,8 @@ function result = convertList(list, convertToArray)
     elseif ~elementsHaveEqualType(result) || ~elementsAreAllNonNull(result)
         return
     elseif isstruct(result{1}) && ~structsAreCompatible(result)
+        return
+    elseif isa(result{1}, "ana.type.dict")
         return
     elseif elementsHaveEqualSize(result)
         numDims = effectiveSize(result{1});

@@ -1,4 +1,4 @@
-classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
+classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
     %ANA.TYPE.DICT      A dictionary with struct semantics.
     %
     %   d = ana.type.dict();
@@ -44,7 +44,7 @@ classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
             pad = max(cellfun(@length, fn));
 
             for k = 1:numel(fn)    
-                value = obj.(fn{k});
+                value = obj(fn{k});
     
                 fprintf('    %*s: %s\n', ...
                     pad, fn{k}, ana.type.describe(value));
@@ -133,13 +133,13 @@ classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
         end
     end
 
-    %% RedefinesDot
+    %% RedefinesParen
     methods (Access = protected)
-        function varargout = dotReference(obj, indexOp)
-            key = string(indexOp(1).Name);
+        function varargout = parenReference(obj, indexOp)
+            key = ana.type.dict.parseKey(indexOp(1));
 
             if ~isKey(obj.Data, key)
-                error("ANA:type:dict:noSuchKey", ...
+                error("ANA:type:dict:NoSuchKey", ...
                     "No such key: '%s'.", key);
             end
 
@@ -153,8 +153,8 @@ classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
             end
         end
 
-        function obj = dotAssign(obj, indexOp, varargin)
-            key = string(indexOp(1).Name);
+        function obj = parenAssign(obj, indexOp, varargin)
+            key = ana.type.dict.parseKey(indexOp(1));
 
             if isscalar(indexOp)
                 obj.Data(key) = varargin(1);
@@ -172,8 +172,13 @@ classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
             obj.Data(key) = {value};
         end
 
-        function n = dotListLength(obj, indexOp, indexContext)
-            key = string(indexOp(1).Name);
+        function obj = parenDelete(obj, indexOp)
+            key = ana.type.dict.parseKey(indexOp(1));
+            remove(obj.Data, key);
+        end
+
+        function n = parenListLength(obj, indexOp, indexContext)
+            key = ana.type.dict.parseKey(indexOp(1));
 
             if ~isKey(obj.Data, key)
                 n = 1;
@@ -187,6 +192,24 @@ classdef dict < matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
                 n = 1;
             else
                 n = listLength(value, indexOp(2:end), indexContext);
+            end
+        end
+    end
+
+    methods (Static, Access = private)
+        function key = parseKey(indexOp)
+            idx = indexOp.Indices;
+
+            if numel(idx) ~= 1
+                error("ANA:type:dict:InvalidIndex", ...
+                    "Use exactly one key, for example d(""foo"").");
+            end
+
+            key = string(idx{1});
+
+            if ~isscalar(key)
+                error("ANA:type:dict:InvalidKey", ...
+                    "Dictionary key must be scalar string or char.");
             end
         end
     end

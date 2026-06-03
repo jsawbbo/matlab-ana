@@ -55,14 +55,15 @@ classdef leaf < ana.config.node.base
         function initialize(obj)
             obj.PrivateData_ = [];
             if ~isempty(obj.PrivateScheme_)
-                if isfield(obj.PrivateScheme_, "meta")
+                meta = obj.PrivateScheme_.meta();
+                if ~isempty(meta)
                     meta = obj.PrivateScheme_.meta;
                     if isfield(meta,"default")
                         default = meta.default;
 
                         if isstruct(default)
                             if isfield(default,"eval")
-                                default = eval(meta.default);
+                                default = eval(meta.default.eval);
                             else
                                 error("ANA:internal", "internal error: should not happend...")
                             end
@@ -97,19 +98,18 @@ classdef leaf < ana.config.node.base
                 end
                 valid = true;
             else
-                valid = strcmp("*", obj.PrivateType_); % may assign any type
+                switch (obj.PrivateType_)
+                    case "*"
+                        valid = true;
+                    case "path"
+                        valid = strcmp(T,"path") || strcmp(T,"string");
+                    otherwise
+                        valid = strcmp(T,"*") || strcmp(T,obj.PrivateType_);
+                end
+                
                 if ~valid
-                    valid = strcmp(T, obj.PrivateType_); 
-                    if ~valid
-                        % value types may not change
-                        if strcmp(T,"*")
-                            % except "null"
-                            valid = true;
-                        else
-                            reason = "data type cannot be changed";
-                            return
-                        end
-                    end
+                    reason = "data type cannot be changed";
+                    return
                 end
             end
 
@@ -215,3 +215,7 @@ classdef leaf < ana.config.node.base
         end
     end
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski

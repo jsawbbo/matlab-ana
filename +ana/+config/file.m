@@ -20,6 +20,11 @@ classdef file < ana.config.object
 
             if force || (obj.PrivateAutosave_ && obj.ismodified())
                 fd = fopen(+obj.PrivateFilename_,"w");
+                
+                if ~isempty(obj.PrivateScheme_)
+                    fprintf(fd, "version: ""%s""\n\n", obj.PrivateScheme_.version);
+                end
+
                 obj.save_(fd);
                 fclose(fd);
             end
@@ -40,7 +45,7 @@ classdef file < ana.config.object
             if isempty(pathname)
                 pathname = ana.os.paths('configdir') / "config.yml";
                 options.Scheme = "/general";
-                options.Autosave = true;
+                % options.Autosave = true;
             else
                 pathname = ana.fs.path(pathname);
             end
@@ -51,18 +56,33 @@ classdef file < ana.config.object
             % FIXME implement a singleton mechanism
 
             % initialize (delayed for singleton mechanism)
-            obj.init()                     
+            obj.initialize()                     
             
             % load config file if it exists
             obj.PrivateFilename_ = ana.fs.path(pathname);
             if obj.PrivateFilename_.isfile()
                 data = ana.file.yaml.load(obj.PrivateFilename_);
-                % FIXME check/set version 
+
+                if isstruct(data)
+                    ver = data.version;
+                    data = rmfield(data, "version");
+                elseif isa(data,'ana.type.dict')
+                    ver = data("version");
+                    data = rmfield(data, "version");
+                else
+                    error("ANA:internal:unexpectedType", "internal error: unexpected type")
+                end
+
+                % TODO check version
+
                 obj.set(data);
             end
 
             obj.PrivateAutosave_ = options.Autosave;
-            obj.autosave(~isempty(options.Scheme));
+
+            if ~obj.PrivateFilename_.isfile()
+                obj.autosave(~isempty(options.Scheme));
+            end
         end
 
         % FIXME add delete for Autosave

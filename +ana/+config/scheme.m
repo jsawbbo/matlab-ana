@@ -1,9 +1,18 @@
 classdef scheme 
     %ana.config.scheme        Scheme handler.
     %
-    %   FIXME
+    % Schemes define a hierarchical configuration tree. The structure
+    % general structure is
     %
-
+    %     key: "key-name"
+    %     type: <type-of-entry>
+    %     meta:
+    %         <meta information...>
+    %     content:
+    %         <content definition>
+    %
+    % For further information, see <a href="https://github.com/jsawbbo/matlab-ana/blob/main/scheme/README.md">scheme/README.md</a>.
+        
     %% PROPERTIES
     properties (SetAccess = private)
         Scheme = []
@@ -184,6 +193,15 @@ classdef scheme
         function res = isempty(obj)
             %ISEMPTY    Check if scheme is empty.
             res = isempty(obj.Scheme);
+        end
+
+        function res = version(obj)
+            %VERSION    Get scheme version.
+            if isempty(obj.Scheme)
+                res = [];
+            else
+                res = obj.Scheme.version;
+            end
         end
 
         function id = type(obj)

@@ -1,32 +1,43 @@
-function todo
-% todo - Find all TODO and FIXME entries in text files under the toolbox tree.
-%
-% This function searches all text files recursively from the directory
-% containing the "+ana" package (i.e., the parent directory of "+ana").
-% It outputs FIXME entries first, then TODO entries.
-%
-% For FIXME:
-%   filename:
-%   [line:column] text...
-%
-% For TODO (two possible formats):
-%   filename:
-%   - text...                    (for inline TODO: "TODO text...")
-%   - item 1                     (for multi-line TODO block)
-%   - item 2
-%
-% The function excludes itself (ana/todo.m) from the search.
-% TODO only matches inside comments (%, %{, /*, etc. depending on file type).
-% FIXME matches anywhere (comments, code, function names, etc.).
+function todo(folder)
+    %ANA.TODO       Find all TODO and FIXME entries in text files.
+    %
+    %    ana.todo()                    % search ana toolbox folder 
+    %    ana.todo(pwd)                 % search current path
+    %
+    % This function searches all text files recursively for FIXME 
+    % and TODO entries and displays them separately:
+    %
+    % For FIXME:
+    %   filename:
+    %   [line:column] text...
+    %
+    % For TODO (two possible formats):
+    %   filename:
+    %   - text...                    (for inline TODO: "TODO text...")
+    %   - item 1                     (for multi-line TODO block)
+    %   - item 2
+    %
+    % The function excludes itself (ana/todo.m) from the search.
+    % TODO only matches inside comments (%, %{, /*, etc. depending on file type).
+    % FIXME matches anywhere (comments, code, function names, etc.).
 
-    % Determine the root directory (parent of the directory containing this file)
-    fullPath = mfilename('fullpath');          % e.g., /path/to/toolbox/+ana/todo
-    [packageDir, ~, ~] = fileparts(fullPath);  % /path/to/toolbox/+ana
-    [rootDir, ~, ~] = fileparts(packageDir);   % /path/to/toolbox
+    arguments
+        folder (1,1) string = ''
+    end
 
-    % Check if root directory exists
-    if ~isfolder(rootDir)
-        error('Cannot determine toolbox root directory.');
+    fullPath = mfilename('fullpath');              % e.g., /path/to/toolbox/+ana/todo
+    
+    if isempty(folder) || (strlength(folder) == 0)
+        % Determine the root directory (parent of the directory containing this file)
+        [packageDir, ~, ~] = fileparts(fullPath);  % /path/to/toolbox/+ana
+        [rootDir, ~, ~] = fileparts(packageDir);   % /path/to/toolbox
+    
+        % Check if root directory exists
+        if ~isfolder(rootDir)
+            error('Cannot determine toolbox root directory.');
+        end
+    else
+        rootDir = folder;
     end
 
     % Exclude the todo.m file itself
@@ -80,7 +91,7 @@ function todo
             end
 
             % Get relative filename from toolbox root
-            relPath = strrep(filePath, [rootDir filesep], '');
+            relPath = strrep(filePath, [char(rootDir) filesep], '');
             lineNum = 0;
             inMultilineComment = false;
             currentMultilineTodo = [];  % Structure to collect multi-line TODO items

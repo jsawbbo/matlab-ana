@@ -1,4 +1,4 @@
-classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
+classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
     %ana.config.node.dict       A key-value pair mapping.
     %
     %   This node wraps an underlying dictionary, allowing non-standard keys. If possible, though,
@@ -14,25 +14,25 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                 level {mustBeScalarOrEmpty} = 0
             end
 
+            parent_list = isa(obj.PrivateParent_, "ana.config.node.list") || isa(obj.PrivateParent_, "ana.config.node.table");
             indent_s = pad("", ana.internal.indent("YAML")*level);
-            key = keys(obj.PrivateData_);
+            key = fieldnames(obj.PrivateData_);
             N = length(key);
             for i = 1:N
-                if (level > 0) && (i == 1) && ~isa(obj.PrivateParent_, "ana.config.node.list")
+                if (level > 0) && (i == 1) && ~parent_list
                     fprintf(fd,"\n");
                 end
 
-                if (i == 1) && isa(obj.PrivateParent_, "ana.config.node.list")
-                    fprintf(fd, "%s:", key(i));
+                if (i == 1) && parent_list
+                    fprintf(fd, "%s:", key{i});
                 else
-                    fprintf(fd, "%s%s:", indent_s, key(i));
+                    fprintf(fd, "%s%s:", indent_s, key{i});
                 end
 
                 try
-                    node = obj.PrivateData_(key(i));
-                    node{1}.save_(fd,level+1);
+                    obj.PrivateData_(key{i}).save_(fd,level+1);
                 catch me
-                    disp(me)
+                    FIXME(me)
                 end
         
                 if (i < N) || (level == 0)
@@ -45,7 +45,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     %% SCHEME
     methods (Access = protected)
         function initialize(obj)
-            obj.PrivateData_ = dictionary(string([]), {});
+            obj.PrivateData_ = ana.type.dict;
             if ~isempty(obj.PrivateScheme_)
                 content = obj.PrivateScheme_.content();
                 for k = 1:numel(content)
@@ -55,14 +55,14 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                         case "dict"
                             node = ana.config.node.dict(Parent=obj,Scheme=child);
                         case "table"
-                            node = ana.config.node.list(Parent=obj,Scheme=child,Uniform=true);
+                            node = ana.config.node.table(Parent=obj,Scheme=child);
                         case "list"
-                            node = ana.config.node.list(Parent=obj,Scheme=child,Uniform=false);
+                            node = ana.config.node.list(Parent=obj,Scheme=child);
                         otherwise
                             node = ana.config.node.leaf(Parent=obj,Scheme=child);
                     end
 
-                    obj.PrivateData_(child.key) = {node};
+                    obj.PrivateData_(child.key) = node;
                 end
             end
         end
@@ -83,16 +83,11 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
 
     %% RedefinesDot
     methods(Access=protected)
-        function res = getField(obj,field)
-            res = obj.PrivateData_(field);
-            res = res{1};
-        end
-
         function varargout = dotReference(obj, indexOp)
             field = indexOp(1).Name;
             
-            if isKey(obj.PrivateData_, field)
-                retval = obj.getField(field);
+            if isfield(obj.PrivateData_, field)
+                retval = obj.PrivateData_(field);
                 
                 if numel(indexOp) > 1
                     retval = retval.(indexOp(2:end));
@@ -111,14 +106,14 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             if isscalar(indexOp)
                 obj.set(field, newValue);
             else
-                node = obj.getField(field);
+                node = obj.PrivateData_(field);
                 node.(indexOp(2:end)) = newValue;
             end
         end
         
         function n = dotListLength(obj, indexOp, ~)
             field = indexOp(1).Name;
-            if isKey(obj.PrivateData_, field)
+            if isfield(obj.PrivateData_, field)
                 % always returning one node
                 n = 1;
             else
@@ -129,16 +124,16 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
     
     methods
         function fields = fieldnames(obj)
-            fields = keys(obj.PrivateData_);
+            fields = fieldnames(obj.PrivateData_);
         end
         
         function tf = isfield(obj, field)
-            tf = isKey(obj.PrivateData_, field);
+            tf = isfield(obj.PrivateData_, field);
         end
         
         function obj = rmfield(obj, field)
-            if isKey(obj.PrivateData_, field)
-                remove(obj.PrivateData_, field);
+            if isfield(obj.PrivateData_, field)
+                obj.PrivateData_ = rmfield(obj.PrivateData_, field);
             end
         end
     end
@@ -161,18 +156,18 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
             %
             try
                 res = struct();
-                fn = keys(obj.PrivateData_);
+                fn = fieldnames(obj.PrivateData_);
                 for k = 1:numel(fn)
                     node = obj.PrivateData_(fn{k});
                     res.(fn{k}) = node{1}.get();
                 end
             catch 
                 res = obj.PrivateData_;
-                for k = 1:numel(res)
-                    if ~isa(res(fn{k}), 'ana.config.node.base')
+                for k = 1:numel(fn)
+                    if ~isa(res.(fn{k}), 'ana.config.node.base')
                         warning("field %s is not a config node", fn{k})
                     else
-                        res(fn{k}) = res(fn{k}).get();
+                        res.(fn{k}) = res.(fn{k}).get();
                     end
                 end
             end
@@ -226,8 +221,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot
                             error("ANA:runtime:validationFailed", msg)
                         end
     
-                        if obj.PrivateData_.isKey(key)
-                            node = obj.getField(key);
+                        if isfield(obj.PrivateData_, key)
+                            node = obj.PrivateData_(key);
                             node.set(value);
                         else
                             if isempty(obj.PrivateScheme_)

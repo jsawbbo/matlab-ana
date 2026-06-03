@@ -8,18 +8,10 @@ classdef object < ana.config.node.dict
 
     %% SCHEME
     methods (Access = protected)
-        function init(obj)
+        function initialize(obj)
             % FIXME handle version
-            init@ana.config.node.dict(obj);
+            initialize@ana.config.node.dict(obj);
         end
-
-        function [res,msg] = validate(obj,value,key)
-            if strcmp(key,"version")
-                FIXME("must not be changed")
-            else
-                [res,msg] = validate@ana.config.node.dict(obj,value,key);
-            end
-        end        
     end
     
     %% PUBLIC
@@ -35,7 +27,7 @@ classdef object < ana.config.node.dict
 
             obj@ana.config.node.dict(Parent=options.Parent,Scheme=options.Scheme);
             if options.Init
-                obj.init()
+                obj.initialize()
             end
         end
     end

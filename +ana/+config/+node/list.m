@@ -15,6 +15,11 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
             if ~isempty(obj)
                 for k = 1:numel(obj)
+                    if level > 0
+                        indent_s = pad("", ana.internal.indent("YAML")*(level-1));
+                        fprintf(fd, "\n%s",indent_s);
+                    end
+
                     fprintf(fd, "-%s",  pad("", ana.internal.indent("YAML")-1));
                     node = obj.PrivateData_{k};
                     node.save_(fd,level);
@@ -58,27 +63,49 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     end
 
     %% RedefinesParen
-    methods(Access=protected)
+    methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
-            [varargout{1:nargout}] = obj.PrivateData_{indexOp(1).Indices{:}};
+            idx = indexOp(1).Indices;
+            selected = obj.Items(idx{:});
 
-            if numel(indexOp) > 1
-                [varargout{1:nargout}] = matlab.mixin.indexing.internal.forwardIndexing( ...
-                    varargout{:}, indexOp(2:end));
+            if isscalar(selected)
+                result = selected{1};
+            else
+                result = vals;
+            end
+
+            if isscalar(indexOp)
+                varargout{1} = result;
+            else
+                varargout{1} = matlab.mixin.indexing.forwarding ...
+                    .builtinSubsref(result, indexOp(2:end));
             end
         end
 
         function obj = parenAssign(obj, indexOp, varargin)
-            if isscalar(indexOp)
-                lst = cell(numel(indexOp(1).Indices),2);
-                for k = 1:numel(indexOp(1).Indices)
-                    lst{k,1} = indexOp(1).Indices{k};
-                end
-                lst(k,2) = varargin(k);
+            idx = [indexOp(1).Indices{:}];
+            value = varargin{1};
+            assert(numel(idx) == numel(value));
 
-                obj.set(lst{:});
+            if isscalar(indexOp)
+                if isscalar(value)
+                    if isa(value,'ana.config.node.base')
+                        value = value.get();
+                    end
+                    obj.set(idx,value);
+                else
+                    for k = 1:numel(idx)
+                        if isa(value,'ana.config.node.base')
+                            value{k} = value{k}.get();
+                        end
+                        obj.set(idx(k),value{k});
+                    end
+                end
             else
-                error("ANA:logic:invalidArgument", "invalid indexing operation")
+                tmp = obj.PrivateData_{idx};
+                tmp = matlab.mixin.indexing.forwarding ...
+                    .builtinSubsasgn(tmp, indexOp(2:end), varargin{:});
+                obj.Items{idx}.set(tmp);
             end
         end
 
@@ -163,8 +190,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             %
             %     node.set(index,value,...)
             %
-            %   inserts individual values by index, where negative values count from end
-            %   (1 is front, -1 is end), while
+            %   inserts individual values at given index.
             %
             %     node.set({value,...})
             %
@@ -217,3 +243,7 @@ end
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):
 %   Jürgen "George" Sawinski
+%
+% Development assistance:
+%   ChatGPT (OpenAI, GPT-5.5)
+%   DeepSeek (深度求索)
