@@ -20,7 +20,7 @@ function res = load(filename)
     end
 
     doc = xmlread(filename);
-    res = ana.util.node(Name=filename,Children={});
+    res = ana.type.node(Name=filename,Children={});
     % FIXME res.Handler = ???
     res = parseChildNodes(doc, res);
 end
@@ -61,16 +61,16 @@ function node = makeNodeFromXML(theNode)
                 return
             end
 
-            node = ana.util.node(Name = nodeName,Data = text);
+            node = ana.type.node(Name = nodeName,Data = text);
         otherwise
             
             if any(strcmp(methods(theNode), 'getData'))
-                node = ana.util.node(                       ...
+                node = ana.type.node(                       ...
                     Name = nodeName,                        ...
                     Attributes = parseAttributes(theNode),  ...
                     Data = char(theNode.getData));
             else
-                node = ana.util.node(                       ...
+                node = ana.type.node(                       ...
                     Name = nodeName,                        ...
                     Attributes = parseAttributes(theNode),  ...
                     Children={});
