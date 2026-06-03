@@ -12,3 +12,10 @@ else
 end
 
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% Copyright (c) 2022 Martin Koch
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Martin Koch
+%
+% Originally licensed under MIT License, see accompanying file in the parent folder.

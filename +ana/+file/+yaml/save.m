@@ -1,10 +1,9 @@
 function save(filename,data,options)
     %ana.file.yaml.save     Save a YAML file.
     %
-    %See also: ana.file.yaml.koch.dump
+    % See also: ana.file.yaml.dump
     %
-    %Note: This file internally uses Martin Koch's Matlab YAML package,
-    %      released under the MIT License.
+    
     arguments
         filename (1, :) 
         data
@@ -27,6 +26,10 @@ function save(filename,data,options)
     fclose(fid);
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% Copyright (c) 2022 Martin Koch
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):
+%   Martin Koch
 %   Jürgen "George" Sawinski
+%
+% Originally licensed under MIT License, see accompanying file in this folder.
