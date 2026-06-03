@@ -201,7 +201,7 @@ classdef leaf < ana.config.node.base
 
             switch(obj.PrivateType_)
                 case 'time'
-                    FIXME("requires special treatment for type 'time'")
+                    value = ana.type.datetime(value);
                 otherwise
                     % all good
             end
