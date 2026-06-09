@@ -268,6 +268,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             path = strjoin(obj.Parts(1:end-1),obj.separator);
             filename = obj.Parts{end};
             extension = regexp(filename, '[.][^.]+$', 'match');
+            if isempty(extension)
+                extension = '';
+            else
+                extension = extension{1};
+            end
         end
 
         function res = exist(obj,searchType)
