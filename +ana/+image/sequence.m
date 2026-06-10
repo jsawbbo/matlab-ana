@@ -1,5 +1,5 @@
-classdef imageseq < handle
-    %ana.media.imageseq     Image sequence (sequence, stack or video).
+classdef sequence < handle
+    %ana.image.sequence     Image sequence (sequence, stack or video).
     %
     %   FIXME
     %
@@ -17,7 +17,7 @@ classdef imageseq < handle
     end
 
     methods
-        function obj = imageseq(options)
+        function obj = sequence(options)
             %IMAGESEQ Construct an instance of this class
             arguments
                 options.Cache = '/tmp'

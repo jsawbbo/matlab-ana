@@ -1,4 +1,8 @@
 function trace(fmt,varargin)
+    %ana.log.trace      Log trace (with stack info).
+    %
+    % See also: ana.log.level, ana.log.message, ana.log.to
+
     if ana.log.g.level > ana.log.level.TRACE
         return
     end

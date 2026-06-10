@@ -1,11 +1,12 @@
 classdef g 
     %ana.log.g     Logger settings.
     %
-    %   Detailed explanation goes here
+    %   Helper to store logger data (such as the log level).
 
     properties (Constant)
         Logger = ana.util.shared(...
-            struct(level=ana.log.level.INFO))
+            struct(level=ana.log.level.INFO,...
+                file=[]))
     end
 
     methods (Static)

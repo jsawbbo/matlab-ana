@@ -16,12 +16,17 @@ function result = passoptions(options,selection)
     %           obj@parent_class(poptions{:});
     %       end
     %
+    arguments
+        options (1,1)
+        selection = []
+    end
+
     if nargin > 1
         result = {};
         fn = fieldnames(options);
         for i = 1:numel(fn)
             name = fn{i};
-            if any(strcmp(selection,name))
+            if isempty(selection) || any(strcmp(selection,name))
                 result{end+1} = name; %#ok<*AGROW>
                 result{end+1} = options.(name);
             end
