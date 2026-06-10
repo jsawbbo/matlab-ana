@@ -8,10 +8,4 @@ classdef level < int32
         DEBUG   (-1)   % Detailed information for debugging
         TRACE   (-2)   % Extremely detailed flow tracing
     end
-
-    methods(Static)
-        function set(lvl)
-            ana.log.g.level(lvl);
-        end
-    end
 end
