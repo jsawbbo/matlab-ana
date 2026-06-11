@@ -73,7 +73,7 @@ classdef file < ana.config.object
                     error("ANA:internal:unexpectedType", "internal error: unexpected type")
                 end
 
-                % TODO check version
+                % TODO: check version
 
                 obj.set(data);
             end
