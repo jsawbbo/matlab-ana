@@ -7,28 +7,35 @@ classdef process < handle
 
     %% PROPERTIES
     properties(SetAccess = protected)
-        Process java.lang.Process               % Java process handle.
+        Process %java.lang.Process              % Java process handle.
+    end
 
-        Input java.io.OutputStream              % Process standard input stream.
-        Output java.io.InputStream              % Process standard output stream.
-        Error java.io.InputStream               % Process standard error stream.
+    properties
+        Input %java.io.OutputStream             % Process' standard input stream.
+        Output %java.io.InputStream             % Process' standard output stream.
+        Error %java.io.InputStream              % Process' standard error stream.
     end
 
     properties(Hidden, SetAccess = protected)
-        BufferInput java.io.PrintStream         % FIXME
-        BufferOutput java.io.BufferedReader     % FIXME
-        BufferError java.io.BufferedReader      % FIXME
+        BufferedInput %java.io.PrintStream      % FIXME
+        BufferedOutput %java.io.BufferedReader  % FIXME
+        BufferedError %java.io.BufferedReader   % FIXME
     end
 
     properties(Hidden)
-        InputCb                 % Input callback for run() method.
-        OutputCb                % Output callback for run() method.
-        ErrorCb                 % Error callback for run() method.
+        InputCb                                 % Process input callback.
+        OutputCb                                % Process output callback.
+        ErrorCb                                 % Process error callback.
+    end
+
+    %% PROTECTED
+    methods(Access=protected)
+
     end
 
     %% PUBLIC
     methods
-        function self = process(varargin,options)
+        function obj = process(varargin,options)
             %PROCESS    Constructor.
             arguments(Repeating)
                 varargin
@@ -41,87 +48,129 @@ classdef process < handle
                 options.Error = @ana.log.error      % Program error callback (default: ana.log.error).
             end
 
+            args = java.util.Arrays.asList(string(varargin));
+            build = java.lang.ProcessBuilder(args);
 
-%             Runtime = java.lang.Runtime.getRuntime();
-% 
-%             % invoke process
-%             try
-%                 if iscell(varargin{end})
-%                     self.Process = Runtime.exec(varargin(1:end-1), varargin{end});
-%                 elseif isstruct(varargin{end})
-%                     env = {};
-% 
-%                     s = varargin{end};
-%                     fn = fieldnames(s);
-%                     for k = 1:length(fn)
-%                         env = [env, {[fn{k} '=' s.(fn{k})]}];
-%                     end
-% 
-%                     self.Process = Runtime.exec(varargin(1:end-1), env);
-%                 else
-%                     self.Process = Runtime.exec(varargin);
-%                 end
-%             catch me
-% %                 warning(me.message);
-%                 return
-%             end
-% 
-%             % process input
-%             self.InputStream = self.Process.getOutputStream();
-%             self.ProcessInput = java.io.PrintStream(self.InputStream);
-% 
-%             % process output
-%             self.OutputStream = self.Process.getInputStream();
-%             self.ProcessOutput = java.io.BufferedReader(java.io.InputStreamReader(self.OutputStream));
-% 
-%             % process error
-%             self.ErrorStream = self.Process.getErrorStream();
-%             self.ProcessError = java.io.BufferedReader(java.io.InputStreamReader(self.ErrorStream));
+            % environment
+            env = build.environment();
+
+            if ~options.MatlabRuntime
+                % remove Matlab environment from LD_LIBRARY_PATH
+                paths = env.get('LD_LIBRARY_PATH');
+                if ~isempty(paths)
+                    paths = split(string(paths), ':');
+                    bad = contains(paths, {'MATLAB','MathWorks'});
+                    env.put('LD_LIBRARY_PATH', strjoin(paths(~bad),':'));
+                end
+            end
+
+            for k = 1:2:numel(options.Environment)
+                env.put(options.Environment{k},options.Environment{k+1});
+            end
+
+            % start process, get streams
+            obj.Process = build.start();
+            obj.Input = obj.Process.getOutputStream();
+            obj.Output = obj.Process.getInputStream();
+            obj.Error = obj.Process.getErrorStream();
+
+            % callbacks and buffering
+            if ~isempty(options.Input)
+                FIXME
+            end
+
+            if ~isempty(options.Output)
+                if isa(options.Output, 'function_handle')
+                    obj.BufferedOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.Output));
+                    obj.OutputCb = options.Output;
+                else
+                    FIXME
+                end
+            end
+
+            if ~isempty(options.Error)
+                if isa(options.Error, 'function_handle')
+                    obj.BufferedError = java.io.BufferedReader(java.io.InputStreamReader(obj.Error));
+                    obj.ErrorCb = options.Error;
+                else
+                    FIXME
+                end
+            end
+
+%             obj.ProcessInput = java.io.PrintStream(obj.InputStream);
+
+%             obj.ProcessOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.OutputStream));
+
+
+%             obj.ProcessError = java.io.BufferedReader(java.io.InputStreamReader(obj.ErrorStream));
         end
         
-        function delete(self)
+        function delete(obj)
             try  %#ok<TRYNC>                
-                self.Process.destroyForcibly();
+                obj.Process.destroyForcibly();
             end
         end
     end
-    
+
     methods
-        % % Get standard input of the process.
-        % function results = stdin(self)
-        %     results = self.InputStream;
-        % end
-        % 
-        % % Get standard output of the process.
-        % function results = stdout(self)
-        %     results = self.OutputStream;
-        % end
-        % 
-        % % Get standard error output of the process.
-        % function results = stderr(self)
-        %     results = self.ErrorStream;
-        % end
-        % 
-        % % Check if process is valid.
-        % function result = isgood(self)
-        %     result = ~isempty(self.Process);
-        % end
-        % 
-        % % Check if process is running.
-        % function result = isrunning(self)
-        %     result = self.Process.isAlive();
-        % end
-        % 
-        % % Check if process has (properly) terminated.
-        % function result = hasterminated(self)
-        %     result = ~isempty(self.exitValue());
-        % end
-        % 
-        % % Kill the subprocess.
-        % function destroy(self)
-        %     destroy(self.Process)
-        % end
-        % 
+        function result = isrunning(obj)
+            %ISRUNNING      Check if process is running.
+            result = obj.Process.isAlive();
+        end
+
+        function result = terminated(obj)
+            %TERMINATED     Check if process has (properly) terminated.
+            result = ~isempty(obj.exitValue());
+        end
+
+        function destroy(obj)
+            %DESTROY        Destroy the subprocess.
+            destroy(obj.Process)
+        end
+
+        function results = exitValue(obj)
+            %EXITVALUE      Get exit value from process.
+            if obj.isrunning() || ~obj.isvalid()
+                results = [];
+            else
+                results = obj.Process.exitValue();
+            end
+        end
+
+        function [out,err] = available(obj)
+            %READY      Check if data can be read from process.
+
+            if isempty(obj.BufferedOutput)
+                out = (obj.Output.available() > 0);
+            else
+                out = obj.BufferedOutput.ready();
+            end
+
+            if isempty(obj.BufferedError)
+                err = (obj.Error.available() > 0);
+            else
+                err = obj.BufferedError.ready();
+            end
+        end
+
+        function res = step(obj)
+            %STEP FIXME
+            while obj.isrunning()
+                [out,err] = obj.available();
+                if ~out && ~err
+                    break
+                end
+
+                if out 
+                    obj.handle()
+                end
+
+                if err
+                end
+            end
+            res = obj.isrunning();
+        end
+
         % % Wait for the subprocess to finish.
         % %
         % % USAGE
@@ -132,28 +181,21 @@ classdef process < handle
         % % status:       true if the subprocess has exited and false if the 
         % %               waiting time elapsed before the subprocess has exited
         % % 
-        % function results = wait(self, timeout)
+        % function results = wait(obj, timeout)
         %     if nargin > 1
         %         java.lang.Thread.sleep(timeout*1000);
-        %         results = ~self.Process.isAlive();
+        %         results = ~obj.Process.isAlive();
         %     else
-        %         results = self.Process.wait();
+        %         results = obj.Process.wait();
         %     end
         % end
         % 
         % % Get programs exit value.
-        % function results = exitValue(self)
-        %     if self.isrunning()
-        %         results = [];
-        %     else
-        %         results = self.Process.exitValue();
-        %     end
-        % end
         % 
         % % Loop in-/output.
         % %
         % % FIXME
-        % function results = run(self, type)
+        % function results = run(obj, type)
         %     results = [];
         %     if nargin < 2
         %         type = 'text';
@@ -165,23 +207,23 @@ classdef process < handle
         %     % loop until exited
         %     switch type
         %         case 'text'
-        %             while self.isrunning() ...
-        %                     || self.ProcessOutput.ready() ...
-        %                     || self.ProcessError.ready()
-        %                 if self.ProcessOutput.ready()
-        %                     self.OutputCb(char(self.ProcessOutput.readLine()));
+        %             while obj.isrunning() ...
+        %                     || obj.ProcessOutput.ready() ...
+        %                     || obj.ProcessError.ready()
+        %                 if obj.ProcessOutput.ready()
+        %                     obj.OutputCb(char(obj.ProcessOutput.readLine()));
         %                 end
         % 
-        %                 if self.ProcessError.ready()
-        %                     self.ErrorCb(char(self.ProcessError.readLine()));
+        %                 if obj.ProcessError.ready()
+        %                     obj.ErrorCb(char(obj.ProcessError.readLine()));
         %                 end
         % 
-        %                 if ~isempty(self.InputCb)
-        %                     self.ProcessInput.write(self.InputCb());
+        %                 if ~isempty(obj.InputCb)
+        %                     obj.ProcessInput.write(obj.InputCb());
         %                 end
         % 
-        %                 if ~self.wait(0.01) && ~isempty(self.ProgressCb)
-        %                     self.ProgressCb();
+        %                 if ~obj.wait(0.01) && ~isempty(obj.ProgressCb)
+        %                     obj.ProgressCb();
         %                 end
         %             end
         % 
@@ -192,8 +234,8 @@ classdef process < handle
         %             error("ANA:runtime:invalidArgument", "invalid value provided to property 'Type'.")
         %     end
         % 
-        %     if  ~isempty(self.ProgressCb)
-        %         self.ProgressCb('Finished', true);
+        %     if  ~isempty(obj.ProgressCb)
+        %         obj.ProgressCb('Finished', true);
         %     end
         % end
     end
