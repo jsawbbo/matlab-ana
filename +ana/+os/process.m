@@ -1,5 +1,12 @@
 classdef process < handle
     % ana.os.process    Sub-process builder.
+    %   
+    %   proc = ana.os.process('command', 'args', ..., <options>...)
+    %
+    % Options:
+    %   Input=@callback
+    %   Output=@callback
+    %   Error=@callback     (default: ana.log.error)
     %
     % TODO: 
     % - documentation for ana.os.process
@@ -76,7 +83,7 @@ classdef process < handle
 
             % callbacks and buffering
             if ~isempty(options.Input)
-                FIXME
+                obj.InputCb = options.Input;
             end
 
             if ~isempty(options.Output)
@@ -97,11 +104,7 @@ classdef process < handle
                 end
             end
 
-%             obj.ProcessInput = java.io.PrintStream(obj.InputStream);
-
-%             obj.ProcessOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.OutputStream));
-
-
+%             obj.ProcessOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.OutputStream)); or binary BufferedInputStream
 %             obj.ProcessError = java.io.BufferedReader(java.io.InputStreamReader(obj.ErrorStream));
         end
         
