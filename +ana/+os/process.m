@@ -1,6 +1,12 @@
 classdef process < handle
     % ana.os.process    Sub-process builder.
     %
+    %
+    % Callbacks:
+    %
+    %
+    %
+    %
     % TODO: 
     % - documentation for ana.os.process
     % - check if MatlabRuntime is valid on Windows
@@ -18,8 +24,13 @@ classdef process < handle
 
     properties(Hidden, SetAccess = protected)
         BufferedInput %java.io.PrintStream      % FIXME
+        InputMode
+
         BufferedOutput %java.io.BufferedReader  % FIXME
+        OutputMode
+
         BufferedError %java.io.BufferedReader   % FIXME
+        ErrorMode
     end
 
     properties(Hidden)
@@ -30,7 +41,6 @@ classdef process < handle
 
     %% PROTECTED
     methods(Access=protected)
-
     end
 
     %% PUBLIC
@@ -46,6 +56,9 @@ classdef process < handle
                 options.Input = []                  % Program input callback.
                 options.Output = []                 % Program output callback.
                 options.Error = @ana.log.error      % Program error callback (default: ana.log.error).
+                options.InputMode = 'binary'
+                options.OutputMode = 'text'
+                options.ErrorMode = 'text'
             end
 
             args = java.util.Arrays.asList(string(varargin));
@@ -74,35 +87,39 @@ classdef process < handle
             obj.Output = obj.Process.getInputStream();
             obj.Error = obj.Process.getErrorStream();
 
-            % callbacks and buffering
-            if ~isempty(options.Input)
-                FIXME
+            % modes, buffering and callbacks
+            obj.InputMode = options.InputMode;
+            obj.InputCb = options.Input;
+            switch (obj.InputMode)
+                case 'binary'
+                    % nothing to be done
+                case 'text'
+                    obj.BufferedOutput = java.io.PrintStream(obj.Input);
+                otherwise
+                    error("ANA:os:process:invalidInputMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.InputMode)
             end
 
-            if ~isempty(options.Output)
-                if isa(options.Output, 'function_handle')
+            obj.OutputMode = options.OutputMode;
+            obj.OutputCb = options.Output;
+            switch (obj.OutputMode)
+                case 'binary'
+                    % nothing to be done
+                case 'text'
                     obj.BufferedOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.Output));
-                    obj.OutputCb = options.Output;
-                else
-                    FIXME
-                end
+                otherwise
+                    error("ANA:os:process:invalidOutputMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.OutputMode)
             end
 
-            if ~isempty(options.Error)
-                if isa(options.Error, 'function_handle')
+            obj.ErrorMode = options.ErrorMode;
+            obj.ErrorCb = options.Error;
+            switch (obj.ErrorMode)
+                case 'binary'
+                    % nothing to be done
+                case 'text'
                     obj.BufferedError = java.io.BufferedReader(java.io.InputStreamReader(obj.Error));
-                    obj.ErrorCb = options.Error;
-                else
-                    FIXME
-                end
+                otherwise
+                    error("ANA:os:process:invalidErrorMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.ErrorMode)
             end
-
-%             obj.ProcessInput = java.io.PrintStream(obj.InputStream);
-
-%             obj.ProcessOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.OutputStream));
-
-
-%             obj.ProcessError = java.io.BufferedReader(java.io.InputStreamReader(obj.ErrorStream));
         end
         
         function delete(obj)
@@ -123,8 +140,16 @@ classdef process < handle
             result = ~isempty(obj.exitValue());
         end
 
+        function close(obj)
+            %CLOSE          Close connection.
+            % FIXME
+            obj.Input.flush();
+            close(obj.Input);
+        end
+
         function destroy(obj)
             %DESTROY        Destroy the subprocess.
+            obj.close();
             destroy(obj.Process)
         end
 
@@ -153,91 +178,69 @@ classdef process < handle
             end
         end
 
-        function res = step(obj)
-            %STEP FIXME
-            while obj.isrunning()
-                [out,err] = obj.available();
-                if ~out && ~err
+        function res = run(obj)
+            %RUN        Run program.
+            % 
+            %   FIXME
+            while true
+                while true
+                    % check if we have data to read/process
+                    [out,err] = obj.available();
+                    if ~out && ~err && ~obj.isrunning()
+                        break
+                    end
+    
+                    % process program's stdout
+                    if out && ~isempty(obj.OutputCb)
+                        if isempty(obj.BufferedOutput)
+                            FIXME
+                        else
+                            obj.OutputCb(char(obj.BufferedOutput.readLine()));
+                        end
+                    end
+    
+                    % process program's stderr
+                    if err && ~isempty(obj.ErrorCb)
+                        if isempty(obj.BufferedError)
+                            FIXME
+                        else
+                            obj.ErrorCb(char(obj.BufferedError.readLine()));
+                        end
+                    end
+                end
+
+                if isempty(obj.InputCb)
+                    res = false;
+                else
+                    data = obj.InputCb();
+                    if isempty(data)
+                        res = false;
+                    else 
+                        res = obj.write(data);
+                        if isempty(res) || (res == 0)
+                            res = false;
+                        end
+                    end
+                end
+
+                if ~res && ~obj.isrunning()
                     break
                 end
-
-                if out 
-                    obj.handle()
-                end
-
-                if err
-                end
             end
+
             res = obj.isrunning();
         end
 
-        % % Wait for the subprocess to finish.
-        % %
-        % % USAGE
-        % %   exitvalue = process.wait()
-        % %   status = process.wait(timeout_seconds);
-        % %
-        % % exitvalue:    the programs exit value
-        % % status:       true if the subprocess has exited and false if the 
-        % %               waiting time elapsed before the subprocess has exited
-        % % 
-        % function results = wait(obj, timeout)
-        %     if nargin > 1
-        %         java.lang.Thread.sleep(timeout*1000);
-        %         results = ~obj.Process.isAlive();
-        %     else
-        %         results = obj.Process.wait();
-        %     end
-        % end
-        % 
-        % % Get programs exit value.
-        % 
-        % % Loop in-/output.
-        % %
-        % % FIXME
-        % function results = run(obj, type)
-        %     results = [];
-        %     if nargin < 2
-        %         type = 'text';
-        %     end
-        % 
-        %     % check if streams are open
-        %     % FIXME
-        % 
-        %     % loop until exited
-        %     switch type
-        %         case 'text'
-        %             while obj.isrunning() ...
-        %                     || obj.ProcessOutput.ready() ...
-        %                     || obj.ProcessError.ready()
-        %                 if obj.ProcessOutput.ready()
-        %                     obj.OutputCb(char(obj.ProcessOutput.readLine()));
-        %                 end
-        % 
-        %                 if obj.ProcessError.ready()
-        %                     obj.ErrorCb(char(obj.ProcessError.readLine()));
-        %                 end
-        % 
-        %                 if ~isempty(obj.InputCb)
-        %                     obj.ProcessInput.write(obj.InputCb());
-        %                 end
-        % 
-        %                 if ~obj.wait(0.01) && ~isempty(obj.ProgressCb)
-        %                     obj.ProgressCb();
-        %                 end
-        %             end
-        % 
-        %         case 'binary'
-        %             FIXME()
-        % 
-        %         otherwise
-        %             error("ANA:runtime:invalidArgument", "invalid value provided to property 'Type'.")
-        %     end
-        % 
-        %     if  ~isempty(obj.ProgressCb)
-        %         obj.ProgressCb('Finished', true);
-        %     end
-        % end
+        function res = write(obj,data)
+            %WRITE      Write data to program's stdin.
+            %
+            if isempty(obj.BufferedInput)
+                res = obj.Input.write(data);
+                obj.Input.flush();
+            else
+                res = obj.BufferedInput.write(data);
+            end
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
