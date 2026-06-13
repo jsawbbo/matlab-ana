@@ -1,5 +1,12 @@
 classdef process < handle
     % ana.os.process    Sub-process builder.
+    %   
+    %   proc = ana.os.process('command', 'args', ..., <options>...)
+    %
+    % Options:
+    %   Input=@callback
+    %   Output=@callback
+    %   Error=@callback     (default: ana.log.error)
     %
     %
     % Callbacks:
