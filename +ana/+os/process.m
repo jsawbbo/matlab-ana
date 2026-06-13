@@ -61,7 +61,7 @@ classdef process < handle
                 options.ErrorMode = 'text'
             end
 
-            args = java.util.Arrays.asList(string(varargin));
+            args = java.util.Arrays.asList(varargin{:});
             build = java.lang.ProcessBuilder(args);
 
             % environment
@@ -239,6 +239,15 @@ classdef process < handle
                 obj.Input.flush();
             else
                 res = obj.BufferedInput.write(data);
+            end
+        end
+
+        function res = read(obj)
+            %READ       Read data from program's stdout.
+            if isempty(obj.BufferedOutput)
+                res = obj.Output.read();
+            else
+                res = obj.BufferedOutput.readLine();
             end
         end
     end
