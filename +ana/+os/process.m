@@ -69,11 +69,9 @@ classdef process < handle
                 options.Charset = 'UTF-8'
             end
 
-            args = cellfun(@char, varargin, 'UniformOutput', false);
-
-            jargs = javaArray('java.lang.String', numel(args));
-            for k = 1:numel(args)
-                jargs(k) = java.lang.String(args{k});
+            jargs = javaArray('java.lang.String', numel(varargin));
+            for k = 1:numel(varargin)
+                jargs(k) = java.lang.String(char(varargin{k}));
             end
 
             build = java.lang.ProcessBuilder(jargs);
@@ -220,7 +218,7 @@ classdef process < handle
                 while true
                     % check if we have data to read/process
                     [out,err] = obj.available();
-                    if ~out && ~err && ~obj.isrunning()
+                    if ~out && ~err
                         break
                     end
     
@@ -244,7 +242,7 @@ classdef process < handle
                 end
 
                 if isempty(obj.InputCb)
-                    res = false;
+                    break
                 else
                     data = obj.InputCb();
                     if isempty(data)
