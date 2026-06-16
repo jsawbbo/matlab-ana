@@ -66,10 +66,17 @@ classdef process < handle
                 options.InputMode = 'binary'
                 options.OutputMode = 'text'
                 options.ErrorMode = 'text'
+                options.Charset = 'UTF-8'
             end
 
-            args = java.util.Arrays.asList(varargin{:});
-            build = java.lang.ProcessBuilder(args);
+            args = cellfun(@char, varargin, 'UniformOutput', false);
+
+            jargs = javaArray('java.lang.String', numel(args));
+            for k = 1:numel(args)
+                jargs(k) = java.lang.String(args{k});
+            end
+
+            build = java.lang.ProcessBuilder(jargs);
 
             % environment
             env = build.environment();
@@ -80,6 +87,7 @@ classdef process < handle
                 if ~isempty(paths)
                     paths = split(string(paths), ':');
                     bad = contains(paths, {'MATLAB','MathWorks'});
+                    assert(any(size(bad)==1), "ANA:internalError", "Internal error: expected a 1-dimensional array.")
                     env.put('LD_LIBRARY_PATH', strjoin(paths(~bad),':'));
                 end
             end
@@ -95,13 +103,15 @@ classdef process < handle
             obj.Error = obj.Process.getErrorStream();
 
             % modes, buffering and callbacks
+            charset = java.nio.charset.Charset.forName(options.Charset);
+
             obj.InputMode = options.InputMode;
             obj.InputCb = options.Input;
             switch (obj.InputMode)
                 case 'binary'
                     % nothing to be done
                 case 'text'
-                    obj.BufferedOutput = java.io.PrintStream(obj.Input);
+                    obj.BufferedInput = java.io.PrintStream(obj.Input,charset);
                 otherwise
                     error("ANA:os:process:invalidInputMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.InputMode)
             end
@@ -112,7 +122,7 @@ classdef process < handle
                 case 'binary'
                     % nothing to be done
                 case 'text'
-                    obj.BufferedOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.Output));
+                    obj.BufferedOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.Output,charset));
                 otherwise
                     error("ANA:os:process:invalidOutputMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.OutputMode)
             end
@@ -123,15 +133,20 @@ classdef process < handle
                 case 'binary'
                     % nothing to be done
                 case 'text'
-                    obj.BufferedError = java.io.BufferedReader(java.io.InputStreamReader(obj.Error));
+                    obj.BufferedError = java.io.BufferedReader(java.io.InputStreamReader(obj.Error,charset));
                 otherwise
                     error("ANA:os:process:invalidErrorMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.ErrorMode)
             end
         end
         
         function delete(obj)
-            try  %#ok<TRYNC>                
-                obj.Process.destroyForcibly();
+            obj.stop();
+
+            try  
+                if obj.Process.isAlive()
+                    obj.Process.destroyForcibly();
+                end
+            catch
             end
         end
     end
@@ -142,22 +157,34 @@ classdef process < handle
             result = obj.Process.isAlive();
         end
 
-        function result = terminated(obj)
-            %TERMINATED     Check if process has (properly) terminated.
+        function result = exited(obj)
+            %EXITED         Check if process has exited normally.
+            %
+            %   This method returns `true` if the program exited normally
+            %   (which means, it has returned an exit value), `false` otherwise 
+            %   (for example, because the process was "killed" by the user).
+            %
             result = ~isempty(obj.exitValue());
         end
 
         function close(obj)
             %CLOSE          Close connection.
-            % FIXME
-            obj.Input.flush();
-            close(obj.Input);
+            try obj.Input.flush(); catch, end
+            try obj.Input.close(); catch, end
         end
 
-        function destroy(obj)
-            %DESTROY        Destroy the subprocess.
-            obj.close();
-            destroy(obj.Process)
+        function stop(obj)
+            %STOP           Stop sub-process.
+            try obj.Input.close(); catch, end
+            try obj.Output.close(); catch, end
+            try obj.Error.close(); catch, end
+        
+            try
+                if obj.Process.isAlive()
+                    obj.Process.destroy();
+                end
+            catch
+            end 
         end
 
         function results = exitValue(obj)
@@ -238,14 +265,27 @@ classdef process < handle
             res = obj.isrunning();
         end
 
-        function res = write(obj,data)
+        function res = write(obj,buf)
             %WRITE      Write data to program's stdin.
             %
+            % FIXME buf = typecast(reshape(uint8(data).', [], 1), 'int8');
+
             if isempty(obj.BufferedInput)
-                res = obj.Input.write(data);
-                obj.Input.flush();
+                try
+                    obj.Input.write(buf);
+                    obj.Input.flush();
+                    res = true;
+                catch
+                    res = false;
+                end
             else
-                res = obj.BufferedInput.write(data);
+                try
+                    obj.BufferedInput.write(buf);
+                    obj.BufferedInput.flush();
+                    res = true;
+                catch
+                    res = false;
+                end
             end
         end
 
@@ -263,3 +303,6 @@ end
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):
 %   Jürgen "George" Sawinski
+%
+% Development assistance:
+%   ChatGPT (OpenAI, GPT-5.5)
