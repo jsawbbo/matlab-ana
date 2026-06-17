@@ -1,7 +1,7 @@
 function trace(fmt,varargin)
     %ana.log.trace      Log trace (with stack info).
     %
-    % See also: ana.log.level, ana.log.message, ana.log.to
+    % See also: ana.log.level, ana.log.message, ana.log.set
 
     if ana.log.g.level > ana.log.level.TRACE
         return
@@ -21,3 +21,7 @@ function trace(fmt,varargin)
 
     ana.log.message('trace',msg);
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski

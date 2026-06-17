@@ -10,3 +10,7 @@ classdef level < int32
         TRACE   (-2)   % Extremely detailed flow tracing
     end
 end
+% Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
+% SPDX-License-Identifier: GPL-3.0-or-later
+% Author(s):
+%   Jürgen "George" Sawinski
