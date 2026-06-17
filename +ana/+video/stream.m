@@ -13,6 +13,7 @@ classdef stream < handle
             FrameRate = [], ...             % Input frame-rate.
             FrameSize = [], ...             % Input geometry ([w h]).
             PixelFormat = [], ...           % Input pixel format (e.g. "gray8").
+            ExtraParams = [], ...           % Additional command-line parameters.
             Reserved=[]);
 
         Filter = struct(...                 % Filter
@@ -26,7 +27,7 @@ classdef stream < handle
             PixelFormat = 'yuv444p', ...    % Output pixel format (e.g. "rgb24", default: "yuv444p").
             Codec = 'libx264', ...          % Video codec.
             ConstantRateFactor = 18,...     % Depends on codec, for libx264 a value of 0 is lossless and 51 worst losses.
-            ExtraParams = [],...            % Additional command-line parameters.
+            ExtraParams = [], ...           % Additional command-line parameters.
             Reserved=[]);
     end
 
@@ -59,6 +60,8 @@ classdef stream < handle
                         case 'ExtraParams'
                             extra = cellfun(@(s) string(s),param.ExtraParams,UniformOutput=false);
                             args = [args(:)',extra{:}];
+                        case 'Instruction'
+                            args = [args(:)',"-vf",string(param.Instruction)];
                         otherwise
                             error('ANA:internalError', 'internal error: unknown key: %s', key)
                     end
@@ -123,6 +126,7 @@ classdef stream < handle
                 args = [args(:)',"-i",obj.Input.File];
             end
 
+            args = obj.handleParam(args,obj.Filter);
             args = obj.handleParam(args,obj.Output);
 
             if isempty(obj.Output.File)
