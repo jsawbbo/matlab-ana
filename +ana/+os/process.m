@@ -1,49 +1,58 @@
 classdef process < handle
-    % ana.os.process    Sub-process builder.
-    %   
-    %   proc = ana.os.process('command', 'args', ..., <options>...)
+    % ana.os.process    Sub-process execution.
+    % 
+    % Akin to Matlab's <a href="matlab:help system">system</a> command, this class provides the possibility to
+    % execute sub-processes and connect or deal with the process' <a href="https://en.wikipedia.org/wiki/Standard_streams">standard streams</a>
+    % using the underlying Java language (java.lang.Process).
+    %
+    % A process can be created with
+    %
+    %     proc = ana.os.process('command', 'args...', ..., <options>...)
+    %
+    % (note that program arguments that are separated on the command-line by a space
+    % must be passed to ana.os.process as individual command arguments).
     %
     % Options:
-    %   Input=@callback
-    %   Output=@callback
-    %   Error=@callback     (default: ana.log.error)
+    %     MatlabRuntime=<logical>           If `true`, the command is executed within Matlab's
+    %                                       runtime environment (default: false).
+    %     Environment={...}                 List of environment variables that should be passed
+    %                                       to the process in addition to the normal environment 
+    %                                       variables (e.g. Environment={MY_VAR=1.0}).
+    %     Charset="<charset>"               The character set for any stream in text mode 
+    %                                       (default: UTF-8).
+    %     Input=<stdin settings>            See below.
+    %     Output=<stdout settings>          See below.
+    %     Error=<stderr settings>           See below 
+    %                                       (defaults: text mode and callback ana.log.error).
     %
+    % The stream settings can be either the mode ("text" or "binary") or a callback. 
+    % Alternatively it can be list (cell) of mode, callback and character-set
+    % (e.g. Output={"text",@ana.log.info,"C"}).
     %
-    % Callbacks:
-    %
-    %
-    %
-    %
-    % TODO: 
-    % - documentation for ana.os.process
-    % - check if MatlabRuntime is valid on Windows
 
     %% PROPERTIES
     properties(SetAccess = protected)
-        Process %java.lang.Process              % Java process handle.
+        Process                         % Process handle (java.lang.Process).
+
+        StdIn                           % Standard input stream of the process.
+        StdOut                          % Standard output stream of the process.
+        StdErr                          % Standard error stream of the process.
+
+        Charset                         % Default character set.
     end
 
+    properties(SetAccess = protected)
+        BufIn                           % Input stream buffer.
+        BufOut                          % Output stream buffer.
+        BufErr                          % Error stream buffer.
+
+        CbIn                            % Input stream callback.
+        CbOut                           % Output stream callback.
+        CbErr                           % Error stream callback.
+    end
+       
     properties
-        Input %java.io.OutputStream             % Process' standard input stream.
-        Output %java.io.InputStream             % Process' standard output stream.
-        Error %java.io.InputStream              % Process' standard error stream.
-    end
-
-    properties(Hidden, SetAccess = protected)
-        BufferedInput %java.io.PrintStream      % FIXME
-        InputMode
-
-        BufferedOutput %java.io.BufferedReader  % FIXME
-        OutputMode
-
-        BufferedError %java.io.BufferedReader   % FIXME
-        ErrorMode
-    end
-
-    properties(Hidden)
-        InputCb                                 % Process input callback.
-        OutputCb                                % Process output callback.
-        ErrorCb                                 % Process error callback.
+        Blocksize = 4096                % Default for block-wise binary reads.
     end
 
     %% PROTECTED
@@ -60,13 +69,10 @@ classdef process < handle
             arguments
                 options.MatlabRuntime = false       % Flag, if MATLAB paths should be accepted in LD_LIBRARY_PATH.
                 options.Environment = []            % Environment variables {<key>=<value>,...}.
-                options.Input = []                  % Program input callback.
-                options.Output = []                 % Program output callback.
-                options.Error = @ana.log.error      % Program error callback (default: ana.log.error).
-                options.InputMode = 'binary'
-                options.OutputMode = 'text'
-                options.ErrorMode = 'text'
-                options.Charset = 'UTF-8'
+                options.Input = []                  % Process' standard input settings.
+                options.Output = []                 % Process' standard output settings.
+                options.Error = []                  % Process' standard error settings.
+                options.Charset = 'UTF-8'           % Text-mode character set (default: "UTF-8").
             end
 
             jargs = javaArray('java.lang.String', numel(varargin));
@@ -80,6 +86,9 @@ classdef process < handle
             env = build.environment();
 
             if ~options.MatlabRuntime
+                % TODO:
+                % - check if MatlabRuntime works on Windows
+
                 % remove Matlab environment from LD_LIBRARY_PATH
                 paths = env.get('LD_LIBRARY_PATH');
                 if ~isempty(paths)
@@ -96,44 +105,96 @@ classdef process < handle
 
             % start process, get streams
             obj.Process = build.start();
-            obj.Input = obj.Process.getOutputStream();
-            obj.Output = obj.Process.getInputStream();
-            obj.Error = obj.Process.getErrorStream();
+            obj.StdIn = obj.Process.getOutputStream();
+            obj.StdOut = obj.Process.getInputStream();
+            obj.StdErr = obj.Process.getErrorStream();
 
-            % modes, buffering and callbacks
-            charset = java.nio.charset.Charset.forName(options.Charset);
+            % default character set
+            obj.Charset = options.Charset;
 
-            obj.InputMode = options.InputMode;
-            obj.InputCb = options.Input;
-            switch (obj.InputMode)
-                case 'binary'
-                    % nothing to be done
-                case 'text'
-                    obj.BufferedInput = java.io.PrintStream(obj.Input,charset);
-                otherwise
-                    error("ANA:os:process:invalidInputMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.InputMode)
-            end
+            % standard stream options
+            moreopts = {"Input","Output","Error"};
+            for k = 1:3
+                opt = moreopts{k};
 
-            obj.OutputMode = options.OutputMode;
-            obj.OutputCb = options.Output;
-            switch (obj.OutputMode)
-                case 'binary'
-                    % nothing to be done
-                case 'text'
-                    obj.BufferedOutput = java.io.BufferedReader(java.io.InputStreamReader(obj.Output,charset));
-                otherwise
-                    error("ANA:os:process:invalidOutputMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.OutputMode)
-            end
+                % defaults
+                mode = 'text';
+                charset = obj.Charset;
+                switch (opt)
+                    case "Input"
+                        callback = [];
+                    case "Output"
+                        callback = [];
+                    case "Error"
+                        callback = @ana.log.error;
+                end
 
-            obj.ErrorMode = options.ErrorMode;
-            obj.ErrorCb = options.Error;
-            switch (obj.ErrorMode)
-                case 'binary'
-                    % nothing to be done
-                case 'text'
-                    obj.BufferedError = java.io.BufferedReader(java.io.InputStreamReader(obj.Error,charset));
-                otherwise
-                    error("ANA:os:process:invalidErrorMode", "Invalid input mode '%s', must be 'text' or 'binary'.", obj.ErrorMode)
+                % user settings
+                user = options.(opt);
+                if ~isempty(user)
+                    if ischar(user) || isstring(user) || isa(user,'function_handle')
+                        user = {user};
+                    end
+
+                    assert(iscell(user), "ANA:os:process:invalidStreamParam","Invalid parameters passed to %s", opt);
+
+                    for n = 1:numel(user)
+                        value = user{n};
+
+                        if ischar(value) || isstring(value)
+                            switch value
+                                case {"text","binary"}
+                                    mode = value;
+                                otherwise
+                                    charset = value;
+                            end
+                        elseif isa(value,'function_handle')
+                            callback = value;
+                        else
+                            error("ANA:os:process:invalidStreamParam","Invalid parameters passed to %s", opt);
+                        end
+                    end
+                end
+
+                % checks
+                switch (mode)
+                    case {"text","binary"}
+                    otherwise
+                        error("ANA:os:process:invalidStreamParam","Invalid mode for %s: %s", opt, mode);
+                end
+
+                if isempty(charset)
+                    charset = obj.Charset;
+                end
+                charset = java.nio.charset.Charset.forName(charset);
+
+                % setup 
+                switch (opt)
+                    case "Input"
+                        switch (mode)
+                            case "text"
+                                obj.BufIn = java.io.PrintWriter(java.io.OutputStreamWriter(obj.StdIn,charset));
+                            case "binary"
+                                % FIXME
+                        end
+                        obj.CbIn = callback;
+                    case "Output"
+                        switch (mode)
+                            case "text"
+                                obj.BufOut = java.io.BufferedReader(java.io.InputStreamReader(obj.StdOut,charset));
+                            case "binary"
+                                % nothing to be done
+                        end
+                        obj.CbOut = callback;
+                    case "Error"
+                        switch (mode)
+                            case "text"
+                                obj.BufErr = java.io.BufferedReader(java.io.InputStreamReader(obj.StdErr,charset));
+                            case "binary"
+                                % nothing to be done
+                        end
+                        obj.CbErr = callback;
+                end
             end
         end
         
@@ -155,27 +216,35 @@ classdef process < handle
             result = obj.Process.isAlive();
         end
 
-        function result = exited(obj)
-            %EXITED         Check if process has exited normally.
+        function results = exitValue(obj)
+            %EXITVALUE      Get exit value from process.
             %
-            %   This method returns `true` if the program exited normally
-            %   (which means, it has returned an exit value), `false` otherwise 
-            %   (for example, because the process was "killed" by the user).
+            % This method returns the programs exit code if the program
+            % exited normally. Otherwise, the result is an empty array.
             %
-            result = ~isempty(obj.exitValue());
+            results = obj.Process.exitValue();
         end
 
         function close(obj)
             %CLOSE          Close connection.
-            try obj.Input.flush(); catch, end
-            try obj.Input.close(); catch, end
+            % 
+            % This method flushes and closes the programs standard input,
+            % commonly used to signal the sub-process the end of data
+            % transmission.
+            %
+            % See also: ana.os.process.stop
+            try obj.StdIn.flush(); catch, end
+            try obj.StdIn.close(); catch, end
         end
 
         function stop(obj)
             %STOP           Stop sub-process.
-            try obj.Input.close(); catch, end
-            try obj.Output.close(); catch, end
-            try obj.Error.close(); catch, end
+            %
+            % Close all standard streams and destroy the process.
+            %
+            try obj.StdIn.close(); catch, end
+            try obj.StdOut.close(); catch, end
+            try obj.StdErr.close(); catch, end
         
             try
                 if obj.Process.isAlive()
@@ -185,36 +254,34 @@ classdef process < handle
             end 
         end
 
-        function results = exitValue(obj)
-            %EXITVALUE      Get exit value from process.
-            if obj.isrunning() || ~obj.isvalid()
-                results = [];
-            else
-                results = obj.Process.exitValue();
-            end
-        end
-
         function [out,err] = available(obj)
-            %READY      Check if data can be read from process.
-
-            if isempty(obj.BufferedOutput)
-                out = (obj.Output.available() > 0);
+            %AVAILABLE      Check if data can be read from process.
+            %
+            if isempty(obj.BufOut)
+                out = (obj.StdOut.available() > 0);
             else
-                out = obj.BufferedOutput.ready();
+                out = obj.BufOut.ready();
             end
 
-            if isempty(obj.BufferedError)
-                err = (obj.Error.available() > 0);
+            if isempty(obj.BufErr)
+                err = (obj.StdErr.available() > 0);
             else
-                err = obj.BufferedError.ready();
+                err = obj.BufErr.ready();
             end
         end
 
         function res = run(obj)
             %RUN        Run program.
             % 
-            %   FIXME
+            % This function "runs" one iteration which covers feeding the callbacks.
+            % 
+            %
+            hasoutputcb = ~isempty(obj.CbOut);
+            haserrorcb = ~isempty(obj.CbErr);
+            hasinputcb = ~isempty(obj.CbIn);
+
             while true
+                % === output,error handling
                 while true
                     % check if we have data to read/process
                     [out,err] = obj.available();
@@ -223,28 +290,27 @@ classdef process < handle
                     end
     
                     % process program's stdout
-                    if out && ~isempty(obj.OutputCb)
-                        if isempty(obj.BufferedOutput)
-                            FIXME
+                    if out && hasoutputcb
+                        if isempty(obj.BufOut)
+                            obj.CbOut(char(obj.StdOut.read(obj.Blocksize)));
                         else
-                            obj.OutputCb(char(obj.BufferedOutput.readLine()));
+                            obj.CbOut(char(obj.BufOut.readLine()));
                         end
                     end
     
                     % process program's stderr
-                    if err && ~isempty(obj.ErrorCb)
-                        if isempty(obj.BufferedError)
-                            FIXME
+                    if err && haserrorcb
+                        if isempty(obj.BufErr)
+                            obj.CbErr(char(obj.StdErr.read(obj.Blocksize)));
                         else
-                            obj.ErrorCb(char(obj.BufferedError.readLine()));
+                            obj.CbErr(char(obj.BufErr.readLine()));
                         end
                     end
                 end
 
-                if isempty(obj.InputCb)
-                    break
-                else
-                    data = obj.InputCb();
+                % === input handling if applicable
+                if hasinputcb
+                    data = obj.CbIn();
                     if isempty(data)
                         res = false;
                     else 
@@ -253,6 +319,8 @@ classdef process < handle
                             res = false;
                         end
                     end
+                else
+                    break
                 end
 
                 if ~res && ~obj.isrunning()
@@ -264,22 +332,23 @@ classdef process < handle
         end
 
         function res = write(obj,buf)
-            %WRITE      Write data to program's stdin.
+            %WRITE      Write data to program's standard input stream.
             %
-            % FIXME buf = typecast(reshape(uint8(data).', [], 1), 'int8');
+            % Write binary (int8 or uint8) data to the programs standard input or the buffer.
+            %
 
-            if isempty(obj.BufferedInput)
+            if isempty(obj.BufIn)
                 try
-                    obj.Input.write(buf);
-                    obj.Input.flush();
+                    obj.StdIn.write(buf);
+                    obj.StdIn.flush();
                     res = true;
                 catch
                     res = false;
                 end
             else
                 try
-                    obj.BufferedInput.write(buf);
-                    obj.BufferedInput.flush();
+                    obj.BufIn.write(buf);
+                    obj.BufIn.flush();
                     res = true;
                 catch
                     res = false;
@@ -288,11 +357,14 @@ classdef process < handle
         end
 
         function res = read(obj)
-            %READ       Read data from program's stdout.
-            if isempty(obj.BufferedOutput)
-                res = obj.Output.read();
+            %READ       Read data from program's standard output stream.
+            %
+            % In text mode, reads a line, otherwise a block of data.
+            %
+            if isempty(obj.BufOut)
+                res = obj.StdOut.read(obj.Blocksize);
             else
-                res = obj.BufferedOutput.readLine();
+                res = obj.BufOut.readLine();
             end
         end
     end

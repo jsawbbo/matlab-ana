@@ -1,9 +1,28 @@
-classdef stream < handle
-    %ana.video.stream          Video en-, trans- or decoder (based on ffmpeg).
+classdef ffmpeg < handle
+    %ana.video.ffmpeg          FFmpeg streaming interface.
     %
-    % TODO: 
-    % - documentation
-    % - examples, e.g. ffmpeg -i CADDX000003-%06d.png -c:v libx265 -pix_fmt gray -x265-params lossless=1 output.mp4
+    % Example:
+    % To write the data of an image store to a losslessly compressed mp4 (H.265), the following
+    % code can be used:
+    % 
+    %    imds = imageDatastore("path/to/images/");
+    %    I = imds.read();
+    %    Dim = size(I);
+    %    mp4 = ana.video.ffmpeg() ...
+    %      .input(Format="rawvideo",PixelFormat="rgb24",FrameSize=[Dim(2) Dim(1)],FrameRate=50) ...
+    %      .filter() ...
+    %      .output(Codec="libx265",ExtraParams={"-x265-params","lossless=1"},File="output.mp4");
+    %    mp4.build();
+    %    while ~isempty(I)
+    %        mp4.run(); 
+    %    
+    %        RGB = permute(I, [3, 2, 1]); 
+    %        mp4.write(RGB(:));
+    %        
+    %        I = imds.read();
+    %    end
+    %    mp4.close()
+    %
 
     %% PROPERTIES
     properties
@@ -72,7 +91,7 @@ classdef stream < handle
 
     %% PUBLIC
     methods
-        function obj = stream()
+        function obj = ffmpeg()
             %STREAM         Create an instance of this class.
         end
 
@@ -136,7 +155,7 @@ classdef stream < handle
             end
                 
             args = cellstr(args);
-            proc = ana.os.process(args{:}, OutputMode='binary');
+            proc = ana.os.process(args{:},Input="binary",Output="binary");
             obj.Process = proc;
         end
 
@@ -159,6 +178,7 @@ classdef stream < handle
             %CLOSE      Close stream.
             obj.Process.close();
             while obj.Process.isrunning()
+                obj.run();
                 pause(0.001);
             end
         end
