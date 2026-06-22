@@ -1,0 +1,6 @@
+TODO:
+- add "helpfiles" directory with terse documentation
+- caching needs to be implemented and described (see scheme/general.yml)
+- handle truely remote networks (including Windows UNC paths, URLs, etc)
+- needs a "helpfiles" discription of file paths (such as the "{storage}" notation
+  and the fact, we're only using forward slash as file path separator
