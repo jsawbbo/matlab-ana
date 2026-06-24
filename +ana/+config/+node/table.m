@@ -235,6 +235,8 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
                         obj.PrivateData_{k} = node;
                     end
+                elseif isempty(s)
+                    % nothing to do
                 else
                     error("ANA:logic:invalidArgument", "argument not recognized")
                 end

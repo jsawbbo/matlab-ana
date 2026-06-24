@@ -1,38 +1,41 @@
-classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
-    %ANA.TYPE.DICT      A dictionary with struct semantics.
+classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
+    %ANA.TYPE.DICT      Variant dictionary and struct semantics.
+    % 
+    % This class wraps Matlab's dictionary allowing any type to be stored and
+    % retrieved without unpacking cells (as <a href="matlab:help dictionary">dictionary</a> would required).
     %
-    %   d = ana.type.dict();
-    %   d.foo = 42;
-    %   d.("bar-baz") = magic(3);
+    % Usage:
     %
-    %   d.foo         % -> 42
-    %   d.("bar-baz") % -> magic(3)
-    %   fieldnames(d) % -> {'foo'; 'bar-baz'}
+    %     d = ana.type.dict();
+    %     d.foo = 42;
+    %     d("bar-baz") = magic(3);
     %
-    % Internally values are stored in MATLAB's dictionary using string keys.
-    % Values are wrapped in cells so heterogeneous MATLAB values are allowed.
+    %     d('foo')      % -> 42
+    %     d("bar-baz")  % -> magic(3)
+    %     fieldnames(d) % -> {'foo'; 'bar-baz'}
+    %
 
     %% Properties
     properties (Access = private)
-        Data dictionary = dictionary(string.empty(1,0), cell.empty(1,0))
+        PrivateData_ dictionary = dictionary(string.empty(1,0), cell.empty(1,0))
     end
 
     %% Helper
     methods
         function out = keys(obj)
             % keys      Return keys as a string column vector.
-            out = keys(obj.Data);
+            out = keys(obj.PrivateData_);
             out = out(:);
         end
 
         function tf = isKey(obj, name)
             % isKey     True if key exists.
-            tf = isKey(obj.Data, string(name));
+            tf = isKey(obj.PrivateData_, string(name));
         end
 
         function remove(obj, name)
             % remove    Remove one or more keys.
-            remove(obj.Data, string(name));
+            remove(obj.PrivateData_, string(name));
         end
         
         function disp(obj)
@@ -76,7 +79,7 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
                 s = varargin{1};
                 f = string(fieldnames(s));
                 for k = reshape(f, 1, [])
-                    obj.Data(k) = {s.(k)};
+                    obj.PrivateData_(k) = {s.(k)};
                 end
                 return
             end
@@ -90,7 +93,7 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
                 end
 
                 for i = 1:numel(ks)
-                    obj.Data(ks(i)) = {vs{i}};
+                    obj.PrivateData_(ks(i)) = {vs{i}};
                 end
                 return
             end
@@ -101,13 +104,13 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
             end
 
             for i = 1:2:nargin
-                obj.Data(string(varargin{i})) = {varargin{i+1}};
+                obj.PrivateData_(string(varargin{i})) = {varargin{i+1}};
             end
         end
 
         function out = fieldnames(obj)
             % fieldnames        Return dictionary keys as a cellstr, like struct.
-            out = cellstr(keys(obj.Data));
+            out = cellstr(keys(obj.PrivateData_));
             out = out(:);
         end
 
@@ -118,15 +121,15 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
 
         function rmfield(obj, name)
             % rmfield           Remove one or more keys.
-            remove(obj.Data, string(name));
+            remove(obj.PrivateData_, string(name));
         end
 
         function s = struct(obj)
             % struct            Convert to scalar struct (if possible).
             s = struct();
-            ks = keys(obj.Data);
+            ks = keys(obj.PrivateData_);
             for k = reshape(ks, 1, [])
-                value = obj.Data(k);
+                value = obj.PrivateData_(k);
                 value = value{1};
                 s.(k) = value;
             end
@@ -138,12 +141,12 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
         function varargout = parenReference(obj, indexOp)
             key = ana.type.dict.parseKey(indexOp(1));
 
-            if ~isKey(obj.Data, key)
+            if ~isKey(obj.PrivateData_, key)
                 error("ANA:type:dict:NoSuchKey", ...
                     "No such key: '%s'.", key);
             end
 
-            value = obj.Data(key);
+            value = obj.PrivateData_(key);
             value = value{1};
 
             if isscalar(indexOp)
@@ -157,35 +160,35 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
             key = ana.type.dict.parseKey(indexOp(1));
 
             if isscalar(indexOp)
-                obj.Data(key) = varargin(1);
+                obj.PrivateData_(key) = varargin(1);
                 return
             end
 
-            if isKey(obj.Data, key)
-                value = obj.Data(key);
+            if isKey(obj.PrivateData_, key)
+                value = obj.PrivateData_(key);
                 value = value{1};
             else
                 value = struct();
             end
 
             [value.(indexOp(2:end))] = varargin{:};
-            obj.Data(key) = {value};
+            obj.PrivateData_(key) = {value};
         end
 
         function obj = parenDelete(obj, indexOp)
             key = ana.type.dict.parseKey(indexOp(1));
-            remove(obj.Data, key);
+            remove(obj.PrivateData_, key);
         end
 
         function n = parenListLength(obj, indexOp, indexContext)
             key = ana.type.dict.parseKey(indexOp(1));
 
-            if ~isKey(obj.Data, key)
+            if ~isKey(obj.PrivateData_, key)
                 n = 1;
                 return
             end
 
-            value = obj.Data(key);
+            value = obj.PrivateData_(key);
             value = value{1};
 
             if isscalar(indexOp)
@@ -210,6 +213,50 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.Scalar
             if ~isscalar(key)
                 error("ANA:type:dict:InvalidKey", ...
                     "Dictionary key must be scalar string or char.");
+            end
+        end
+    end
+
+    %% RedefinesDot
+    methods(Access=protected)
+        function varargout = dotReference(obj, indexOp)
+            field = indexOp(1).Name;
+
+            if isKey(obj.PrivateData_, field)
+                retval = obj.PrivateData_(field);
+                retval = retval{1};
+
+                if numel(indexOp) > 1
+                    retval = retval.(indexOp(2:end));
+                end
+
+                varargout{1} = retval;
+            else
+                error("ANA:runtime:fieldNotFound", "field '%s' not found.", field);
+            end
+        end
+
+        function obj = dotAssign(obj, indexOp, varargin)
+            field = indexOp(1).Name;
+            value = varargin{1};
+
+            if isscalar(indexOp)
+                obj.PrivateData_(field) = {value};
+            else
+                node = obj.PrivateData_(field);
+                node = node{1};
+                node.(indexOp(2:end)) = value;
+                obj.PrivateData_(field) = {node};
+            end
+        end
+
+        function n = dotListLength(obj, indexOp, ~)
+            field = indexOp(1).Name;
+            if isKey(obj.PrivateData_, field)
+                % always returning one node
+                n = 1;
+            else
+                error("ANA:runtime:invalidKey", "Field '%s' not found.", field);
             end
         end
     end

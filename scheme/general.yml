@@ -22,64 +22,85 @@ content:
                 File storage search path.
 
                 Depending on the computing environment, files may be stored in locations with
-                a different root (for example when moving from a Microscoft Windows to a
+                a different root (for example when moving from a Microsoft Windows to a
                 Linux workstation). This allows files to be represented as, for example
 
                     {storage}/rawdata/datafile-01.data
 
-                so that a configuration file must not be edited.
+                so that configuration files do not need to be edited for different environments.
         content:
         -   key: location
             type: path
             meta:
                 label: Location
-                comment: "Local path or remote URL."
-        -   key: type
+                comment: |
+                    Local path or remote URL.
+
+                    Supported schemes:
+                    - file system path (/path/to/data, C:\path\to\data, or file:/path/to/data)
+                    - UNC paths (\\server\share or //server/share)
+                    - URLs (except file: scheme, e.g. https://server/path)
+        -   key: class
             type: category
             meta:
-                label: Remote
+                label: Storage class
                 categories:
                 -   value: "local"
                     label: "Local"
-                -   value: "remote"
-                    label: "Remote"
-                -   value: "removable"
-                    label: "Removable"
+                -   value: "network"
+                    label: "Network"
+                -   value: "external"
+                    label: "External"
                 default: local
-                comment: "Search path residing on a remote system."
+                comment: |
+                    Local storage means storage that is permanently connected to the computing device (*).
+
+                    Network storage encompasses everything, that is accessible via a network but is not
+                    necessarily permanently connected (*). Especially on workstations or any computing 
+                    device, this includes mapped network drives, remote file-systems, and cloud storage, 
+                    including WebDAV, S3, etc.).
+
+                    External storage refers to removable media, such has USB hard disks, SD cards, etc.
+                    (mind that this requires a consistent mount point [Linux/Unix] or drive letter 
+                    [Windows]).
+
+                    (*) Note, that the distinction between "local" and "network" is not always obvious. 
+                    If network storage is expected to be online permanently (which is, for example
+                    the case in a HPC environment where a network failure implies a general system failure),
+                    it should be considered "local" storage, otherwise, it is a "network" storage.
     -   key: scratch
         type: path
         meta:
             label: Scratch directory
-            comment: "Local scratch directory (for temporary large files)."
+            comment: |
+                Local scratch directory (for temporary large files).
             default: 
                 eval: |
                     ana.os.paths('tmpdir')
-    -   key: cache
-        type: dict
-        meta:
-            label: Cache directory and size
-        content:
-        -   key: path
-            type: path
-            meta:
-                label: Path
-                comment: |
-                    Cache directory.
-        
-                    FIXME
-                default: 
-                    eval: |
-                        ana.os.paths('cachedir')
-        -   key: size
-            type: numeric
-            meta:
-                label: Size
-                comment: |
-                    Maximum size of the cache directory (GiB).
-    
-                    FIXME
-                default: 256
+# FIXME
+    # -   key: cache
+    #     type: dict
+    #     meta:
+    #         label: Cache directory and size
+    #         comment: |
+    #             Note: At the moment of writing, caching is a planned feature, so, currently not supported.
+    #     content:
+    #     -   key: path
+    #         type: path
+    #         meta:
+    #             label: Path
+    #             comment: |
+    #                 Local cache directory.
+    #             default: 
+    #                 eval: |
+    #                     ana.os.paths('cachedir')
+    #     -   key: size
+    #         type: numeric
+    #         meta:
+    #             label: Size
+    #             comment: |
+    #                 Maximum size of the cache directory (GiB).
+    #             default: 256
 # FIXME external programs
 #           - python
 #           - conda

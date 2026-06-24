@@ -1,9 +1,6 @@
 classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
     %ana.config.node.dict       A key-value pair mapping.
     %
-    %   This node wraps an underlying dictionary, allowing non-standard keys. If possible, though,
-    %   it may behave like a normal `struct` for accessing values.
-    %
 
     %% HELPER
     methods (Hidden, Access=protected)
@@ -79,63 +76,6 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                 end
             end
         end        
-    end
-
-    %% RedefinesDot
-    methods(Access=protected)
-        function varargout = dotReference(obj, indexOp)
-            field = indexOp(1).Name;
-            
-            if isfield(obj.PrivateData_, field)
-                retval = obj.PrivateData_(field);
-                
-                if numel(indexOp) > 1
-                    retval = retval.(indexOp(2:end));
-                end
-
-                varargout{1} = retval;
-            else
-                error("ANA:runtime:fieldNotFound", "field '%s' not found.", field);
-            end
-        end
-        
-        function obj = dotAssign(obj, indexOp, varargin)
-            field = indexOp(1).Name;
-            newValue = varargin{1};
-
-            if isscalar(indexOp)
-                obj.set(field, newValue);
-            else
-                node = obj.PrivateData_(field);
-                node.(indexOp(2:end)) = newValue;
-            end
-        end
-        
-        function n = dotListLength(obj, indexOp, ~)
-            field = indexOp(1).Name;
-            if isfield(obj.PrivateData_, field)
-                % always returning one node
-                n = 1;
-            else
-                error("ANA:runtime:invalidKey", "Field '%s' not found.", field);
-            end
-        end
-    end
-    
-    methods
-        function fields = fieldnames(obj)
-            fields = fieldnames(obj.PrivateData_);
-        end
-        
-        function tf = isfield(obj, field)
-            tf = isfield(obj.PrivateData_, field);
-        end
-        
-        function obj = rmfield(obj, field)
-            if isfield(obj.PrivateData_, field)
-                obj.PrivateData_ = rmfield(obj.PrivateData_, field);
-            end
-        end
     end
     
     %% PUBLIC
@@ -237,17 +177,17 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                                     node = ana.config.node.dict(Parent=obj,Scheme=sch);
                                     node.set(value);
     
-                                    obj.PrivateData_(key) = {node};
+                                    obj.PrivateData_(key) = node;
                                 elseif iscell(value)
                                     node = ana.config.node.list(Parent=obj,Scheme=sch);
                                     node.set(value);
     
-                                    obj.PrivateData_(key) = {node};
+                                    obj.PrivateData_(key) = node;
                                 else
                                     error("ANA:runtime:invalidType", "trying to assign invalid type for key '%s'", key)
                                 end
                             else
-                                obj.PrivateData_(key) = {ana.config.node.leaf(value,Parent=obj,Scheme=sch)};
+                                obj.PrivateData_(key) = ana.config.node.leaf(value,Parent=obj,Scheme=sch);
                             end
                         end
                     end
@@ -263,6 +203,63 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
             catch me
                 scope = 0;
                 rethrow(me);
+            end
+        end
+    end
+
+    %% RedefinesDot
+    methods(Access=protected)
+        function varargout = dotReference(obj, indexOp)
+            field = indexOp(1).Name;
+            
+            if isfield(obj.PrivateData_, field)
+                retval = obj.PrivateData_(field);
+                
+                if numel(indexOp) > 1
+                    retval = retval.(indexOp(2:end));
+                end
+
+                varargout{1} = retval;
+            else
+                error("ANA:runtime:fieldNotFound", "field '%s' not found.", field);
+            end
+        end
+        
+        function obj = dotAssign(obj, indexOp, varargin)
+            field = indexOp(1).Name;
+            value = varargin{1};
+
+            if isscalar(indexOp)
+                obj.set(field, value);
+            else
+                node = obj.PrivateData_(field);
+                node.(indexOp(2:end)) = value;
+            end
+        end
+        
+        function n = dotListLength(obj, indexOp, ~)
+            field = indexOp(1).Name;
+            if isfield(obj.PrivateData_, field)
+                % always returning one node
+                n = 1;
+            else
+                error("ANA:runtime:invalidKey", "Field '%s' not found.", field);
+            end
+        end
+    end
+    
+    methods
+        function fields = fieldnames(obj)
+            fields = fieldnames(obj.PrivateData_);
+        end
+        
+        function tf = isfield(obj, field)
+            tf = isfield(obj.PrivateData_, field);
+        end
+        
+        function obj = rmfield(obj, field)
+            if isfield(obj.PrivateData_, field)
+                obj.PrivateData_ = rmfield(obj.PrivateData_, field);
             end
         end
     end
