@@ -6,23 +6,24 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
     %% HELPER
     methods (Hidden, Access=protected)
-        function save_(obj,fd,level)
+        function save_(obj,fd,options)
             arguments
                 obj
                 fd (1,1) double
-                level {mustBeScalarOrEmpty} = 0
+                options.Level (1,1) {mustBeInteger,mustBeGreaterThan(options.Level,-1)} = 0
+                options.Comment (1,1) {mustBeNumericOrLogical} = true
             end
 
             if ~isempty(obj)
                 for k = 1:numel(obj)
-                    if level > 0
-                        indent_s = pad("", ana.internal.indent("YAML")*(level-1));
+                    if options.Level > 0
+                        indent_s = pad("", 2*(options.Level-1));
                         fprintf(fd, "\n%s",indent_s);
                     end
 
-                    fprintf(fd, "-%s",  pad("", ana.internal.indent("YAML")-1));
+                    fprintf(fd, "- ");
                     node = obj.PrivateData_{k};
-                    node.save_(fd,level);
+                    node.save_(fd,Level=options.Level,Comment=false);
                 end
             end
         end        

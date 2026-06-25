@@ -4,35 +4,56 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
 
     %% HELPER
     methods (Hidden, Access=protected)
-        function save_(obj,fd,level)
+        function save_(obj,fd,options)
             arguments
                 obj
                 fd (1,1) double
-                level {mustBeScalarOrEmpty} = 0
+                options.Level (1,1) {mustBeInteger,mustBeGreaterThan(options.Level,-1)} = 0
+                options.Comment (1,1) {mustBeNumericOrLogical} = true
             end
 
             parent_list = isa(obj.PrivateParent_, "ana.config.node.list") || isa(obj.PrivateParent_, "ana.config.node.table");
-            indent_s = pad("", ana.internal.indent("YAML")*level);
+            indent_s = pad("", 2*options.Level);
             key = fieldnames(obj.PrivateData_);
             N = length(key);
             for i = 1:N
-                if (level > 0) && (i == 1) && ~parent_list
+                if (options.Level > 0) && (i == 1) && ~parent_list
                     fprintf(fd,"\n");
                 end
+                node = obj.PrivateData_(key{i});
+                noindent = (i == 1) && parent_list;
+                
+                % comment
+                sch = node.PrivateScheme_;
+                meta = sch.meta();
+                if options.Comment && isfield(meta,'comment')
+                    lines = strsplit(meta.comment, '\n', CollapseDelimiters=false); % FIXME do we need to handle \r?
+                    if strlength(lines(end)) == 0
+                        lines = lines(1:end-1);
+                    end
 
-                if (i == 1) && parent_list
-                    fprintf(fd, "%s:", key{i});
-                else
-                    fprintf(fd, "%s%s:", indent_s, key{i});
+                    for k = 1:numel(lines)
+                        if ~noindent
+                            fprintf(fd, indent_s);
+                        end
+                        fprintf(fd, "# %s\n", lines{k});
+                    end
                 end
+
+                % value
+                if ~noindent
+                    fprintf(fd, indent_s);
+                end
+                fprintf(fd, "%s:", key{i});
 
                 try
-                    obj.PrivateData_(key{i}).save_(fd,level+1);
+                    node.save_(fd,Level=options.Level+1);
                 catch me
-                    FIXME(me)
+                    % FIXME what should we do?
+                    rethrow(me)
                 end
         
-                if (i < N) || (level == 0)
+                if (i < N) || (options.Level == 0)
                     fprintf(fd, "\n");
                 end
             end

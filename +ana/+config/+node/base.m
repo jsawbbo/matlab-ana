@@ -13,11 +13,12 @@ classdef base < handle
 
     %% INTERNAL
     methods (Hidden,Access = protected)
-        function save_(obj,fd,level)
+        function save_(obj,fd,options)
             arguments
                 obj (1,1) 
                 fd (1,1) double 
-                level (1,1) {mustBeInteger,mustBeGreaterThan(level,-1)}
+                options.Level (1,1) {mustBeInteger,mustBeGreaterThan(options.Level,-1)} = 0
+                options.Comment (1,1) {mustBeNumericOrLogical} = false
             end
 
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
@@ -34,7 +35,7 @@ classdef base < handle
     %% HELPER
     methods
         function disp(obj)
-            obj.save_(1,1);
+            obj.save_(1,Level=1,Comment=true); % FIXME Comment should be false
             fprintf("\n")
         end
 
@@ -139,7 +140,7 @@ classdef base < handle
 
         function dump(obj)
             %DUMP       Dump contents (YAML).
-            obj.save_(1,0);
+            obj.save_(1,Level=0);
         end
 
         function res = get(obj)
