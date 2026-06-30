@@ -5,11 +5,12 @@ classdef leaf < ana.config.node.base
 
     %% HELPER
     methods (Hidden, Access=protected)
-        function save_(obj,fd,level)
+        function save_(obj,fd,options)
             arguments
                 obj
                 fd (1,1) double
-                level {mustBeScalarOrEmpty} = 0
+                options.Level (1,1) {mustBeInteger,mustBeGreaterThan(options.Level,-1)} = 0
+                options.Comment (1,1) {mustBeNumericOrLogical} = true
             end
 
             assert(~isa(obj.PrivateData_, 'ana.config.node.base'));
@@ -24,7 +25,7 @@ classdef leaf < ana.config.node.base
                 N = length(lines);
                 switch (extract(s,1))
                     case "-"
-                        indent_s = pad("", obj.Indent_*(level-1));
+                        indent_s = pad("", 2*(options.Level-1));
                         fprintf(fd,"\n");
                         for i = 1:N
                             fprintf(fd,"%s%s",indent_s,lines(i));
@@ -33,7 +34,7 @@ classdef leaf < ana.config.node.base
                             end
                         end
                     case {"|",">"}
-                        indent_s = pad("", obj.Indent_*level);
+                        indent_s = pad("", 2*options.Level);
                         fprintf(fd," %s\n", lines(1));
                         for i = 2:N
                             fprintf(fd,"%s%s",indent_s,strtrim(lines(i)));
