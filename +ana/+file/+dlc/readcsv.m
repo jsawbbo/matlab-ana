@@ -48,7 +48,7 @@ function res = readcsv(filename)
     res = struct();
 
     res.frame = data(:,1);
-    for k = 2:numel(vars)-1
+    for k = 2:numel(vars)
         idx = (k-2)*3+1;
         tmp = struct(x=data(:,idx+1),y=data(:,idx+2),likelihood=data(:,idx+3));
         res.(vars(k)) = tmp;
