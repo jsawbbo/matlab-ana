@@ -16,6 +16,6 @@ function display(obj, name)
         return
     end
 
-    fprintf('  <a href="matlab:help">%s</a> with contents:\n\n', class(obj));
+    fprintf('  <a href="matlab:help">%s</a> with contents:\n', class(obj));
     disp(obj)
 end

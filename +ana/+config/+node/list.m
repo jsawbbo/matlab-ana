@@ -6,7 +6,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
     %% HELPER
     methods (Hidden, Access=protected)
-        function save_(obj,fd,level)
+        function save_(obj,fd,options)
             arguments
                 obj
                 fd (1,1) double

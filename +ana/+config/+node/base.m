@@ -13,7 +13,15 @@ classdef base < handle
 
     %% INTERNAL
     methods (Hidden,Access = protected)
+        function res = indent_(~,level)
+            %INDENT_    Returns target column for indentation.
+            res = 2*level;
+            % TODO:
+            % - make this configurable
+        end
+
         function save_(obj,fd,options)
+            %SAVE_      Emit node in YAML format.
             arguments
                 obj (1,1) 
                 fd (1,1) double 
@@ -25,6 +33,7 @@ classdef base < handle
         end
 
         function autosave(obj)
+            %AUTOSAVE       Auto-save configuration.
             ptr = obj.root();
             if ptr ~= obj
                 ptr.autosave();
@@ -35,7 +44,7 @@ classdef base < handle
     %% HELPER
     methods
         function disp(obj)
-            obj.save_(1,Level=1,Comment=true); % FIXME Comment should be false
+            obj.save_(1,Level=1,Comment=false);
             fprintf("\n")
         end
 

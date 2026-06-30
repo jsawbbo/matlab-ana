@@ -15,15 +15,17 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
 
             if ~isempty(obj)
+                indent_column = obj.indent_(options.Level-1);
                 for k = 1:numel(obj)
+                    node = obj.PrivateData_{k};
+                    
                     if options.Level > 0
-                        indent_s = pad("", 2*(options.Level-1));
+                        indent_s = pad("", indent_column);
                         fprintf(fd, "\n%s",indent_s);
                     end
 
                     fprintf(fd, "- ");
-                    node = obj.PrivateData_{k};
-                    node.save_(fd,Level=options.Level,Comment=false);
+                    node.save_(fd,Level=options.Level,Comment=options.Comment);
                 end
             end
         end        
@@ -114,6 +116,8 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                     tmp.(indexOp(2:end)) = varargin{k};
                 end
             end
+            % TODO:
+            % - if new entry is created, it needs to run the initialize() function first
         end
 
         function obj = parenDelete(obj, indexOp)

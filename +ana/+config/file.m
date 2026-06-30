@@ -89,7 +89,15 @@ classdef file < ana.config.object
 
         function save(obj)
             %SAVE   Save data to associated file.
-            %FIXME
+            copyfile(+obj.PrivateFilename_, +obj.PrivateFilename_ + ".bak")
+            fd = fopen(+obj.PrivateFilename_,"w");
+
+            % emit header
+            fprintf(fd, "version: %s\n\n", obj.PrivateScheme_.version());
+
+            % contents
+            obj.save_(fd,Comment=true);
+            fclose(fd);
         end
     end
 end

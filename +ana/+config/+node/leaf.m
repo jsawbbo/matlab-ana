@@ -25,7 +25,7 @@ classdef leaf < ana.config.node.base
                 N = length(lines);
                 switch (extract(s,1))
                     case "-"
-                        indent_s = pad("", 2*(options.Level-1));
+                        indent_s = pad("", obj.indent_(options.Level-1));
                         fprintf(fd,"\n");
                         for i = 1:N
                             fprintf(fd,"%s%s",indent_s,lines(i));
@@ -34,7 +34,7 @@ classdef leaf < ana.config.node.base
                             end
                         end
                     case {"|",">"}
-                        indent_s = pad("", 2*options.Level);
+                        indent_s = pad("", obj.indent_(options.Level));
                         fprintf(fd," %s\n", lines(1));
                         for i = 2:N
                             fprintf(fd,"%s%s",indent_s,strtrim(lines(i)));

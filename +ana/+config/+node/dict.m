@@ -13,7 +13,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
             end
 
             parent_list = isa(obj.PrivateParent_, "ana.config.node.list") || isa(obj.PrivateParent_, "ana.config.node.table");
-            indent_s = pad("", 2*options.Level);
+            indent_column = obj.indent_(options.Level);
+            indent_s = pad("", indent_column);
             key = fieldnames(obj.PrivateData_);
             N = length(key);
             for i = 1:N
@@ -24,35 +25,27 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                 noindent = (i == 1) && parent_list;
                 
                 % comment
-                sch = node.PrivateScheme_;
-                meta = sch.meta();
-                if options.Comment && isfield(meta,'comment')
-                    lines = strsplit(meta.comment, '\n', CollapseDelimiters=false); % FIXME do we need to handle \r?
-                    if strlength(lines(end)) == 0
-                        lines = lines(1:end-1);
-                    end
-
-                    for k = 1:numel(lines)
-                        if ~noindent
-                            fprintf(fd, indent_s);
-                        end
-                        fprintf(fd, "# %s\n", lines{k});
-                    end
+                if options.Comment
+                    follow_comments = node.PrivateScheme_.comment(fd,Column=indent_column);
+                else
+                    follow_comments = options.Comment;
                 end
 
-                % value
+                % key
                 if ~noindent
                     fprintf(fd, indent_s);
                 end
                 fprintf(fd, "%s:", key{i});
 
+                % value
                 try
-                    node.save_(fd,Level=options.Level+1);
+                    node.save_(fd,Level=options.Level+1,Comment=follow_comments);
                 catch me
                     % FIXME what should we do?
                     rethrow(me)
                 end
         
+                % finalize
                 if (i < N) || (options.Level == 0)
                     fprintf(fd, "\n");
                 end

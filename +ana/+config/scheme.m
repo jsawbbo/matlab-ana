@@ -236,6 +236,47 @@ classdef scheme
                 res{k} = ana.config.scheme(res{k});
             end
         end
+
+        function follow = comment(obj,fd,options)
+            %COMMENT    Emit comment.
+            arguments
+                obj (1,1) ana.config.scheme
+                fd (1,1) double 
+                options.Column (1,1)        % Target column for comments
+                options.Level (1,1) = 0     % Nested comment level
+            end
+
+            follow = true;
+            if isfield(obj.Scheme, 'meta')
+                meta = obj.Scheme.meta;
+                if isfield(meta,'comment')
+                    column_s = pad("", options.Column);
+                    indent_s = pad("", options.Level*4); % FIXME make configurable?
+                    lines = strsplit(meta.comment, '\n', CollapseDelimiters=false); % FIXME do we need to handle \r?
+                    if strlength(lines(end)) == 0
+                        lines = lines(1:end-1);
+                    end
+
+                    for k = 1:numel(lines)
+                        fprintf(fd, "%s# %s%s\n", column_s, indent_s, lines{k});
+                    end
+
+                    switch (obj.Scheme.type)
+                        case "table"
+                            fprintf(fd, "%s# \n", column_s);
+                            fprintf(fd, "%s# %sEntries:\n", column_s, indent_s);
+
+                            for k = 1:numel(obj.Scheme.content)
+                                node = ana.config.scheme(obj.Scheme.content{k});
+                                fprintf(fd, "%s# %s- ""%s""\n", column_s, indent_s, node.Scheme.key);
+                                node.comment(fd,Column=options.Column,Level=options.Level+1);
+                            end
+
+                            follow = false;
+                    end
+                end
+            end
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
