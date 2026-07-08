@@ -1,15 +1,28 @@
-classdef mouse < handle
-    %ANA.UI.MOUSE       Mouse dispatcher.
+classdef input < handle
+    %ANA.UI.INPUT       Mouse and keyboard input dispatcher
     %
     % Usage:
-    %   ana.ui.mouse(handle,name,options...)
+    %   input = ana.ui.input(handle,event,callback,options...);
     %
     %     handle      Graphics handle (such as a uiaxes).
-    %     name        Callback name (ButtonDown,ButtonUp,ButtonMotion, or, ScrollWheel)
-    %     callback    The callback function @(src,ev) ...
+    %     event       Event type (e.g. "MousePress")
+    %     callback    The callback function @(src,ev,input) ...
+    %
+    % Event types:
+    %   MouseMotion         The mouse pointer is moving (with or without button press).
+    %   MousePress          Mouse button is pressed.
+    %   MouseButton         Mouse button is released.
+    %   KeyPress            A key is pressed.
+    %   KeyRelease          A key is released.
     %
 
-    properties(Hidden,SetAccess=private)
+    properties (SetAccess = protected)
+        Button = []         % Mouse button currently pressed.
+        Hit = []            % Object under the mouse pointer.
+        Modifier = []       % Modifier keys hold down (Shift, Alt, Ctrl).
+    end
+
+    properties (Hidden, SetAccess = private)
         Figure (1,1) matlab.ui.Figure
         Callbacks (1,:) struct = struct(...
             'handle', {}, ...
@@ -69,7 +82,7 @@ classdef mouse < handle
     end
 
     methods
-        function obj = mouse(handle, name, callback, options)
+        function obj = input(handle, name, callback, options)
             %MOUSE      Create or modify an instance of this class.
             %
             arguments
