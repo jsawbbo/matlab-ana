@@ -23,6 +23,7 @@ classdef input < handle
     % Options:
     %   Auto                Ignore and cleanup failed callbacks immediately.
     %   Hover               The "MouseMotion" event is also handled when no button is pressed.
+    %   Replace             Flag, if existing callback should be replaced.
     %
 
     properties (SetAccess = protected)
@@ -42,18 +43,84 @@ classdef input < handle
             handle={}, ...
             event={}, ...
             callback={},...
-            options={})
+            auto={},...
+            hover={})
         Hover = false                           % Handle mouse motion without button pressed.
     end
 
     methods (Hidden)
-        function dispatch(obj, src, event)
-            %DISPATCH       The callback handler (installed in the parent figure).
-            object = hittest(obj.Figure);
-            if isempty(object)
+        function dispatchMouseMotion(obj, src, event)
+            if isempty(obj.Button) && ~obj.Hover
                 return
             end
-            handle = object;
+
+            obj.Hit = hittest(obj.Figure);
+            if isempty(obj.Hit)
+                return
+            end
+            
+            obj.dispatch(src,event);
+        end
+
+        function dispatchMousePress(obj, src, event)
+            obj.Button = event.Source.SelectionType;
+
+            obj.Hit = hittest(obj.Figure);
+            if isempty(obj.Hit)
+                return
+            end
+
+            obj.dispatch(src,event);
+        end
+
+        function dispatchMouseRelease(obj, src, event)
+            obj.Button = [];
+
+            obj.dispatch(src,event);
+        end
+
+        function dispatchMouseScroll(obj, src, event)
+            obj.Hit = hittest(obj.Figure);
+            if isempty(obj.Hit)
+                return
+            end
+
+            obj.dispatch(src,event);
+        end
+
+        function dispatchKeyPress(obj, src, event)
+            switch event.Key
+                case 'shift'
+                    obj.Shift = true;
+                case 'control'
+                    obj.Control = true;
+                case 'alt'
+                    obj.Alt = true;
+                % case 'escape'
+                otherwise
+                    obj.dispatch(src,event);
+            end
+        end
+
+        function dispatchKeyRelease(obj, src, event)
+            switch event.Key
+                case 'shift'
+                    obj.Shift = false;
+                case 'control'
+                    obj.Control = false;
+                case 'alt'
+                    obj.Alt = false;
+                % case 'escape'
+                otherwise
+                    obj.dispatch(src,event);
+            end
+        end
+
+        function dispatch(obj, src, event)
+            handle = obj.Hit;
+            if isempty(handle)
+                return
+            end
 
             % find object, that wants to receive callbacks
             idx = [];
@@ -75,18 +142,18 @@ classdef input < handle
             end
 
             % select callback by event name
-            cur = find([obj.Callbacks(idx).name] == event.EventName);
+            cur = find([obj.Callbacks(idx).event] == event.EventName);
             if isempty(cur) 
                 return
             elseif numel(cur) > 1
-                %FIXME emit warning 
-                return
+                warning("multiple callbacks for the same event registered")
+                cur = cur(1);
             end
             idx = idx(cur);
 
-            % run callback (with the object, that was hit as source!)
+            % run callback
             try 
-                obj.Callbacks(idx).callback(src, event, object);
+                obj.Callbacks(idx).callback(src, event, obj);
             catch ME
                 if obj.Callbacks(idx).auto
                     obj.Callbacks(idx) = []; % remove offending callback
@@ -107,63 +174,67 @@ classdef input < handle
                 callback (1,1) function_handle
                 options.Auto (1,1) {mustBeNumericOrLogical} = true
                 options.Hover (1,1) {mustBeNumericOrLogical} = false
+                options.Replace (1,1) {mustBeNumericOrLogical} = false
             end
-            %TODO: avoid duplicate registration
 
-            % find associated figure window
+            % find associated figure window, install input handler
             fig = ancestor(handle,'figure');
             if isempty(fig)
                 error("Could not find parent figure handle.")
             end
-
-            fcn = "Window"+event+"Fcn";
-            switch (event)
-                case "MousePress"
-                    fcn = "WindowButtonDownFcn";
-                case "MouseRelease"
-                    fcn = "WindowButtonUpFcn";
-                case "MouseMotion"
-                    fcn = "WindowButtonMotionFcn";
-            end
-
-            assert(isprop(fig, fcn), "Invalid callback name, figure has no property ""%s"".", fcn);
-
-            % use or install "us"
-            if isa(fig.UserData, "ana.ui.mouse")
+            
+            if isa(fig.UserData, "ana.ui.input")
                 obj = fig.UserData;
             else
                 obj.Figure = fig;
                 fig.UserData = obj;
+
+                fig.WindowButtonDownFcn = @obj.dispatchMousePress;
+                fig.WindowButtonUpFcn = @obj.dispatchMouseRelease;
+                fig.WindowButtonMotionFcn = @obj.dispatchMouseMotion;
+                fig.WindowScrollWheelFcn = @obj.dispatchMouseScroll;
+
+                fig.WindowKeyPressFcn = @obj.dispatchKeyPress;
+                fig.WindowKeyReleaseFcn = @obj.dispatchKeyRelease;
             end
-            if isempty(fig.(fcn))
-                %TODO: possibly need to check, if a "foreign" callback was installed
-                fig.(fcn) = @(src,ev) obj.dispatch(src,ev);
+
+            % sanity check
+            idx = find([obj.Callbacks(:).handle] == handle);
+            if ~isempty(idx)
+                cur = find([obj.Callbacks(idx).event] == "Window"+event);
+                if ~isempty(cur) 
+                    if options.Replace
+                        idx = idx(cur);
+                        obj.Callbacks(idx) = [];
+                    else
+                        error("Callback for '%s' for given handle already installed.", event);
+                    end
+                end
             end
-            
+
             % book keeping
             obj.Hover = obj.Hover | options.Hover;
             obj.Callbacks(end+1) = struct(...
                 handle=handle,...
                 event="Window"+event,...
                 callback=callback,...
-                options = struct( ...
-                    Auto=options.Auto,...
-                    Hover=options.Hover));
+                auto=options.Auto,...
+                hover=options.Hover);
         end
 
         function clear(obj)
             %CLEAR    Remove all callbacks
-            obj.Callbacks = struct('handle', {}, 'event', {}, 'callback', {}, 'options', {});
+            obj.Callbacks = struct(handle={},event={},callback={},auto={},hover={});
+            obj.Hover = false;
         end        
 
         function delete(obj)
             %DELETE Clean up dispatcher
-
             if ~ishandle(obj.Figure)
                 return
             end
 
-            % Clear UserData if this dispatcher owns it
+            % clear UserData if this dispatcher owns it
             if isa(obj.Figure.UserData, 'ana.ui.mouse') && ...
                     obj.Figure.UserData == obj
                 obj.Figure.UserData = [];
@@ -171,8 +242,8 @@ classdef input < handle
                 return
             end
 
-            % Remove figure callbacks
-            events = ["ButtonDown", "ButtonUp", "ButtonMotion", "ScrollWheel"];
+            % remove figure callbacks
+            events = ["ButtonDown", "ButtonUp", "ButtonMotion", "ScrollWheel","KeyPress","KeyRelease"];
             for ev = events
                 field = "Window" + ev + "Fcn";
                 obj.Figure.(field) = [];
@@ -195,6 +266,7 @@ classdef input < handle
             end
             
             obj.Callbacks = obj.Callbacks([obj.Callbacks(:).handle] ~= handle);
+            obj.Hover = any([obj.Callbacks(:).hover]);
         end
     end
 end
