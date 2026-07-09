@@ -6,33 +6,49 @@ classdef input < handle
     %
     %     handle      Graphics handle (such as a uiaxes).
     %     event       Event type (e.g. "MousePress")
-    %     callback    The callback function @(src,ev,input) ...
+    %     callback    The callback function.
+    %                 Note: the callback is passed three arguments:
+    %                 - the "source" of the event,
+    %                 - the "event" structure, and,
+    %                 - the ana.ui.input object handling the callbacks.
     %
     % Event types:
-    %   MouseMotion         The mouse pointer is moving (with or without button press).
+    %   MouseMotion         The mouse pointer was moved (while a button was pressed, see Hover below).
     %   MousePress          Mouse button is pressed.
     %   MouseButton         Mouse button is released.
+    %   ScrollWheel         Mouse scroll wheel.
     %   KeyPress            A key is pressed.
     %   KeyRelease          A key is released.
     %
+    % Options:
+    %   Auto                Ignore and cleanup failed callbacks immediately.
+    %   Hover               The "MouseMotion" event is also handled when no button is pressed.
+    %
 
     properties (SetAccess = protected)
-        Button = []         % Mouse button currently pressed.
-        Hit = []            % Object under the mouse pointer.
-        Modifier = []       % Modifier keys hold down (Shift, Alt, Ctrl).
+        Button = []             % Mouse button currently pressed.
+        Hit = []                % Object under the mouse pointer.
+                                % Note: this is only updated when a mouse event occurs.
+
+        % Modifier keys:
+        Shift    (1,1) logical = false
+        Control  (1,1) logical = false
+        Alt      (1,1) logical = false
     end
 
     properties (Hidden, SetAccess = private)
-        Figure (1,1) matlab.ui.Figure
-        Callbacks (1,:) struct = struct(...
-            'handle', {}, ...
-            'name', {}, ...
-            'callback', {}, ...
-            'auto', {})
+        Figure (1,1) matlab.ui.Figure           % The figure we're dispatching input events for.
+        Callbacks (1,:) struct = struct(...     % List of callbacks.
+            handle={}, ...
+            event={}, ...
+            callback={},...
+            options={})
+        Hover = false                           % Handle mouse motion without button pressed.
     end
 
     methods (Hidden)
         function dispatch(obj, src, event)
+            %DISPATCH       The callback handler (installed in the parent figure).
             object = hittest(obj.Figure);
             if isempty(object)
                 return
@@ -82,58 +98,62 @@ classdef input < handle
     end
 
     methods
-        function obj = input(handle, name, callback, options)
-            %MOUSE      Create or modify an instance of this class.
+        function obj = input(handle, event, callback, options)
+            %INPUT          Create or modify an instance of this class.
             %
             arguments
-                handle (1,1)
-                name (1,1) string
-                callback (1,1) % FIXME check for function
+                handle (1,1) matlab.graphics.Graphics
+                event (1,1) string
+                callback (1,1) function_handle
                 options.Auto (1,1) {mustBeNumericOrLogical} = true
+                options.Hover (1,1) {mustBeNumericOrLogical} = false
             end
             %TODO: avoid duplicate registration
 
+            % find associated figure window
             fig = ancestor(handle,'figure');
             if isempty(fig)
                 error("Could not find parent figure handle.")
             end
 
-            field = "Window"+name+"Fcn";
-            assert(isprop(fig, field), "Invalid callback name (neither ButtonDown,ButtonUp,ButtonMotion, nor, ScrollWheel).");
+            fcn = "Window"+event+"Fcn";
+            switch (event)
+                case "MousePress"
+                    fcn = "WindowButtonDownFcn";
+                case "MouseRelease"
+                    fcn = "WindowButtonUpFcn";
+                case "MouseMotion"
+                    fcn = "WindowButtonMotionFcn";
+            end
 
+            assert(isprop(fig, fcn), "Invalid callback name, figure has no property ""%s"".", fcn);
+
+            % use or install "us"
             if isa(fig.UserData, "ana.ui.mouse")
-                try delete(obj); catch, end
                 obj = fig.UserData;
             else
                 obj.Figure = fig;
                 fig.UserData = obj;
             end
-            if isempty(fig.(field))
+            if isempty(fig.(fcn))
                 %TODO: possibly need to check, if a "foreign" callback was installed
-                fig.(field) = @(src,ev) obj.dispatch(src,ev);
+                fig.(fcn) = @(src,ev) obj.dispatch(src,ev);
             end
             
-            switch (name)
-                case "ButtonDown"
-                    name = "WindowMousePress";
-                case "ButtonUp"
-                    name = "WindowMouseRelease";
-                case "ButtonMotion"
-                    name = "WindowMouseMotion";
-                case "ScrollWheel"
-                    name = "WindowScrollWheel";
-            end
-
+            % book keeping
+            obj.Hover = obj.Hover | options.Hover;
             obj.Callbacks(end+1) = struct(...
                 handle=handle,...
-                name=name,...
+                event="Window"+event,...
                 callback=callback,...
-                auto=options.Auto);
+                options = struct( ...
+                    Auto=options.Auto,...
+                    Hover=options.Hover));
         end
 
         function clear(obj)
             %CLEAR    Remove all callbacks
-            obj.Callbacks = struct('handle', {}, 'name', {}, 'callback', {}, 'auto', {});
+            obj.Callbacks = struct('handle', {}, 'event', {}, 'callback', {}, 'options', {});
         end        
 
         function delete(obj)
