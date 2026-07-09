@@ -59,7 +59,7 @@ classdef input < handle
                 return
             end
             
-            obj.dispatch(src,event);
+            obj.dispatchMouse(src,event);
         end
 
         function dispatchMousePress(obj, src, event)
@@ -70,13 +70,13 @@ classdef input < handle
                 return
             end
 
-            obj.dispatch(src,event);
+            obj.dispatchMouse(src,event);
         end
 
         function dispatchMouseRelease(obj, src, event)
             obj.Button = [];
 
-            obj.dispatch(src,event);
+            obj.dispatchMouse(src,event);
         end
 
         function dispatchMouseScroll(obj, src, event)
@@ -85,7 +85,7 @@ classdef input < handle
                 return
             end
 
-            obj.dispatch(src,event);
+            obj.dispatchMouse(src,event);
         end
 
         function dispatchKeyPress(obj, src, event)
@@ -98,7 +98,10 @@ classdef input < handle
                     obj.Alt = true;
                 % case 'escape'
                 otherwise
-                    obj.dispatch(src,event);
+                    idx = find([obj.Callbacks(:).event] == event.EventName);
+                    for i = idx
+                        obj.Callbacks(idx).callback(src,event,obj);
+                    end
             end
         end
 
@@ -112,11 +115,14 @@ classdef input < handle
                     obj.Alt = false;
                 % case 'escape'
                 otherwise
-                    obj.dispatch(src,event);
+                    idx = find([obj.Callbacks(:).event] == event.EventName);
+                    for i = idx
+                        obj.Callbacks(idx).callback(src,event,obj);
+                    end
             end
         end
 
-        function dispatch(obj, src, event)
+        function dispatchMouse(obj, src, event)
             handle = obj.Hit;
             if isempty(handle)
                 return

@@ -63,6 +63,27 @@ classdef storage
                 end
             end
         end
+
+        function path = as(path)
+            %AS  From a full path, retrieve {storage}/... notation.
+            path = ana.fs.path(path);
+            if strcmp(path(1),"{storage}")
+                return
+            end
+
+            ana.init();
+            data = ana.fs.storage.Data;
+            
+            searchpaths = data.searchpath.Paths;
+            for p = 1:numel(searchpaths)
+                storage = searchpaths{p};
+
+                if storage == path(1:numel(storage))
+                    path = ana.fs.path("{storage}") / path(numel(storage)+1:end);
+                    break
+                end
+            end
+        end
     end
 
     methods

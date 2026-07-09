@@ -13,6 +13,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     %- parenAssign,parenDelete need checks (e.g. if Drive == true)
     %- add "~" for $HOME
 
+    %% PROPERTIES
     properties (SetAccess=protected)
         Drive   % Boolean value indicating that a Windows® drive letter is used.
         Parts   % String array of path elements.
@@ -22,6 +23,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         separator = '/' % Canonical path separator.
     end
     
+    %% HELPER
     methods
         function out = cat(~,varargin)
             out = varargin{1};
@@ -91,7 +93,22 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             fprintf('    "%s" (<a href="matlab:help ana.fs.path">ana.fs.path</a>)\n\n', string(obj));
         end
     end
+
+    %% OPERATORS
+    methods
+        function res = eq(obj, other)
+            other = ana.fs.path(other);
+
+            if numel(obj) ~= numel(other)
+                res = false;
+                return
+            end
+
+            res = all(obj.Parts == other.Parts);
+        end
+    end
    
+    %% PUBLIC
     methods
         function obj = path(pathname)
             %PATH Construct an instance of this class
@@ -128,6 +145,10 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 end
    
                 obj.Parts = regexp(string(pathname),'[/\\]+','split');
+                if isempty(obj.Parts{end})
+                    obj.Parts = obj.Parts(1:end-1); % trailing path separator
+                end
+
                 if startsWith(pathname,'\\') || startsWith(pathname,'//')   % Windows share
                     obj.Parts = obj.Parts(2:end);
                     obj.Parts(1) = "//"+obj.Parts(1);
