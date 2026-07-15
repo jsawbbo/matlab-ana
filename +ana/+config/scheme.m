@@ -130,6 +130,8 @@ classdef scheme
                 id = "string";
             elseif isa(value,"ana.fs.path")
                 id = "path";
+            elseif isa(value,"ana.type.url")
+                id = "url";
             elseif isa(value,"datetime") || isa(value,"ana.type.datetime")
                 id = "datetime";
             else

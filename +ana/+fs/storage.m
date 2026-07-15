@@ -66,6 +66,7 @@ classdef storage
 
         function path = as(path)
             %AS  From a full path, retrieve {storage}/... notation.
+            FIXME(should be named "compatible")
             path = ana.fs.path(path);
             if strcmp(path(1),"{storage}")
                 return

@@ -104,6 +104,8 @@ classdef leaf < ana.config.node.base
                         valid = true;
                     case "path"
                         valid = strcmp(T,"path") || strcmp(T,"string");
+                    case "url"
+                        valid = strcmp(T,"url") || strcmp(T,"string");
                     otherwise
                         valid = strcmp(T,"*") || strcmp(T,obj.PrivateType_);
                 end

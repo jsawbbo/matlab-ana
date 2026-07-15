@@ -1,5 +1,5 @@
 classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
-    %ANA.TYPE.DICT      Variant dictionary and struct semantics.
+    %ana.type.dict      Variant dictionary and struct semantics.
     % 
     % This class wraps Matlab's dictionary allowing any type to be stored and
     % retrieved without unpacking cells (as <a href="matlab:help dictionary">dictionary</a> would required).

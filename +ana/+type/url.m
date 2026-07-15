@@ -1,5 +1,5 @@
 classdef url
-    %ANA.UTIL.URL    URL scheme
+    %ana.type.url       URL/URI scheme
     %
     %   The format of an URL (or URI, respectively) is:
     %
@@ -9,7 +9,11 @@ classdef url
     %
     %       authority = [userinfo "@"] host [":" port]
     %
+    % Note: Encoded characters are not parsed.
+    %
+    % See: https://www.rfc-editor.org/rfc/rfc3986.html
 
+    %% PROPERTIES
     properties
         Scheme
         Userinfo
@@ -20,15 +24,18 @@ classdef url
         Fragment
     end
 
+    %% HELPER
     methods
         function res = string(obj)
             %STRING     Create string representation of the URL.
+            % scheme
             if ~isempty(obj.Scheme)
                 res = string(obj.Scheme) + ":";
             else
                 res = "";
             end
 
+            % authority
             if ~isempty(obj.Host)
                 res = res + "//";
             
@@ -43,8 +50,9 @@ classdef url
                 end
             end
 
+            % path, query, fragment
             if ~isempty(obj.Path)
-                if ~startsWith(obj.Path,"/")
+                if ~isempty(obj.Host)
                     res = res + "/";
                 end
                 res = res + obj.Path;
@@ -60,6 +68,11 @@ classdef url
         end
     end
 
+    %% OPERATORS
+    methods
+    end
+
+    %% PUBLIC
     methods
         function obj = url(str)
             %URL Construct an instance of this class
@@ -143,6 +156,22 @@ classdef url
                     obj.Path = parts(2);
                 else
                     obj.Path = parts;                       
+                end
+            end
+        end
+
+        function [drv,scheme] = driver(obj)
+            %DRIVER 
+            arguments
+                obj ana.type.url
+            end
+
+            drv = [];
+            scheme = [];
+            if isempty(obj.Scheme)
+            else
+                drv = obj.Scheme;
+                if contains(drv,"+")
                 end
             end
         end

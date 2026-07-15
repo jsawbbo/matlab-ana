@@ -1,5 +1,5 @@
 classdef datetime 
-    % ana.type.datetime - Wrapper for MATLAB datetime with ISO 8601 UTC handling
+    %ana.type.datetime      Wrapper for MATLAB datetime with ISO 8601 UTC handling
     %
     % This class wraps MATLAB's datetime but defaults to local time if no time-zone
     % is given. Also, within ANA, the default in- and output format is in the form of

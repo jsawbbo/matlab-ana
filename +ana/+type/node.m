@@ -1,5 +1,5 @@
 classdef node < matlab.mixin.indexing.RedefinesParen & handle
-    %ANA.UTIL.NODE  A generic tree node with attributes.
+    %ana.type.node      A generic tree node with attributes.
     %
     %   This class represents either, a branch node or a value, accompanied 
     %   by attributes. FIXME

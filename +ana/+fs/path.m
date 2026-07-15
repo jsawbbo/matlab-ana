@@ -1,5 +1,5 @@
 classdef path < matlab.mixin.indexing.RedefinesParen
-    %ana.fs.path    Canonical representation of a file path or URL.
+    %ana.fs.path    Canonical representation of a file path.
     %
     %   This class represents a file system path agnostic to operating system 
     %   (Windows uses, both, forward and backward slash). In addition, it
@@ -15,15 +15,16 @@ classdef path < matlab.mixin.indexing.RedefinesParen
 
     %% PROPERTIES
     properties (SetAccess=protected)
-        Drive   % Boolean value indicating that a Windows® drive letter is used.
-        Parts   % String array of path elements.
+        Drive                               % Boolean value indicating that a Windows® drive letter is used.
+        Parts                               % String array of path elements.
     end
 
     properties (Constant)
-        separator = '/' % Canonical path separator.
+        separator = '/'                     %ana.fs.path.separator Canonical path separator.
+        forbidden = '[^A-Za-z0-9._-]'       % Forbidden characters (regular expression) for "compatible" paths.
     end
     
-    %% HELPER
+    %% RedefinesParen
     methods
         function out = cat(~,varargin)
             out = varargin{1};
@@ -84,6 +85,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         end
     end
     
+    %% HELPERS
     methods (Hidden)
         function res = string(obj)
             res = fullfile(obj);
@@ -93,10 +95,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             fprintf('    "%s" (<a href="matlab:help ana.fs.path">ana.fs.path</a>)\n\n', string(obj));
         end
     end
-
+    
     %% OPERATORS
-    methods
+    methods(Hidden)
         function res = eq(obj, other)
+            %EQ Equality operator.
             other = ana.fs.path(other);
 
             if numel(obj) ~= numel(other)
@@ -106,8 +109,44 @@ classdef path < matlab.mixin.indexing.RedefinesParen
 
             res = all(obj.Parts == other.Parts);
         end
+
+        function res = mrdivide(obj, part)
+            %MRDIVIDE   Add a path part.
+            arguments
+                obj ana.fs.path;
+                part (1,:);
+            end
+
+            if ~isa(part, 'ana.fs.path')
+                part = ana.fs.path(part);
+            end
+
+            if ~part.isrelative()
+                error("ANA:runtime", "expected a relative path")
+            end
+
+            res = obj;
+            res.Parts = [obj.Parts(1,:), part.Parts(1,:)];
+        end
+
+        function res = mldivide(obj, part)
+            %MLDIVIDE   Add a path part.
+            res = obj.mrdivide(part);
+        end
+
+        function res = plus(obj,piece)
+            %PLUS    Add piece to file name.
+            %
+            res = obj;
+            res.Parts(end) = res.Parts(end) + string(piece);
+        end
+
+        function res = uplus(obj)
+            %UPLUS  Equivalent of string() but with path resolution (see resolve()).
+            res = string(obj.resolve());
+        end
     end
-   
+
     %% PUBLIC
     methods
         function obj = path(pathname)
@@ -125,7 +164,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 obj.Drive = pathname.Drive;
                 obj.Parts = pathname.Parts;
             else
-                if isa(pathname, 'ana.util.url')
+                if isa(pathname, 'ana.type.url')
                     if ~isempty(pathname.Scheme)
                         switch (pathname.Scheme)
                             case 'share'
@@ -167,44 +206,6 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                     obj.Parts = obj.Parts(1);
                 end           
             end
-        end
-    end
-
-    methods(Hidden)
-        function res = mrdivide(obj, part)
-            %MRDIVIDE   Add a path part.
-            arguments
-                obj ana.fs.path;
-                part (1,:);
-            end
-
-            if ~isa(part, 'ana.fs.path')
-                part = ana.fs.path(part);
-            end
-           
-            if ~part.isrelative()
-                error("ANA:runtime", "expected a relative path")
-            end
-
-            res = obj;
-            res.Parts = [obj.Parts(1,:), part.Parts(1,:)];
-        end
-
-        function res = mldivide(obj, part)
-            %MLDIVIDE   Add a path part.
-            res = obj.mrdivide(part);
-        end
-
-        function res = plus(obj,piece)
-            %PLUS    Add piece to file name.
-            %
-            res = obj;
-            res.Parts(end) = res.Parts(end) + string(piece);
-        end
-
-        function res = uplus(obj)
-            %UPLUS  Equivalent of string() but with path resolution (see resolve()).
-            res = string(obj.resolve());
         end
     end
 
