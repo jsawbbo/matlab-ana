@@ -2,11 +2,9 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     %ana.fs.path    Canonical representation of a file path.
     %
     %   This class represents a file system path agnostic to operating system 
-    %   (Windows uses, both, forward and backward slash). In addition, it
-    %   enables storage management (see ANA.FS.STORAGE).
+    %   (Windows uses, both, forward and backward slash). 
     %
-    %   Paths may be concatenated using the division operator (alternatively
-    %   left divide or plus).
+    %   FIXME
     %
     %
     %TODO

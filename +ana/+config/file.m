@@ -85,7 +85,10 @@ classdef file < ana.config.object
             end
         end
 
-        % FIXME add delete for Autosave
+        function delete(obj)
+            %DELETE     Delete object.
+            obj.autosave(false);
+        end
 
         function save(obj)
             %SAVE   Save data to associated file.
