@@ -1,5 +1,5 @@
 classdef searchpath < matlab.mixin.indexing.RedefinesBrace & matlab.mixin.indexing.RedefinesParen
-    %ana.fs.searchpath      Search path.
+    %ANA.FS.SEARCHPATH      Simple search path.
     %
     %   Trivial implementation of search path using internal cell.
     %

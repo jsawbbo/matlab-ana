@@ -98,6 +98,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     methods(Hidden)
         function res = eq(obj, other)
             %EQ Equality operator.
+            %
             other = ana.fs.path(other);
 
             if numel(obj) ~= numel(other)
@@ -110,6 +111,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
 
         function res = mrdivide(obj, part)
             %MRDIVIDE   Add a path part.
+            %
             arguments
                 obj ana.fs.path;
                 part (1,:);
@@ -129,6 +131,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
 
         function res = mldivide(obj, part)
             %MLDIVIDE   Add a path part.
+            %
             res = obj.mrdivide(part);
         end
 
@@ -141,6 +144,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
 
         function res = uplus(obj)
             %UPLUS  Equivalent of string() but with path resolution (see resolve()).
+            %
             res = string(obj.resolve());
         end
     end
@@ -150,7 +154,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         function obj = path(pathname)
             %PATH Construct an instance of this class
             %
-            %Syntax:
+            % Syntax:
             %   obj = ana.fs.path()
             %   obj = ana.fs.path('path/to/file')
             %
@@ -210,21 +214,25 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     methods
         function res = isfile(obj)
             %ISFILE   Check if path points to an existing file.
+            %
             res = isfile(fullfile(obj));
         end
 
         function res = isfolder(obj)
             %ISFOLDER   Check if path points to an existing directory.
+            %
             res = isfolder(fullfile(obj));
         end
 
         function res = isurl(obj)
             %ISURL      Check if path represents a server URL.
+            %
             res = regexp(obj.Parts{1},"^([a-z]+):$");
         end
 
         function res = isshare(obj)
             %ISSHARE    Check if path represents a network (i.e. CIFS) share.
+            %
             res = startsWith(obj.Parts{1}, '//');
         end
 
@@ -259,7 +267,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         function str = fullfile(obj,varargin)
             %FULLFILE   Get full path as string.
             %
-            %   The behavior is identical to Matlab's 'fullfile'.
+            %   The behavior is identical to MATLAB's 'fullfile'.
             %
             arguments
                 obj ana.fs.path;

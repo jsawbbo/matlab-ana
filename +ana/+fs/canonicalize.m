@@ -1,5 +1,5 @@
 function s = canonicalize(s)
-    %ANA.FS.CANONICALIZE       Canonicalize a path.
+    %ANA.FS.CANONICALIZE       Canonicalize a path (string representation).
     %
     % ANA internally only uses POSIX notation (ie. a forward slash) to separate path elements.
     %

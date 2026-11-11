@@ -1,7 +1,15 @@
 function res = find(path,pattern,options)
     %FIND   Find files in a directory.
     %   
-    % FIXME
+    % Syntax:
+    %    items = ana.fs.find(path, pattern);
+    %    items = ana.fs.find(path, pattern, Depth=number);
+    %
+    % Search the directory 'path' for files with given regular expression
+    % 'pattern'. The 'Depth' controls how deep directory traversal happens
+    % (default: Inf).
+    %
+    % Returns a cell of paths.
     % 
     arguments (Input)
         path (1,:)
@@ -21,7 +29,7 @@ function res = find(path,pattern,options)
                 case {'.','..'}
                 otherwise
                     if options.Depth > 1
-                        found = ana.fs.find(cur, pattern,Depth=options.Depth-1);
+                        found = ana.fs.find(cur, pattern, Depth=options.Depth-1);
                         res = [res(:);found(:)];
                     end
             end

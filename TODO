@@ -6,3 +6,4 @@ TODO:
 - needs a "helpfiles" discription of file paths (such as the "{storage}" notation
   and the fact, we're only using forward slash as file path separator
 - add my "vast" implementation (for plotting large datasets)
+- check and refine error IDs
