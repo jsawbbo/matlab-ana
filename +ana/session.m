@@ -43,39 +43,39 @@ classdef session < handle
         % We are using a simple key-value store here. If more complex needs arise,
         % this should be changed to use matlab.mixin.indexing.RedefinesParen.
 
-        function obj = subsasgn(obj, S, value)
-            %SUBSASGN    Assign session variables using () indexing.
-            %
-            if strcmp(S(1).type, '()')
-                if numel(S) ~= 1 || numel(S(1).subs) ~= 1
-                    error('ana.session:InvalidIndex', ...
-                        'Expected exactly one session key.');
-                end
-
-                if isequal(value, [])
-                    obj.remove(S(1).subs{1});
-                else
-                    obj.set(S(1).subs{1}, value);
-                end
-            else
-                obj = builtin('subsasgn', obj, S, value);
-            end
-        end
-
-        function varargout = subsref(obj, S)
-            %SUBSREF     Retrieve session variables using () indexing.
-            %
-            if strcmp(S(1).type, '()')
-                if numel(S) ~= 1 || numel(S(1).subs) ~= 1
-                    error('ana.session:InvalidIndex', ...
-                        'Expected exactly one session key.');
-                end
-
-                varargout{1} = obj.get(S(1).subs{1});
-            else
-                [varargout{1:nargout}] = builtin('subsref', obj, S);
-            end
-        end
+        % function obj = subsasgn(obj, S, value)
+        %     %SUBSASGN    Assign session variables using () indexing.
+        %     %
+        %     if strcmp(S(1).type, '()')
+        %         if numel(S) ~= 1 || numel(S(1).subs) ~= 1
+        %             error('ana.session:InvalidIndex', ...
+        %                 'Expected exactly one session key.');
+        %         end
+        % 
+        %         if isequal(value, [])
+        %             obj.remove(S(1).subs{1});
+        %         else
+        %             obj.set(S(1).subs{1}, value);
+        %         end
+        %     else
+        %         obj = builtin('subsasgn', obj, S, value);
+        %     end
+        % end
+        % 
+        % function varargout = subsref(obj, S)
+        %     %SUBSREF     Retrieve session variables using () indexing.
+        %     %
+        %     if strcmp(S(1).type, '()')
+        %         if numel(S) ~= 1 || numel(S(1).subs) ~= 1
+        %             error('ana.session:InvalidIndex', ...
+        %                 'Expected exactly one session key.');
+        %         end
+        % 
+        %         varargout{1} = obj.get(S(1).subs{1});
+        %     else
+        %         [varargout{1:nargout}] = builtin('subsref', obj, S);
+        %     end
+        % end
     end
 
     %% STATIC
@@ -269,14 +269,55 @@ classdef session < handle
             end
         end
 
-        function sync(obj,t)
-            %SYNC   Synchronize time among registered applications.
+        function sync(obj, source, args)
+            %SYNC   Synchronize data among registered applications.
             %
             % This method will call the sync() method of all registered applications 
-            % (iff the application has the method).
+            % (iff the application has the method). It's signature is:
             %
-            for k = 1:numel(obj.Objects)
-                runcb(obj.Objects{k}, t);
+            %     function sync(obj, data)
+            %         if isfield(data, 'Time')
+            %            % ...
+            %         end
+            %        
+            %         % ...
+            %     end
+            %
+            % Recognized fields are (at the moment of writing):
+            %
+            %     Time              The relative, synchronized time.
+            %
+            % TODO 
+            % - add 'Dataset', 'GlobalTime' etc.?
+            % - describe "relative,synchronized time" (somewhere else)
+            % - if high playback rates are required, some more optimization is needed (e.g. obj.Objects =
+            %   struct(handle=weak-handle,cb=ismethod(handle,'sync'))
+            % - MATLAB's struct constructor can produce a struct array if a field value is a cell array (chatGPT)        
+            arguments
+                obj ana.session
+                source = []
+            end
+            arguments (Repeating)
+                args
+            end
+
+            if ischar(source) || isstring(source)
+                data = struct(source, args{:});
+                source = [];
+            else
+                data = struct(args{:});
+            end
+
+            refs = obj.Objects;
+            
+            for k = 1:numel(refs)
+                h = refs{k}.Handle;
+            
+                if isempty(h) || ~isvalid(h) || isequal(h, source)
+                    continue
+                end
+            
+                runcb(refs{k}, data);
             end
         end
     end
@@ -285,7 +326,7 @@ end
 function runcb(ref,varargin)
     h = ref.Handle;
     
-    if ~isempty(h) && isvalid(h) && ismethod(h, 'sync')
+    if ismethod(h, 'sync')
         try
             h.sync(varargin{:});
         catch me
