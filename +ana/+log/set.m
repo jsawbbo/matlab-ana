@@ -2,12 +2,12 @@ function set(options)
     %ANA.LOG.SET         Set logger properties.
     %
     arguments 
-        options.File = []
-        options.Mode string = "w"
-        options.Level = []
+        options.File = []               % The file name.
+        options.Mode string = "w"       % File open mode.
+        options.Level = []              % Log-level threshold.
     end
 
-    s = ana.state;
+    s = ana.session;
 
     % log level
     if ~isempty(options.Level)
@@ -30,28 +30,4 @@ function set(options)
             s.LogFile = [];
         end
     end
-
-
-    %
-
-    % doclose = isempty(filename);
-    % 
-    % if ~isempty(filename)
-    %     if isstring(filename) || ischar(filename)
-    %         if ~isempty(fd)
-    %             fclose(fd);
-    %         end
-    % 
-    %         fd = fopen(filename, options.Mode);
-    %         if fd <= 2
-    %             fd = [];
-    %         end
-    %     end
-    % else
-    %     if ~isempty(fd)
-    %         fclose(fd);
-    %     end
-    %     fd = [];
-    % end
-    % 
 end

@@ -5,9 +5,10 @@ function message(level, fmt, varargin)
     %
     % For colored output, install the <a href="https://www.mathworks.com/matlabcentral/fileexchange/24093-cprintf-display-formatted-colored-text-in-command-window">cprintf</a> toolbox.
     %
+    %TODO: ana.log needs a Contents.m file and more function documentation
     level = ana.log.level(level);
 
-    if ana.state().LogLevel > level
+    if ana.session().LogLevel > level
         return
     end
 
@@ -33,7 +34,7 @@ function message(level, fmt, varargin)
         fprintf(formattedMessage);
     end
 
-    fd = ana.state().LogFile;
+    fd = ana.session().LogFile;
     if ~isempty(fd)
         try
             fprintf(fd, formattedMessage);
