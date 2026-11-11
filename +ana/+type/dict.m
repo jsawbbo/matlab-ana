@@ -33,9 +33,9 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & matlab.mixin.indexing.Red
             tf = isKey(obj.PrivateData_, string(name));
         end
 
-        function remove(obj, name)
+        function obj = remove(obj, name)
             % remove    Remove one or more keys.
-            remove(obj.PrivateData_, string(name));
+            obj.PrivateData_ = remove(obj.PrivateData_, string(name));
         end
         
         function disp(obj)
