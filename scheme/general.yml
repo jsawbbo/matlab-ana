@@ -10,7 +10,7 @@ content:
     meta:
         label: Storage
         comment: |
-            Local and remote storage locations.
+            Data storage locations.
         ui: ana.config.general
         actions:
     content:
@@ -28,6 +28,8 @@ content:
                     {storage}/rawdata/datafile-01.data
 
                 so that configuration files do not need to be edited for different environments.
+
+                See 'ana.fs.alias' for further information.
         content:
         -   key: location
             type: path
@@ -39,7 +41,7 @@ content:
                     Supported schemes:
                     - file system path (/path/to/data, C:\path\to\data, or file:/path/to/data)
                     - UNC paths (\\server\share or //server/share)
-                    - URLs (except file: scheme, e.g. https://server/path)
+                    - URLs (e.g. https://server/path)
         -   key: class
             type: category
             meta:
@@ -51,56 +53,54 @@ content:
                     label: "Network"
                 -   value: "external"
                     label: "External"
+                -   value: "remote"
+                    label: "Remote"
                 default: local
                 comment: |
                     Local storage means storage that is permanently connected to the computing device (*).
 
-                    Network storage encompasses everything, that is accessible via a network but is not
-                    necessarily permanently connected (*). Especially on workstations or any computing 
-                    device, this includes mapped network drives, remote file-systems, and cloud storage, 
-                    including WebDAV, S3, etc.).
+                    Network storage refers to mounted data volumes permanently attached (such as mapped 
+                    network drives, NFS, etc.).
 
                     External storage refers to removable media, such has USB hard disks, SD cards, etc.
                     (mind that this requires a consistent mount point [Linux/Unix] or drive letter 
                     [Windows]).
 
-                    (*) Note, that the distinction between "local" and "network" is not always obvious. 
-                    If network storage is expected to be online permanently (which is, for example
-                    the case in a HPC environment where a network failure implies a general system failure),
-                    it should be considered "local" storage, otherwise, it is a "network" storage.
+                    Remote storage may refer to any remotely accessible source, which is supported by ANA.
     -   key: scratch
         type: path
         meta:
             label: Scratch directory
             comment: |
-                Local scratch directory (for temporary large files).
+                Local, fast storage for temporary data.
             default: 
                 eval: |
                     ana.os.paths('tmpdir')
-# FIXME
-    # -   key: cache
-    #     type: dict
-    #     meta:
-    #         label: Cache directory and size
-    #         comment: |
-    #             Note: At the moment of writing, caching is a planned feature, so, currently not supported.
-    #     content:
-    #     -   key: path
-    #         type: path
-    #         meta:
-    #             label: Path
-    #             comment: |
-    #                 Local cache directory.
-    #             default: 
-    #                 eval: |
-    #                     ana.os.paths('cachedir')
-    #     -   key: size
-    #         type: numeric
-    #         meta:
-    #             label: Size
-    #             comment: |
-    #                 Maximum size of the cache directory (GiB).
-    #             default: 256
+    -   key: cache
+        type: dict
+        meta:
+            label: Cache
+            comment: |
+                The "cache" is used to store data for offline use. 
+
+                See 'ana.fs.cache' for further information.
+        content:
+        -   key: path
+            type: path
+            meta:
+                label: Path
+                comment: |
+                    Local cache directory.
+                default: 
+                    eval: |
+                        ana.os.paths('cachedir')
+        -   key: size
+            type: numeric
+            meta:
+                label: Size
+                comment: |
+                    Maximum size of the cache directory (GiB).
+                default: 256
 # FIXME external programs
 #           - python
 #           - conda

@@ -259,6 +259,12 @@ classdef scheme
                         lines = lines(1:end-1);
                     end
 
+                    switch (obj.Scheme.type)
+                        case "category"
+                            cats = obj.Scheme.meta.categories;
+                            lines = ["Categories: " + strjoin([cats.value], ", "); ""; lines(:)];
+                    end
+
                     for k = 1:numel(lines)
                         fprintf(fd, "%s# %s%s\n", column_s, indent_s, lines{k});
                     end

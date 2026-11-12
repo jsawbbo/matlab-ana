@@ -20,6 +20,7 @@ end
 function init_storage()
     %TODO
     %- load from config instead of static init 
+    %- move to ana.session
     ana.fs.storage.set('S:','/gpfs/soma_fs/bbo');
 end
 

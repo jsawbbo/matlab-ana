@@ -250,6 +250,16 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
         end
 
+        function res = isalias(obj)
+            %ISALIAS    Check if path uses an alias.
+            %
+            arguments
+                obj ana.fs.path
+            end
+
+            res = obj.isrelative() && startsWith(obj.Parts{1}, "{") && endsWith(obj.Parts{1}, "}");
+        end
+
         function str = drive(obj)
             %DRIVE   Get (Windows®) drive (if applicable).
             %
