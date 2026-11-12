@@ -1,27 +1,20 @@
 function init()
     %ANA.INIT Initialize "ANA".
     %
-    %   This function initializes internally used search paths and 
+    %   This function initializes internally used libraries and 
     %   is only called from functions or classes that require said
     %   initialization.
     %
     persistent version
 
-    if ~ischar(version) | ~isequal(ana.version(),version)
+    if isempty(version) | (version ~= ana.version())
         mfile = mfilename('fullpath');
 
-        init_storage();
         init_snakeyaml(mfile);
 
         version = ana.version();
+        mlock
     end
-end
-
-function init_storage()
-    %TODO
-    %- load from config instead of static init 
-    %- move to ana.session
-    ana.fs.storage.set('S:','/gpfs/soma_fs/bbo');
 end
 
 function init_snakeyaml(mfile)

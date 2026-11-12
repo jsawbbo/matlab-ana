@@ -5,5 +5,14 @@ function resolved = find(path)
         path ana.fs.path
     end
     
+    tmp = ana.fs.alias.expand(path);
+
+    for k = 1:numel(tmp)
+        if tmp{k}.exist()
+            resolved = tmp{k};
+            return
+        end
+    end
+
     resolved = [];
 end

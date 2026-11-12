@@ -4,6 +4,11 @@ classdef session < handle
     %   The ANA.SESSION serves as persistent variable storage and synchronization during
     %   the life-time of registered applications.
     %
+    %   Configuration
+    %   =============
+    %
+    %   The session class serves as the central point for loading configurations.
+    %
     %   Variables
     %   =========
     %   
@@ -12,6 +17,12 @@ classdef session < handle
     %
     %       s = ana.session();
     %       s('USER') = 'My Identity';
+    %
+    %   Aliases
+    %   =======
+    %
+    %   Aliases are set during initialization and as well. See ana.fs.alias for further
+    %   information.
     % 
     %   Applications
     %   ============
@@ -23,59 +34,23 @@ classdef session < handle
     %
 
     %% PROPERTIES
+    properties
+        Config ana.config.object            % Configuration tree.
+    end
+
     properties(SetAccess=protected)
-        UserData ana.type.dict              % User data.
+        Variables ana.type.dict             % Variables.
+        Aliases ana.type.dict               % Aliases.
         Objects = {}                        % Registered objects.
     end
 
     properties(Hidden)
-        % FIXME this should go into "UserData"...
         LogLevel = ana.log.level.INFO       % Global log level.
         LogFile = []                        % Log file (see ana.log.message)
     end
 
     properties(Hidden,Access=private)
         Instance = false                    % Flag, only true for actual singleton instance.
-    end
-
-    %% INTERNAL
-    methods(Access=public,Hidden)
-        % We are using a simple key-value store here. If more complex needs arise,
-        % this should be changed to use matlab.mixin.indexing.RedefinesParen.
-
-        % function obj = subsasgn(obj, S, value)
-        %     %SUBSASGN    Assign session variables using () indexing.
-        %     %
-        %     if strcmp(S(1).type, '()')
-        %         if numel(S) ~= 1 || numel(S(1).subs) ~= 1
-        %             error('ana.session:InvalidIndex', ...
-        %                 'Expected exactly one session key.');
-        %         end
-        % 
-        %         if isequal(value, [])
-        %             obj.remove(S(1).subs{1});
-        %         else
-        %             obj.set(S(1).subs{1}, value);
-        %         end
-        %     else
-        %         obj = builtin('subsasgn', obj, S, value);
-        %     end
-        % end
-        % 
-        % function varargout = subsref(obj, S)
-        %     %SUBSREF     Retrieve session variables using () indexing.
-        %     %
-        %     if strcmp(S(1).type, '()')
-        %         if numel(S) ~= 1 || numel(S(1).subs) ~= 1
-        %             error('ana.session:InvalidIndex', ...
-        %                 'Expected exactly one session key.');
-        %         end
-        % 
-        %         varargout{1} = obj.get(S(1).subs{1});
-        %     else
-        %         [varargout{1:nargout}] = builtin('subsref', obj, S);
-        %     end
-        % end
     end
 
     %% STATIC
@@ -87,6 +62,27 @@ classdef session < handle
             if isempty(instance)
                 obj.Instance = true;
                 instance = obj;
+
+                % load general config
+                %TODO: load all relevant configs
+                obj.load();
+
+                % fill standard aliases from general config
+                storage = obj.Config.general.storage;
+                searchpath = storage.searchpath;
+                aliases = struct(location={},class={});
+
+                for a = 1:numel(searchpath)
+                    aliases(a).location = searchpath(a).location.get();
+                    aliases(a).class = searchpath(a).class.get();
+                end
+
+                obj.Aliases.("storage") = aliases;
+                obj.Aliases.("scratch") = struct(location=storage.scratch.get(),class='local');
+                obj.Aliases.("project") = struct(location=[],class='local');
+
+                % fill standard variables
+                obj.set("USER", getenv("USER"));
             else
                 obj = instance;
             end
@@ -120,7 +116,32 @@ classdef session < handle
         end
     end
 
-    %% PUBLIC
+    %% CONFIG
+    methods
+        function load(obj,key)
+            %LOAD       Load configuration.
+            %
+            %   FIXME
+            %
+            arguments
+                obj ana.session
+                key (1,:) string = "general";
+            end
+
+            configdir = ana.os.paths('configdir');
+
+            for k = 1:numel(key)
+                if key(k) == "general"
+                    cfg = ana.config.file(configdir/"general.yml", Scheme="/general");
+                    obj.Config.("general") = cfg;
+                else
+                    %TODO load additional configs, might be of the form "plugin.device"
+                end
+            end
+        end
+    end
+
+    %% VARIABLES
     methods
         function obj = session()
             %STATE      Construct a singleton instance of this class.
@@ -146,7 +167,7 @@ classdef session < handle
             for k = 1:2:numel(varargin)
                 key = varargin{k};
                 value = varargin{k+1};
-                obj.UserData(string(key)) = value;
+                obj.Variables(string(key)) = value;
             end
         end
 
@@ -180,7 +201,7 @@ classdef session < handle
 
             for k = 1:numel(args)
                 key = string(args{k});
-                obj.UserData = obj.UserData.remove(key);
+                obj.Variables = obj.Variables.remove(key);
             end
         end
 
@@ -208,15 +229,15 @@ classdef session < handle
             end
 
             if nargin == 1
-                res = obj.UserData;
+                res = obj.Variables;
                 return
             elseif nargin == 2
                 if iscell(varargin{1})
                     args = varargin{1};
                 else
                     key = string(varargin{1});
-                    if isfield(obj.UserData, key)
-                        res = obj.UserData(key);
+                    if isfield(obj.Variables, key)
+                        res = obj.Variables(key);
                     else
                         res = [];
                         warning("No such key in ana.session's UserData: '%s'", key);
@@ -230,8 +251,8 @@ classdef session < handle
             res = ana.type.dict();
             for k = 1:numel(args)
                 key = string(args{k});
-                if isfield(obj.UserData, key)
-                    res(key) = obj.UserData(key);
+                if isfield(obj.Variables, key)
+                    res(key) = obj.Variables(key);
                 else
                     res(key) = [];
                     warning("No such key in ana.session's UserData: '%s'", key);
@@ -240,6 +261,52 @@ classdef session < handle
         end
     end
 
+    %% ALIASES
+    methods
+        function res = hasalias(obj, key)
+            %HASALIAS       Check if alias is stored.
+            %
+            arguments
+                obj ana.session
+                key (1,1) string
+            end
+
+            res = isfield(obj.Aliases, key);
+        end
+
+        function setalias(obj, key, path, cls)
+            %SETALIAS       Set alias.
+            %
+            %  
+            arguments
+                obj ana.session
+                key (1,1) string
+                path (1,1) string
+                cls = []
+            end
+
+            obj.Aliases(key) = struct('location', path, 'class', cls);
+        end
+
+        function [loc,cls] = getalias(obj,key)
+            %GETALIAS       Get alias.
+            %
+            arguments
+                obj ana.session
+                key (1,1) string
+            end
+            if obj.hasalias(key)
+                alias = obj.Aliases(key);
+                loc = [alias.location];
+                cls = [alias.class];
+            else
+                loc = [];
+                cls = [];
+            end
+        end
+    end
+
+    %% OBJECT REGISTRY
     methods 
         function register(obj, h)
             %REGISTER       Register a handle with the "state".

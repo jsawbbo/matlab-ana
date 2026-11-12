@@ -197,6 +197,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                                     node.set(value);
     
                                     obj.PrivateData_(key) = node;
+                                elseif isa(value, 'ana.config.node.base') % FIXME should only accept derived classes...
+                                    obj.PrivateData_(key) = value;
                                 else
                                     error("ANA:runtime:invalidType", "trying to assign invalid type for key '%s'", key)
                                 end

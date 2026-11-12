@@ -274,6 +274,23 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
         end
 
+        function res = alias(obj)
+            %ALIAS  Get alias key (if applicable).
+            %
+            %See also: isalias
+            %
+            arguments
+                obj ana.fs.path;
+            end
+
+            if obj.isalias()
+                s = obj.Parts{1};
+                res = extractBetween(string(s),2,strlength(s)-1);
+            else
+                res = [];
+            end
+        end
+
         function str = fullfile(obj,varargin)
             %FULLFILE   Get full path as string.
             %

@@ -67,7 +67,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
             idx = indexOp(1).Indices;
-            selected = obj.Items(idx{:});
+            selected = obj.PrivateData_(idx{:});
 
             if isscalar(selected)
                 result = selected{1};
@@ -78,8 +78,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             if isscalar(indexOp)
                 varargout{1} = result;
             else
-                varargout{1} = matlab.mixin.indexing.forwarding ...
-                    .builtinSubsref(result, indexOp(2:end));
+                [varargout{1:nargout}] = result.(indexOp(2:end));
             end
         end
 
