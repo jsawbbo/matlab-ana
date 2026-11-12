@@ -17,15 +17,20 @@ end
 
 function [res,found] = collapse_helper(path,names,aliases)
     for k = 1:numel(names)
-        alias = names(k);
-        location = ana.fs.path(aliases.(alias).location);
+        name = names(k);
+        alias = aliases.(name);
 
-        n = numel(location);
-        found = all(location == path(1:n));
-        if found
-            res = ("{"+alias+"}") / path(n+1:end);
-            return
+        for l = 1:numel(alias)
+            location = ana.fs.path(alias(l).location);
+    
+            n = numel(location);
+            found = (n <= numel(path)) && all(location == path(1:n));
+            if found
+                res = ("{"+name+"}") / path(n+1:end);
+                return
+            end
         end
     end
+    found = false;
     res = path;
 end
