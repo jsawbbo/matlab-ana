@@ -92,7 +92,11 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & ...
                 vs = varargin{2};
 
                 if ~iscell(vs)
-                    vs = num2cell(vs);
+                    if isscalar(ks)
+                        vs = {vs};
+                    else
+                        vs = num2cell(vs);
+                    end
                 end
 
                 for i = 1:numel(ks)
@@ -122,9 +126,9 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & ...
             tf = isKey(obj, name);
         end
 
-        function rmfield(obj, name)
+        function obj = rmfield(obj, name)
             % rmfield           Remove one or more keys.
-            remove(obj.PrivateData_, string(name));
+            obj.PrivateData_ = remove(obj.PrivateData_, string(name));
         end
 
         function s = struct(obj)
