@@ -43,40 +43,43 @@ function runtests(options)
         data = load('tests/failed.mat', 'failures');
         previous = data.failures;
 
-        if ~isempty(previous)
-            % Group previous failures by folder.
-            folders = unique([previous.Folder]);
-        
-            for folder = folders
-                % Get the names of failed tests in this folder.
-                idx = [previous.Folder] == folder;
-                names = [previous(idx).Test];
-        
-                fprintf("======== ana.%s:\n", folder);
-        
-                % Run ONLY these tests.
-                suite = TestSuite.fromFolder( ...
-                    fullfile('tests', folder), Name=names);
-        
-                if isempty(suite)
-                    warning("No matching tests found in %s", folder);
-                    continue
-                end
-        
-                results = run(suite);
-        
-                if options.Verbose
-                    table(results)
-                end
-        
-                % Remember tests that are still failing.
-                idx = find([results.Failed] | [results.Incomplete]);
-        
-                for j = idx
-                    failures(end+1).Folder = folder;
-                    failures(end).Test = string(results(j).Name);
-                    failures(end).Result = results(j);
-                end
+        if isempty(previous)
+            fprintf("No previous failures found, possibly re-run without 'FailedOnly' option.\n");
+            return
+        end
+
+        % Group previous failures by folder.
+        folders = unique([previous.Folder]);
+    
+        for folder = folders
+            % Get the names of failed tests in this folder.
+            idx = [previous.Folder] == folder;
+            names = [previous(idx).Test];
+    
+            fprintf("======== ana.%s:\n", folder);
+    
+            % Run ONLY these tests.
+            suite = TestSuite.fromFolder( ...
+                fullfile('tests', folder), Name=names);
+    
+            if isempty(suite)
+                warning("No matching tests found in %s", folder);
+                continue
+            end
+    
+            results = run(suite);
+    
+            if options.Verbose
+                table(results)
+            end
+    
+            % Remember tests that are still failing.
+            idx = find([results.Failed] | [results.Incomplete]);
+    
+            for j = idx
+                failures(end+1).Folder = folder;
+                failures(end).Test = string(results(j).Name);
+                failures(end).Result = results(j);
             end
         end
     end

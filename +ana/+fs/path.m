@@ -18,7 +18,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     end
 
     properties (Constant)
-        separator = '/'                     %ana.fs.path.separator Canonical path separator.
+        separator = '/'                     % Canonical path separator.
         forbidden = '[^A-Za-z0-9._-]'       % Forbidden characters (regular expression) for "compatible" paths.
     end
     
@@ -227,7 +227,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         function res = isurl(obj)
             %ISURL      Check if path represents a server URL.
             %
-            res = regexp(obj.Parts{1},"^([a-z]+):$");
+            res = ~isempty(regexp(obj.Parts{1},"^([a-z]+):$"));
         end
 
         function res = isshare(obj)
@@ -308,7 +308,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 full = full / varargin{i};
             end
 
-            str = strjoin(full.Parts,obj.separator);
+            if isscalar(full.Parts) && ana.util.strempty(full.Parts{1})
+                str = string(ana.fs.path.separator);
+            else
+                str = strjoin(full.Parts,obj.separator);
+            end
         end
 
         function [path,filename,extension] = fileparts(obj)
@@ -320,14 +324,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 obj ana.fs.path;
             end
 
-            path = strjoin(obj.Parts(1:end-1),obj.separator);
-            filename = obj.Parts{end};
-            extension = regexp(filename, '[.][^.]+$', 'match');
-            if isempty(extension)
-                extension = '';
-            else
-                extension = extension{1};
-            end
+            [path,filename,extension] = fileparts(string(obj));
         end
 
         function res = exist(obj,searchType)
