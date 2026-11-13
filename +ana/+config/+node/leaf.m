@@ -118,9 +118,8 @@ classdef leaf < ana.config.node.base
 
             % additional checks in the scheme's meta struct
             if ~isempty(obj.PrivateScheme_)
-                if isfield(obj.PrivateScheme_, "meta")
-                    meta = obj.PrivateScheme_.meta;
-
+                meta = obj.PrivateScheme_.meta();
+                if ~isempty(meta)
                     switch (obj.PrivateScheme_.type)
                         case "category"
                             assert(isfield(meta,"categories"), "error in scheme, expected field meta.categories")

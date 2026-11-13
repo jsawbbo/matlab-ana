@@ -57,7 +57,7 @@ content:
                     label: "Remote"
                 default: local
                 comment: |
-                    Local storage means storage that is permanently connected to the computing device (*).
+                    Local storage means storage that is permanently connected to the computing device.
 
                     Network storage refers to mounted data volumes permanently attached (such as mapped 
                     network drives, NFS, etc.).

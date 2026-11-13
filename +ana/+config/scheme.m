@@ -60,6 +60,7 @@ classdef scheme
     methods(Static)
         function register(path)
             %REGISTER   Registers a path as "scheme" path.
+            %
 
             path = ana.fs.path(path);
 
@@ -73,6 +74,8 @@ classdef scheme
 
         function path = find(name)
             %FIND   Find scheme file.
+            %
+
             name = ana.fs.path(name);
             name(end) = name(end) + ".yml";
             if ~name.isrelative()
@@ -96,6 +99,8 @@ classdef scheme
     methods
         function sch = get(obj,key)
             %GET        Get child content by key.
+            %
+            
             sch = [];
 
             if obj.isempty() || ~isfield(obj.Scheme, 'content')

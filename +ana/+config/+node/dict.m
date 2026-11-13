@@ -1,9 +1,9 @@
-classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matlab.mixin.Scalar
+classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matlab.mixin.indexing.OverridesPublicDotMethodCall & matlab.mixin.Scalar
     %ana.config.node.dict       A key-value pair mapping.
     %
 
     %% HELPER
-    methods (Hidden, Access=protected)
+    methods (Hidden,Access=protected)
         function save_(obj,fd,options)
             arguments
                 obj
@@ -228,6 +228,25 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
         function varargout = dotReference(obj, indexOp)
             field = indexOp(1).Name;
             
+            % method call
+            if numel(indexOp) > 1 && ...
+                    indexOp(2).Type == "Paren" 
+        
+                args = indexOp(2).Indices;
+        
+                try
+                    if numel(indexOp) == 2
+                        [varargout{1:nargout}] = feval(field, obj, args{:});
+                    else
+                        result = feval(field, obj, args{:});
+                        [varargout{1:nargout}] = result.(indexOp(3:end));
+                    end
+                    return
+                catch 
+                end
+            end
+
+            % regular indexing
             if isfield(obj.PrivateData_, field)
                 retval = obj.PrivateData_(field);
                 
