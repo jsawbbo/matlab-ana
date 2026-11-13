@@ -2,13 +2,20 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & ...
                 matlab.mixin.indexing.RedefinesDot & ...
                 matlab.mixin.indexing.OverridesPublicDotMethodCall & ...
                 matlab.mixin.Scalar
-    %ana.type.dict      Variant dictionary and struct semantics.
+    %ana.type.dict      Variant dictionary with struct semantics.
     % 
     % This class wraps Matlab's dictionary allowing any type to be stored and
     % retrieved without unpacking cells (as <a href="matlab:help dictionary">dictionary</a> would required).
     %
-    % Usage:
+    % Assignment semantics:
     %
+    %   d(key) = []    Removes the key (dictionary semantics).
+    %   d.key = []     Stores an empty array (struct semantics).
+    %
+    % Use isKey(d,key) or isfield(d,key) to distinguish absent keys from keys 
+    % containing empty values.
+    %
+    % Example:
     %     d = ana.type.dict();
     %     d.foo = 42;
     %     d("bar-baz") = magic(3);
@@ -184,7 +191,7 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & ...
 
         function obj = parenDelete(obj, indexOp)
             key = ana.type.dict.parseKey(indexOp(1));
-            remove(obj.PrivateData_, key);
+            obj.PrivateData_ = remove(obj.PrivateData_, key);
         end
 
         function n = parenListLength(obj, indexOp, indexContext)
