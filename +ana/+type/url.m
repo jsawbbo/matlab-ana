@@ -29,17 +29,17 @@ classdef url
         function res = string(obj)
             %STRING     Create string representation of the URL.
             % scheme
-            if ~isempty(obj.Scheme)
+            if ~ana.util.strempty(obj.Scheme)
                 res = string(obj.Scheme) + ":";
             else
                 res = "";
             end
 
             % authority
-            if ~isempty(obj.Host)
+            if ~ana.util.strempty(obj.Host)
                 res = res + "//";
             
-                if ~isempty(obj.Userinfo)
+                if ~ana.util.strempty(obj.Userinfo)
                     res = res + string(obj.Userinfo) + "@";
                 end
 
@@ -51,17 +51,17 @@ classdef url
             end
 
             % path, query, fragment
-            if ~isempty(obj.Path)
-                if ~isempty(obj.Host)
+            if ~ana.util.strempty(obj.Path)
+                if ~ana.util.strempty(obj.Host)
                     res = res + "/";
                 end
                 res = res + obj.Path;
 
-                if ~isempty(obj.Query)
+                if ~ana.util.strempty(obj.Query)
                     res = res + "?" + string(obj.Query);
                 end
 
-                if ~isempty(obj.Fragment)
+                if ~ana.util.strempty(obj.Fragment)
                     res = res + "#" + string(obj.Fragment);
                 end
             end

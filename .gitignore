@@ -438,3 +438,7 @@ FodyWeavers.xsd
 
 # Auto-generated directories (if any)
 **/auto/**
+
+# Test suite
+**/failed.mat
+
