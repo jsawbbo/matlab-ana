@@ -16,7 +16,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
             if ~isempty(obj)
                 for k = 1:numel(obj)
-                    if level > 0
+                    if options.Level > 0
                         indent_s = pad("", 2*(options.Level-1));
                         fprintf(fd, "\n%s",indent_s);
                     end
@@ -67,12 +67,12 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     methods (Access=protected)
         function varargout = parenReference(obj, indexOp)
             idx = indexOp(1).Indices;
-            selected = obj.Items(idx{:});
+            selected = obj.PrivateData_(idx{:});
 
             if isscalar(selected)
                 result = selected{1};
             else
-                result = vals;
+                result = selected;
             end
 
             if isscalar(indexOp)
@@ -106,7 +106,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 tmp = obj.PrivateData_{idx};
                 tmp = matlab.mixin.indexing.forwarding ...
                     .builtinSubsasgn(tmp, indexOp(2:end), varargin{:});
-                obj.Items{idx}.set(tmp);
+                obj.PrivateData_{idx}.set(tmp);
             end
         end
 

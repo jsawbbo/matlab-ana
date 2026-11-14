@@ -1,45 +1,32 @@
 function runtests(options)
     arguments
         options.Verbose = false         % Show suite results verbosely.
+        options.Directories = []        % Directories to run.
         options.FailedOnly = false      % Rerun only failed tests.
     end
 
     import matlab.unittest.TestSuite
     
     failures = struct('Folder', {}, 'Test', {}, 'Result', {});
+    previous = [];
+    folders = [];
 
-    if ~options.FailedOnly       
-        list = dir('tests');
-        for k = 3:numel(list)
-            if ~list(k).isdir
-                continue
-            end
-        
-            folder = list(k).name;
-        
-            fprintf("======== ana.%s:\n", folder);
-            suite = TestSuite.fromFolder(fullfile('tests', folder));
-        
-            results = run(suite);
-            if options.Verbose
-                table(results)
-            end
-        
-            % Collect failed and incomplete tests.
-            idx = find([results.Failed] | [results.Incomplete]);
-        
-            for j = idx
-                failures(end+1).Folder = string(folder);
-                failures(end).Test = string(results(j).Name);
-                failures(end).Result = results(j);
+    % directories 
+    if ~isempty(options.Directories)
+        folders = string(options.Directories);
+
+        for k = 1:numel(folders)
+            p = ana.fs.path(folders(k));
+            if ~p.isfolder()
+                folders(k) = string("tests"/p);
             end
         end
-    else
+    elseif options.FailedOnly
         if ~isfile('tests/failed.mat')
             fprintf("No previous failures file found, re-run without 'FailedOnly' option.\n");
             return
         end
-    
+
         data = load('tests/failed.mat', 'failures');
         previous = data.failures;
 
@@ -48,39 +35,43 @@ function runtests(options)
             return
         end
 
-        % Group previous failures by folder.
         folders = unique([previous.Folder]);
-    
-        for folder = folders
-            % Get the names of failed tests in this folder.
+    else
+        folders = findtests("tests",string([]));
+    end
+
+    for k = 1:numel(folders)
+        folder = folders(k);
+
+        fprintf("======== %s:\n", folder);
+
+        % execute suite
+        if ~isempty(previous)
             idx = [previous.Folder] == folder;
             names = [previous(idx).Test];
+            suite = TestSuite.fromFolder(folder, Name=names);
+        else
+            suite = TestSuite.fromFolder(folder);
+        end
+
+        if isempty(suite)
+            warning("No matching tests found in %s", folder);
+            continue
+        end
+
+        results = run(suite);
+
+        if options.Verbose
+            table(results)
+        end
+
+        % remember failing tests
+        idx = find([results.Failed] | [results.Incomplete]);
     
-            fprintf("======== ana.%s:\n", folder);
-    
-            % Run ONLY these tests.
-            suite = TestSuite.fromFolder( ...
-                fullfile('tests', folder), Name=names);
-    
-            if isempty(suite)
-                warning("No matching tests found in %s", folder);
-                continue
-            end
-    
-            results = run(suite);
-    
-            if options.Verbose
-                table(results)
-            end
-    
-            % Remember tests that are still failing.
-            idx = find([results.Failed] | [results.Incomplete]);
-    
-            for j = idx
-                failures(end+1).Folder = folder;
-                failures(end).Test = string(results(j).Name);
-                failures(end).Result = results(j);
-            end
+        for j = idx
+            failures(end+1).Folder = folder;
+            failures(end).Test = string(results(j).Name);
+            failures(end).Result = results(j);
         end
     end
 
@@ -95,4 +86,19 @@ function runtests(options)
 
     % Preserve the complete failure information.
     save('tests/failed.mat', 'failures');
+end
+
+function folders = findtests(path, folders)
+    list = dir(path);
+    for k = 1:numel(list)
+        if list(k).isdir
+            switch(list(k).name)
+                case {'.','..'}
+                otherwise
+                    nextpath = path + "/" + string(list(k).name);
+                    folders = findtests(nextpath, folders);
+                    folders = [nextpath; folders(:)];
+            end
+        end
+    end
 end

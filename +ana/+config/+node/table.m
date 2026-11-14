@@ -72,7 +72,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             if isscalar(selected)
                 result = selected{1};
             else
-                result = vals;
+                result = selected;
             end
 
             if isscalar(indexOp)

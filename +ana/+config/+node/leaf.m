@@ -138,13 +138,13 @@ classdef leaf < ana.config.node.base
                         case {"integral","numeric"}
                             if isfield(meta,"limit")
                                 if isfield(meta.limit, "min")
-                                    if value < meta.limit.min
+                                    if any(value < meta.limit.min)
                                         valid = false;
                                     end
                                 end
 
                                 if isfield(meta.limit, "max")
-                                    if value > meta.limit.max
+                                    if any(value > meta.limit.max)
                                         valid = false;
                                     end
                                 end
@@ -201,18 +201,24 @@ classdef leaf < ana.config.node.base
             %SET    Set value.
             %
 
-            switch(obj.PrivateType_)
-                case 'datetime'
-                    value = ana.type.datetime(value);
-                otherwise
-                    % all good
+            if ~isempty(obj.PrivateType_)
+                switch(obj.PrivateType_)
+                    case 'datetime'
+                        value = ana.type.datetime(value);
+                    otherwise
+                        % all good
+                end
             end
 
             [valid,reason] = obj.validate(value);
             if ~valid
                 error("ANA:runtime", reason)
             end
-            obj.PrivateData_ = value;
+            if isa(value,"ana.config.node.leaf")
+                obj.PrivateData_ = value.get();
+            else
+                obj.PrivateData_ = value;
+            end
             obj.autosave();
         end
     end
