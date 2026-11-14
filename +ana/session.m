@@ -70,16 +70,16 @@ classdef session < handle
                 % fill standard aliases from general config
                 storage = obj.Config.general.storage;
                 searchpath = storage.searchpath;
-                aliases = struct(location={},class={});
+                aliases = cell(1, numel(searchpath));
 
                 for a = 1:numel(searchpath)
-                    aliases(a).location = searchpath(a).location.get();
-                    aliases(a).class = searchpath(a).class.get();
+                    aliases{a} = ana.fs.path(searchpath(a).location.get(), ...
+                        Category=searchpath(a).category.get());
                 end
 
                 obj.Aliases.("storage") = aliases;
-                obj.Aliases.("scratch") = struct(location=storage.scratch.get(),class='local');
-                obj.Aliases.("project") = struct(location=[],class='local');
+                obj.Aliases.("scratch") = ana.fs.path(storage.scratch.get());
+                obj.Aliases.("project") = [];
 
                 % fill standard variables
                 obj.set("USER", getenv("USER"));
@@ -274,23 +274,26 @@ classdef session < handle
             res = isfield(obj.Aliases, key);
         end
 
-        function setalias(obj, key, path, cls)
+        function setalias(obj, key, loc, cat)
             %SETALIAS       Set alias.
             %
+            %   FIXME
             %  
             arguments
                 obj ana.session
                 key (1,1) string
-                path (1,1) string
-                cls = []
+                loc (1,1) string
+                cat = []
             end
 
-            obj.Aliases(key) = struct('location', path, 'class', cls);
+            obj.Aliases(key) = struct('location', loc, 'category', cat);
         end
 
-        function [loc,cls] = getalias(obj,key)
+        function [loc,cat] = getalias(obj,key)
             %GETALIAS       Get alias.
             %
+            %   FIXME
+            %  
             arguments
                 obj ana.session
                 key (1,1) string
@@ -298,10 +301,10 @@ classdef session < handle
             if obj.hasalias(key)
                 alias = obj.Aliases(key);
                 loc = [alias.location];
-                cls = [alias.class];
+                cat = [alias.category];
             else
                 loc = [];
-                cls = [];
+                cat = [];
             end
         end
     end
@@ -309,7 +312,7 @@ classdef session < handle
     %% OBJECT REGISTRY
     methods 
         function register(obj, h)
-            %REGISTER       Register a handle with the "state".
+            %REGISTER       Register a handle with the "session".
             %
             if ~isa(h, 'handle')
                 error('ana.session:InvalidHandle', 'Registered object must be a handle.');

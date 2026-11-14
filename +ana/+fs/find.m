@@ -1,5 +1,5 @@
 function res = find(path,pattern,options)
-    %FIND   Find files in a directory.
+    %ana.fs.find        Find files in a directory.
     %   
     % Syntax:
     %    items = ana.fs.find(path, pattern);

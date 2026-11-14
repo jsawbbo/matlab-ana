@@ -1,5 +1,5 @@
 function res = strempty(s)
-    %ANA.UTIL.STREMPTY      Check if string (or char array) is empty.
+    %ana.util.strempty      Check if string (or char array) is empty.
     %
     arguments
         s string

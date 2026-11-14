@@ -1,11 +1,21 @@
-function resolved = collapse(path)
-    %ANA.FS.ALIAS.COLLAPSE      FIXME
-    %   
+function resolved = collapse(path,options)
+    %ana.fs.alias.collapse      Collapse a path to its alias form.
+    %
+    % FIXME
+    % 
+    % See: ana.fs.alias.expand
     arguments (Input)
-        path ana.fs.path
+        path ana.fs.path        % The path to collapse.
+        options.Aliases = []    % Aliases (internally used for unit tests).
     end
     
-    aliases = ana.session().Aliases;
+    if isempty(options.Aliases)
+        aliases = ana.session().Aliases;
+    else
+        aliases = options.Aliases;
+    end
+    assert(isstruct(aliases) || isa(aliases,'ana.type.dict'), "Inavlid aliases type.")
+
     names = keys(aliases);
 
     found = true;
@@ -27,6 +37,9 @@ function [res,found] = collapse_helper(path,names,aliases)
             found = (n <= numel(path)) && all(location == path(1:n));
             if found
                 res = ("{"+name+"}") / path(n+1:end);
+                res.Category = ana.fs.category.local;
+                % (collapsed paths are always represented as local, 
+                % they will inherit the category on expansion!)
                 return
             end
         end

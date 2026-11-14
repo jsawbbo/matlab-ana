@@ -7,6 +7,7 @@ classdef node < matlab.mixin.indexing.RedefinesParen & handle
 
     %TODO
     %- see ana.type.dict for display/disp and matlab.mixin.Scalar
+    %- needs testsuite
 
     %% PROPERTIES
     properties (Access=public)

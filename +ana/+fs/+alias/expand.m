@@ -1,27 +1,49 @@
-function resolved = expand(path)
-    %ANA.FS.ALIAS.EXPAND        FIXME
-    %   
-    arguments (Input)
-        path ana.fs.path
+function resolved = expand(path, options)
+    %ana.fs.alias.expand        Expand aliases.
+    %
+    % FIXME
+    % 
+    % See: ana.fs.alias.collapse
+    arguments 
+        path ana.fs.path        % The path to expand.
+        options.Aliases = []    % Aliases (internally used for unit tests).
     end
+
     if ~path.isalias()
-        resolved = path;
+        resolved = {path};
         return
     end
 
-    sess = ana.session();
-    alias = path.alias();
-
-    if ~sess.hasalias(alias)
-        resolved = [];
+    if isempty(options.Aliases)
+        aliases = ana.session().Aliases;
     else
-        [loc,~] = sess.getalias(alias);
-        N = numel(loc);
+        aliases = options.Aliases;
+    end
+    assert(isstruct(aliases) || isa(aliases,'ana.type.dict'), "Inavlid aliases type.")
 
-        resolved = cell(1,N);
+    resolved = expand_helper(path, aliases, {});
+end
 
-        for k = 1:N
-            resolved{k} = loc(k)/path(2:end);
+function resolved = expand_helper(path, aliases, resolved)
+    thealias = path.alias();
+    
+    if ~isfield(aliases, thealias)
+        return
+    end
+
+    list = aliases.(thealias);
+    for k = 1:numel(list)
+        tmp = list{k} / path(2:end);
+        if tmp.isalias()
+            nres = numel(resolved);
+            resolved = expand_helper(tmp, aliases, resolved);
+            if nres == numel(resolved)
+                warning("Alias '%s' is not declared.", tmp.alias())
+                % FIXME this might be actually rather an error?
+            end
+        else
+            resolved{end + 1} = tmp;
         end
     end
 end
+

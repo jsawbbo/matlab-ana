@@ -302,14 +302,14 @@ classdef testpath < matlab.unittest.TestCase
             testCase.verifyEqual(exist(p, 'file'), 0);
         end
 
-        function resolvesAbsolutePathWithoutSearch(testCase)
+        function locatesAbsolutePathWithoutSearch(testCase)
             p = ana.fs.path("/alpha/beta.dat");
-            resolved = resolve(p);
-            testCase.verifyClass(resolved, 'ana.fs.path');
-            testCase.verifyEqual(string(resolved), string(p));
+            located = locate(p);
+            testCase.verifyClass(located, 'ana.fs.path');
+            testCase.verifyEqual(string(located), string(p));
         end
 
-        function resolvesRelativeFileUsingExplicitSearchPath(testCase)
+        function locatesRelativeFileUsingExplicitSearchPath(testCase)
             fixture = testCase.applyFixture( ...
                 matlab.unittest.fixtures.TemporaryFolderFixture);
             folder = fixture.Folder;
@@ -319,18 +319,18 @@ classdef testpath < matlab.unittest.TestCase
             fclose(fid);
 
             sp = ana.fs.searchpath(folder);
-            resolved = resolve(ana.fs.path("trial.dat"), SearchPath=sp);
-            testCase.assertClass(resolved, 'ana.fs.path');
-            testCase.verifyEqual(string(resolved), string(ana.fs.path(name)));
+            located = locate(ana.fs.path("trial.dat"), SearchPath=sp);
+            testCase.assertClass(located, 'ana.fs.path');
+            testCase.verifyEqual(string(located), string(ana.fs.path(name)));
         end
 
         function missingFileInExplicitSearchPath(testCase)
             fixture = testCase.applyFixture( ...
                 matlab.unittest.fixtures.TemporaryFolderFixture);
             sp = ana.fs.searchpath(fixture.Folder);
-            resolved = resolve(ana.fs.path("does-not-exist.dat"), ...
+            located = locate(ana.fs.path("does-not-exist.dat"), ...
                 SearchPath=sp);
-            testCase.verifyEmpty(resolved);
+            testCase.verifyEmpty(located);
         end
     end
 end

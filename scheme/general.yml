@@ -42,10 +42,10 @@ content:
                     - file system path (/path/to/data, C:\path\to\data, or file:/path/to/data)
                     - UNC paths (\\server\share or //server/share)
                     - URLs (e.g. https://server/path)
-        -   key: class
+        -   key: category
             type: category
             meta:
-                label: Storage class
+                label: Storage category
                 categories:
                 -   value: "local"
                     label: "Local"
@@ -67,6 +67,8 @@ content:
                     [Windows]).
 
                     Remote storage may refer to any remotely accessible source, which is supported by ANA.
+
+                    See: ana.fs.category
     -   key: scratch
         type: path
         meta:

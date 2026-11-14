@@ -11,17 +11,23 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     %- parenAssign,parenDelete need checks (e.g. if Drive == true)
     %- add "~" for $HOME
 
+    %% CONSTANTS
+    properties (Constant)
+        separator = '/'                     % Canonical path separator.
+        forbidden = '[^A-Za-z0-9._-]'       % Forbidden characters (regular expression) for "compatible" paths.
+    end
+
     %% PROPERTIES
     properties (SetAccess=protected)
         Drive                               % Boolean value indicating that a Windows® drive letter is used.
         Parts                               % String array of path elements.
     end
 
-    properties (Constant)
-        separator = '/'                     % Canonical path separator.
-        forbidden = '[^A-Za-z0-9._-]'       % Forbidden characters (regular expression) for "compatible" paths.
+    % meta-data
+    properties
+        Category ana.fs.category = ana.fs.category.local        % File category.
     end
-    
+
     %% RedefinesParen
     methods
         function out = cat(~,varargin)
@@ -143,15 +149,21 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         end
 
         function res = uplus(obj)
-            %UPLUS  Equivalent of string() but with path resolution (see resolve()).
+            %UPLUS  Equivalent of string() but with path resolution (see locate()).
             %
-            res = string(obj.resolve());
+
+            loc = obj.locate();
+            if isempty(loc)
+                error("ana.fs.path:NoSuchLocation", "The file '%s' could not be located.", string(obj))
+            end
+
+            res = string(loc);
         end
     end
 
     %% PUBLIC
     methods
-        function obj = path(pathname)
+        function obj = path(pathname,options)
             %PATH Construct an instance of this class
             %
             % Syntax:
@@ -160,11 +172,13 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             %
             arguments
                 pathname (1,:) = []
+                options.Category = []
             end
 
             if isa(pathname, 'ana.fs.path')
                 obj.Drive = pathname.Drive;
                 obj.Parts = pathname.Parts;
+                obj.Category = pathname.Category;
             else
                 if isa(pathname, 'ana.type.url')
                     if ~isempty(pathname.Scheme)
@@ -206,7 +220,15 @@ classdef path < matlab.mixin.indexing.RedefinesParen
     
                 if (numel(obj.Parts) == 2) && strlength(obj.Parts{end}) == 0
                     obj.Parts = obj.Parts(1);
-                end           
+                end
+            end
+
+            if ~isempty(options.Category)
+                try 
+                    obj.Category = ana.fs.category(options.Category);
+                catch
+                    warning('ana.fs.path:InvalidCategory', 'Provided category is not understood - ignoring.')
+                end
             end
         end
     end
@@ -227,13 +249,27 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         function res = isurl(obj)
             %ISURL      Check if path represents a server URL.
             %
-            res = ~isempty(regexp(obj.Parts{1},"^([a-z]+):$"));
+            res = ~isempty(regexp(obj.Parts{1},"^([a-z]+):$", 'once'));
         end
 
         function res = isshare(obj)
             %ISSHARE    Check if path represents a network (i.e. CIFS) share.
             %
             res = startsWith(obj.Parts{1}, '//');
+        end
+
+        function res = isabsolute(obj)
+            %ISABSOLUTE     Check if path is absolute.
+            %
+            arguments
+                obj ana.fs.path;
+            end
+
+            if obj.Drive
+                res = true;
+            else
+                res = isempty(obj.Parts{1}) || obj.isshare();
+            end
         end
 
         function res = isrelative(obj)
@@ -243,11 +279,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 obj ana.fs.path;
             end
             
-            if obj.Drive
-                res = false;
-            else
-                res = ~isempty(obj.Parts{1}) && ~obj.isshare();
-            end
+            res = ~obj.isabsolute();
         end
 
         function res = isalias(obj)
@@ -344,26 +376,35 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
         end
 
-        function res = resolve(obj,options)
-            %RESOLVE   Find file.
+        function res = locate(obj, options)
+            %LOCATE         Locate local storage of a file.
             %
-            %   If no SearchPath is provided, this method will use ana.fs.storage
-            %   to resolve the file path. Otherwise, the find method is used.
+            % FIXME
             %
-            arguments
-                obj ana.fs.path;
-                options.SearchPath ana.fs.searchpath = [];
+            %See: ana.fs.alias.locate
+            arguments 
+                obj ana.fs.path
+                options.Searchpath = [] % A search path (ana.fs.searchpath).
+                options.Aliases = []    % Aliases (internally used for unit tests).
             end
 
-            if ~obj.isrelative()
-                res = obj;
-                return
-            end
-
-            if isempty(options.SearchPath)
-                res = ana.fs.storage.resolve(obj);
-            else
-                res = options.SearchPath.find(obj);
+            if obj.isabsolute()
+                if obj.isfile() || obj.isfolder()
+                    res = obj;
+                else
+                    res = [];
+                end
+            elseif obj.isalias()
+                res = ana.fs.alias.locate(obj, Aliases=options.Aliases);
+            else % isrelative
+                if isempty(options.Searchpath)
+                    res = ana.fs.pwd() / obj;
+                    if ~res.isfile() && ~res.isfolder()
+                        res = [];
+                    end
+                else
+                    res = options.Searchpath.locate(obj);
+                end
             end
         end
     end

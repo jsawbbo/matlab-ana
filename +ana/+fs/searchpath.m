@@ -1,5 +1,5 @@
 classdef searchpath < matlab.mixin.indexing.RedefinesBrace & matlab.mixin.indexing.RedefinesParen
-    %ANA.FS.SEARCHPATH      Simple search path.
+    %ana.fs.searchpath      Simple search path.
     %
     %   Trivial implementation of search path using internal cell.
     %
@@ -87,9 +87,8 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace & matlab.mixin.indexi
             end
         end
 
-        function res = find(obj,path)
+        function res = locate(obj,path)
             %FIND       Find a file or folder in this search path.
-            %
             %
             arguments
                 obj ana.fs.searchpath
@@ -99,7 +98,7 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace & matlab.mixin.indexi
             if iscell(path)
                 res = cell(size(path));
                 for i = 1:numel(path)
-                    res{i} = obj.find(path{i});
+                    res{i} = obj.locate(path{i});
                 end
             else
                 path = ana.fs.path(path);

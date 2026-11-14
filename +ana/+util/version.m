@@ -1,5 +1,5 @@
 classdef version < matlab.mixin.Copyable
-    %ANA.UTIL.VERSION Version information
+    %ana.util.version Version information
     %
 
     properties (SetAccess = protected)
