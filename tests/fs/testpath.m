@@ -303,10 +303,28 @@ classdef testpath < matlab.unittest.TestCase
         end
 
         function locatesAbsolutePathWithoutSearch(testCase)
-            p = ana.fs.path("/alpha/beta.dat");
-            located = locate(p);
+            fixture = testCase.applyFixture( ...
+                matlab.unittest.fixtures.TemporaryFolderFixture);
+        
+            name = fullfile(fixture.Folder, 'test.dat');
+            fid = fopen(name, 'w');
+            testCase.assertGreaterThan(fid, 0);
+            fclose(fid);
+        
+            p = ana.fs.path(name);
+            located = p.locate();
+        
             testCase.verifyClass(located, 'ana.fs.path');
             testCase.verifyEqual(string(located), string(p));
+        end
+        
+        function missingAbsolutePathReturnsEmpty(testCase)
+            fixture = testCase.applyFixture( ...
+                matlab.unittest.fixtures.TemporaryFolderFixture);
+        
+            p = ana.fs.path(fullfile(fixture.Folder, 'missing.dat'));
+        
+            testCase.verifyEmpty(p.locate());
         end
 
         function locatesRelativeFileUsingExplicitSearchPath(testCase)

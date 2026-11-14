@@ -5,8 +5,8 @@ function resolved = locate(path,options)
     %   
     % See: ana.fs.alias.expand
     arguments 
-        path ana.fs.path        % The path to expand.
-        options.Aliases = []    % Aliases (internally used for unit tests).
+        path ana.fs.path            % The path to expand.
+        options.Aliases = []        % Aliases (internally used for unit tests).
     end
     
     if ~path.isalias()

@@ -16,7 +16,15 @@ classdef session < handle
     %   alternatively through indexing. Example:
     %
     %       s = ana.session();
-    %       s('USER') = 'My Identity';
+    %       s('MY_VAR') = 'My Value';
+    %
+    %   Default variables:
+    %       s('USER') = getenv('USER');
+    %       s('Interactive') = true;
+    %
+    %   Interactive controls whether ANA may prompt the user.
+    %   When false, operations requiring user input must use an
+    %   established policy or report that a decision is required.
     %
     %   Aliases
     %   =======
@@ -83,6 +91,7 @@ classdef session < handle
 
                 % fill standard variables
                 obj.set("USER", getenv("USER"));
+                obj.set(Interactive=true);
             else
                 obj = instance;
             end
