@@ -33,7 +33,11 @@ function resolved = expand_helper(path, aliases, resolved)
 
     list = aliases.(thealias);
     for k = 1:numel(list)
-        tmp = list{k} / path(2:end);
+        if isscalar(path)
+            tmp = list{k};
+        else
+            tmp = list{k} / path(2:end);
+        end
         if tmp.isalias()
             nres = numel(resolved);
             resolved = expand_helper(tmp, aliases, resolved);

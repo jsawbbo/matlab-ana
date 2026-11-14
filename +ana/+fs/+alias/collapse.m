@@ -16,7 +16,11 @@ function resolved = collapse(path,options)
     end
     assert(isstruct(aliases) || isa(aliases,'ana.type.dict'), "Inavlid aliases type.")
 
-    names = keys(aliases);
+    if isstruct(aliases)
+        names = string(fieldnames(aliases));
+    else
+        names = keys(aliases);
+    end
 
     found = true;
     resolved = path;
@@ -31,12 +35,16 @@ function [res,found] = collapse_helper(path,names,aliases)
         alias = aliases.(name);
 
         for l = 1:numel(alias)
-            location = ana.fs.path(alias(l).location);
+            location = ana.fs.path(alias{l});
     
             n = numel(location);
             found = (n <= numel(path)) && all(location == path(1:n));
             if found
-                res = ("{"+name+"}") / path(n+1:end);
+                if numel(path) > n
+                    res = ("{"+name+"}") / path(n+1:end);
+                else
+                    res = ana.fs.path("{"+name+"}");
+                end
                 res.Category = ana.fs.category.local;
                 % (collapsed paths are always represented as local, 
                 % they will inherit the category on expansion!)
