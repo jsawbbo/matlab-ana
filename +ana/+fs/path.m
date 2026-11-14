@@ -379,7 +379,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         function res = locate(obj, options)
             %LOCATE         Locate local storage of a file.
             %
-            % FIXME
+            % Locate a path with alias expansion or file-system search.
+            %
+            % Syntax:
+            %   res = path.locate();
+            %   res = path.locate(SearchPath=ana.fs.searchpath);
             %
             %See: ana.fs.alias.locate
             arguments 

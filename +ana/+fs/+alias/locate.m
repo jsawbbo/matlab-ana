@@ -23,5 +23,9 @@ function resolved = locate(path,options)
         end
     end
 
+    %TODO: 
+    %- if the Aliases contain "remote" storage, it might be cachable
+    %- check if file is in cache...
+
     resolved = [];
 end
