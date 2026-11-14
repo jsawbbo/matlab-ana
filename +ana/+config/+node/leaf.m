@@ -71,7 +71,6 @@ classdef leaf < ana.config.node.base
                         end
 
                         obj.PrivateData_ = default;
-                        obj.PrivateDataLast_ = default;
                     end
                 end
             end
@@ -174,7 +173,6 @@ classdef leaf < ana.config.node.base
 
             if nargin == 0
                 obj.PrivateData_ = [];
-                obj.PrivateDataLast_ = [];
 
                 obj.initialize();
             elseif iscell(value)
@@ -186,7 +184,6 @@ classdef leaf < ana.config.node.base
                 end
 
                 obj.PrivateData_ = value;
-                obj.PrivateDataLast_ = value;
             end
         end
 

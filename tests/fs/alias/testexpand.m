@@ -1,4 +1,4 @@
-classdef testaliasexpand < matlab.unittest.TestCase
+classdef testexpand < matlab.unittest.TestCase
     %TESTALIASEXPAND  Unit tests for ana.fs.alias.expand.
     %
     % All aliases are supplied explicitly; no session or real files needed.
@@ -8,7 +8,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
     methods (Test)
         function ordinaryRelativePathPassesThrough(testCase)
             p = ana.fs.path("data/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertClass(result, 'cell');
             testCase.assertNumElements(result, 1);
@@ -18,7 +18,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
         function absolutePathPassesThrough(testCase)
             p = ana.fs.path("/unrelated/trial.mat", ...
                 Category=ana.fs.category.external);
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertClass(result, 'cell');
             testCase.assertNumElements(result, 1);
@@ -28,7 +28,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
 
         function expandsSimpleAlias(testCase)
             p = ana.fs.path("{project}/raw/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertNumElements(result, 1);
             testCase.verifyClass(result{1}, 'ana.fs.path');
@@ -39,7 +39,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
         function expandsAliasWithoutSuffix(testCase)
             % Exact alias roots are valid candidates, too.
             p = ana.fs.path("{project}");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertNumElements(result, 1);
             testCase.verifyEqual(string(result{1}), "/ana-test/project");
@@ -47,7 +47,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
 
         function expandsMultipleLocationsInOrder(testCase)
             p = ana.fs.path("{storage}/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertNumElements(result, 2);
             testCase.verifyEqual(string(result{1}), "/ana-test/storage-a/trial.mat");
@@ -58,7 +58,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
             % The candidate's category comes from the configured location,
             % not from the unresolved alias path.
             p = ana.fs.path("{storage}/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertNumElements(result, 2);
             testCase.verifyEqual(result{1}.Category, ana.fs.category.network);
@@ -67,7 +67,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
 
         function expandsNestedAlias(testCase)
             p = ana.fs.path("{results}/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertNumElements(result, 1);
             testCase.verifyEqual(string(result{1}), ...
@@ -76,7 +76,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
 
         function expandsTwoLevelsOfNesting(testCase)
             p = ana.fs.path("{processed}/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.assertNumElements(result, 1);
             testCase.verifyEqual(string(result{1}), ...
@@ -85,14 +85,14 @@ classdef testaliasexpand < matlab.unittest.TestCase
 
         function unknownAliasProducesNoCandidates(testCase)
             p = ana.fs.path("{missing}/trial.mat");
-            result = ana.fs.alias.expand(p, Aliases=testaliasexpand.aliases());
+            result = ana.fs.alias.expand(p, Aliases=testexpand.aliases());
 
             testCase.verifyClass(result, 'cell');
             testCase.verifyEmpty(result);
         end
 
         function emptyAliasListProducesNoCandidates(testCase)
-            a = testaliasexpand.aliases();
+            a = testexpand.aliases();
             a.empty = {};
             result = ana.fs.alias.expand(ana.fs.path("{empty}/x"), Aliases=a);
 
@@ -122,7 +122,7 @@ classdef testaliasexpand < matlab.unittest.TestCase
         end
 
         function expansionDoesNotModifyInput(testCase)
-            a = testaliasexpand.aliases();
+            a = testexpand.aliases();
             p = ana.fs.path("{storage}/trial.mat");
             result = ana.fs.alias.expand(p, Aliases=a);
 

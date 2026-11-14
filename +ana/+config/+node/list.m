@@ -205,15 +205,19 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 if iscell(s)
                     obj.initialize();
                     
-                    for k = 1:numel(s)
-                        value = s{k};
-
-                        [valid,msg] = obj.validate(value);
-                        if ~valid
-                            error("ANA:runtime:validationFailed", msg)
+                    if ~isempty(obj.PrivateType_) && strcmp(obj.PrivateType_,"list")
+                        error("unimplemented")
+                    else
+                        for k = 1:numel(s)
+                            value = s{k};
+    
+                            [valid,msg] = obj.validate(value);
+                            if ~valid
+                                error("ANA:runtime:validationFailed", msg)
+                            end
+    
+                            obj.PrivateData_{k} = ana.config.node.leaf(value, Parent = obj, Scheme=sch);
                         end
-
-                        obj.PrivateData_{k} = ana.config.node.leaf(value, Parent = obj, Scheme=sch);
                     end
                 else
                     error("ANA:logic:invalidArgument", "argument not recognized")

@@ -113,7 +113,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                 fn = fieldnames(obj.PrivateData_);
                 for k = 1:numel(fn)
                     node = obj.PrivateData_(fn{k});
-                    res.(fn{k}) = node{1}.get();
+                    res.(fn{k}) = node.get();
                 end
             catch 
                 res = obj.PrivateData_;
@@ -170,15 +170,15 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                         key = varargin{k};
                         value = varargin{k+1};
     
-                        [valid,msg] = obj.validate(key);
-                        if ~valid
-                            error("ANA:runtime:validationFailed", msg)
-                        end
-    
                         if isfield(obj.PrivateData_, key)
                             node = obj.PrivateData_(key);
                             node.set(value);
                         else
+                            [valid,msg] = obj.validate(key);
+                            if ~valid
+                                error("ANA:runtime:validationFailed", msg)
+                            end
+
                             if isempty(obj.PrivateScheme_)
                                 sch = [];
                             else
@@ -242,7 +242,10 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                         [varargout{1:nargout}] = result.(indexOp(3:end));
                     end
                     return
-                catch 
+                catch me
+                    if ~startsWith(me.identifier,"MATLAB")
+                        rethrow(me)
+                    end
                 end
             end
 

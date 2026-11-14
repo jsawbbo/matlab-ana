@@ -8,7 +8,6 @@ classdef base < handle
         PrivateScheme_ = [];            % Scheme node (if available).
         PrivateType_ = [];              % Node or data type.
         PrivateData_ = [];              % Representation of encapsulated data.
-        PrivateDataLast_ = [];          % As above, but, before "apply()" - may be unused.
     end
 
     %% INTERNAL
@@ -80,6 +79,10 @@ classdef base < handle
         end
     end
 
+    %% PROTECTED
+    methods (Access=protected)
+    end
+
     %% PUBLIC
     methods
         function obj = base(options)
@@ -117,34 +120,6 @@ classdef base < handle
             while ~isempty(res.PrivateParent_)
                 res = res.PrivateParent_;
             end
-        end
-
-        function res = ismodified(obj)
-            %ISMODIFIED     Check if modified.
-            %
-            arguments
-                obj 
-            end
-            
-            res = ~isequal(obj.PrivateData_,obj.PrivateDataLast_);
-        end
-
-        function apply(obj)
-            %APPLY      Apply changes.
-            arguments
-                obj
-            end
-            
-            obj.PrivateDataLast_ = obj.PrivateData_;
-        end
-
-        function reset(obj)
-            %RESET      Reset changes.
-            arguments
-                obj 
-            end
-
-            obj.PrivateData_ = obj.PrivateDataLast_;
         end
 
         function dump(obj)

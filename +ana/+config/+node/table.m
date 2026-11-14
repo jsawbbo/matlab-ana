@@ -164,7 +164,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
     methods (Static, Access=public)
         function obj = empty()
-            obj = ana.config.node.list();
+            obj = ana.config.node.table();
         end
     end
     
@@ -249,11 +249,15 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                     idx = varargin{k};
                     kvpair = varargin{k+1};
 
-                    if idx > numel(obj)+1
+                    n = numel(obj);
+                    if idx > n+1
                         error("ANA:runtime:invalidIndex", "index out of range")
+                    elseif idx == n+1
+                        node = ana.config.node.dict(Parent=obj,Scheme=sch);
+                        obj.PrivateData_{idx} = node;
                     end
 
-                    node = obj.PrivateData_(idx);
+                    node = obj.PrivateData_{idx};
                     if iscell(kvpair)
                         node.set(kvpair{:});
                     elseif isstruct(kvpair)

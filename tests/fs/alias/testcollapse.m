@@ -1,4 +1,4 @@
-classdef testaliascollapse < matlab.unittest.TestCase
+classdef testcollapse < matlab.unittest.TestCase
     %TESTALIASCOLLAPSE  Unit tests for ana.fs.alias.collapse.
     %
     % Expected alias representation: ana.type.dict whose entries contain
@@ -9,7 +9,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
     methods (Test)
         function unrelatedAbsolutePathIsUnchanged(testCase)
             p = ana.fs.path("/unrelated/trial.mat");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), string(p));
             testCase.verifyFalse(result.isalias());
@@ -17,7 +17,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
 
         function collapsesSimpleLocation(testCase)
             p = ana.fs.path("/ana-test/project/raw/trial.mat");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), "{project}/raw/trial.mat");
             testCase.verifyTrue(result.isalias());
@@ -26,28 +26,28 @@ classdef testaliascollapse < matlab.unittest.TestCase
         function collapsesExactLocation(testCase)
             % No trailing path component is required for a match.
             p = ana.fs.path("/ana-test/project");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), "{project}");
         end
 
         function doesNotMatchPartialComponent(testCase)
             p = ana.fs.path("/ana-test/project-old/data.mat");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), string(p));
         end
 
         function doesNotMatchShorterPath(testCase)
             p = ana.fs.path("/ana-test");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), string(p));
         end
 
         function collapsesSecondLocationOfSearchPath(testCase)
             p = ana.fs.path("/ana-test/storage-b/trial.mat");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), "{storage}/trial.mat");
         end
@@ -55,7 +55,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
         function collapsesNestedAlias(testCase)
             % Repeated collapse should reach the most nested alias.
             p = ana.fs.path("/ana-test/project/results/trial.mat");
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), "{results}/trial.mat");
         end
@@ -65,7 +65,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
             % are recovered when expanding the alias.
             p = ana.fs.path("/ana-test/storage-b/trial.mat", ...
                 Category=ana.fs.category.external);
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), "{storage}/trial.mat");
             testCase.verifyEqual(result.Category, ana.fs.category.local);
@@ -74,7 +74,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
         function unmatchedPathKeepsItsCategory(testCase)
             p = ana.fs.path("/unrelated/trial.mat", ...
                 Category=ana.fs.category.network);
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(result), string(p));
             testCase.verifyEqual(result.Category, ana.fs.category.network);
@@ -83,7 +83,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
         function collapseDoesNotModifyInput(testCase)
             p = ana.fs.path("/ana-test/project/raw.mat", ...
                 Category=ana.fs.category.network);
-            result = ana.fs.alias.collapse(p, Aliases=testaliascollapse.aliases());
+            result = ana.fs.alias.collapse(p, Aliases=testcollapse.aliases());
 
             testCase.verifyEqual(string(p), "/ana-test/project/raw.mat");
             testCase.verifyEqual(p.Category, ana.fs.category.network);
@@ -91,7 +91,7 @@ classdef testaliascollapse < matlab.unittest.TestCase
         end
 
         function collapseAndExpandRoundTrip(testCase)
-            a = testaliascollapse.aliases();
+            a = testcollapse.aliases();
             original = ana.fs.path("/ana-test/project/raw/trial.mat");
             collapsed = ana.fs.alias.collapse(original, Aliases=a);
             candidates = ana.fs.alias.expand(collapsed, Aliases=a);

@@ -13,14 +13,12 @@ classdef testleaf < matlab.unittest.TestCase
         function defaultConstructorIsEmpty(testCase)
             node = ana.config.node.leaf();
             testCase.verifyEmpty(node.get());
-            testCase.verifyFalse(node.ismodified());
         end
 
         function constructorPreservesNumericValue(testCase)
             value = [1 2; 3 4];
             node = ana.config.node.leaf(value);
             testCase.verifyEqual(node.get(), value);
-            testCase.verifyFalse(node.ismodified());
         end
 
         function constructorPreservesString(testCase)
@@ -50,46 +48,6 @@ classdef testleaf < matlab.unittest.TestCase
                 'ANA:runtime');
         end
 
-        %% Modification tracking
-        function settingNewValueMarksModified(testCase)
-            node = ana.config.node.leaf(10);
-            node.set(20);
-            testCase.verifyEqual(node.get(), 20);
-            testCase.verifyTrue(node.ismodified());
-        end
-
-        function settingEqualValueDoesNotMarkModified(testCase)
-            node = ana.config.node.leaf(10);
-            node.set(10);
-            testCase.verifyFalse(node.ismodified());
-        end
-
-        function resetRestoresOriginalValue(testCase)
-            node = ana.config.node.leaf("before");
-            node.set("after");
-            node.reset();
-            testCase.verifyEqual(node.get(), "before");
-            testCase.verifyFalse(node.ismodified());
-        end
-
-        function applySetsNewBaseline(testCase)
-            node = ana.config.node.leaf(1);
-            node.set(2);
-            node.apply();
-            testCase.verifyFalse(node.ismodified());
-            node.set(3);
-            testCase.verifyTrue(node.ismodified());
-            node.reset();
-            testCase.verifyEqual(node.get(), 2);
-            testCase.verifyFalse(node.ismodified());
-        end
-
-        function clearWithoutSchemeEmptiesValue(testCase)
-            node = ana.config.node.leaf(15);
-            node.clear();
-            testCase.verifyEmpty(node.get());
-        end
-
         %% Type inference and validation
         function untypedEmptyValueAcceptsFirstNonemptyType(testCase)
             node = ana.config.node.leaf([]);
@@ -102,15 +60,12 @@ classdef testleaf < matlab.unittest.TestCase
             node = ana.config.node.leaf(5);
             node.set([]);
             testCase.verifyEmpty(node.get());
-            node.reset();
-            testCase.verifyEqual(node.get(), 5);
         end
 
         function rejectsIncompatibleTypeWithoutChangingValue(testCase)
             node = ana.config.node.leaf(10);
             testCase.verifyError(@() node.set("text"), 'ANA:runtime');
             testCase.verifyEqual(node.get(), 10);
-            testCase.verifyFalse(node.ismodified());
         end
 
         function logicalTypeStaysLogical(testCase)
@@ -199,7 +154,6 @@ classdef testleaf < matlab.unittest.TestCase
             node.set(4);
             node.clear();
             testCase.verifyEqual(node.get(), 7);
-            testCase.verifyFalse(node.ismodified());
         end
 
         function clearRestoresEvaluatedSchemaDefault(testCase)
@@ -208,7 +162,6 @@ classdef testleaf < matlab.unittest.TestCase
             node = ana.config.node.leaf(1, Scheme=sch);
             node.clear();
             testCase.verifyEqual(node.get(), 5);
-            testCase.verifyFalse(node.ismodified());
         end
 
         function schemeOnlyConstructorUsesDefault(testCase)
