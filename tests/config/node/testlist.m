@@ -140,20 +140,6 @@ classdef testlist < matlab.unittest.TestCase
             testCase.verifyEqual(testlist.dataColumn(obj), {int32(1); int64(2)});
         end
 
-        function rejectsMixedElementTypes(testCase)
-            obj = ana.config.node.list();
-            testCase.verifyError(@() obj.set({1, "two"}), ...
-                'ANA:runtime:validationFailed');
-        end
-
-        function invalidExistingIndexDoesNotChangeElement(testCase)
-            obj = ana.config.node.list();
-            obj.set({1, 2});
-            testCase.verifyError(@() obj.set(2, "wrong"), ...
-                'ANA:runtime:validationFailed');
-            testCase.verifyEqual(testlist.dataColumn(obj), {1; 2});
-        end
-
         function rejectsGapsWhenAppending(testCase)
             obj = ana.config.node.list();
             obj.set({1});

@@ -34,8 +34,14 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     methods (Access = protected)
         function initialize(obj)
             obj.PrivateData_ = {};
+            obj.PrivateType_ = '*';
             if ~isempty(obj.PrivateScheme_)
-                obj.PrivateType_ = obj.PrivateScheme_.type();
+                cnt = obj.PrivateScheme_.content();
+                if ~isempty(cnt)
+                    if isfield(cnt,'type')
+                        obj.PrivateType_ = cnt.type();
+                    end
+                end
                 % TODO 
                 % - allow a list to have default entries?
             end
@@ -45,20 +51,15 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             reason = [];
 
             T = ana.config.scheme.typeid(value);
-            if isempty(obj.PrivateType_)
-                obj.PrivateType_ = T;
-                valid = true;
-            else
-                switch (obj.PrivateType_)
-                    case "*"
-                        valid = true;
-                    otherwise
-                        valid = strcmp(T, obj.PrivateType_);
-                end
+            switch (obj.PrivateType_)
+                case "*"
+                    valid = true;
+                otherwise
+                    valid = strcmp(T, obj.PrivateType_);
+            end
 
-                if ~valid
-                    reason = "invalid type";
-                end
+            if ~valid
+                reason = "invalid type";
             end
         end        
     end

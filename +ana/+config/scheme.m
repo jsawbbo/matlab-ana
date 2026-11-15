@@ -107,6 +107,10 @@ classdef scheme
                 return
             end
 
+            if ~iscell(obj.Scheme.content)
+                return
+            end
+
             for k = 1:numel(obj.Scheme.content)
                 child = obj.Scheme.content{k};
 
@@ -237,10 +241,21 @@ classdef scheme
 
         function res = content(obj)
             %CONTENT    Get content (ie. children).
+            %
             assert(~isempty(obj.Scheme));
+
+            if ~isfield(obj.Scheme, 'content')
+                res = ana.config.scheme();
+                return
+            end
+
             res = obj.Scheme.content;
-            for k = 1:numel(res)
-                res{k} = ana.config.scheme(res{k});
+            if iscell(res)
+                for k = 1:numel(res)
+                    res{k} = ana.config.scheme(res{k});
+                end
+            else
+                res = ana.config.scheme(res);
             end
         end
 
