@@ -61,6 +61,8 @@ A **value** does not have a content definition.
 
 ### Meta-information
 
+#### General
+
 The ``meta`` field has the following format:
 
     meta:
@@ -79,10 +81,36 @@ or
         eval: |
             <script>
 
-Additional entries:
+#### User interface
 
-FIXME ui, limit, actions, categories
+FIXME 
 
+    ui: <component>
+
+#### Numerical limits
+
+FIXME
+
+    limit:
+        min: <minimum value>
+        max: <maximum value>
+
+TODO: dimensions
+
+#### Categories
+
+FIXME
+
+    categories:
+    -   value: <value>
+        label: <short-label>
+
+#### Actions
+
+TODO 
+
+    actions: |
+        <function>
 
 ### Values
 
