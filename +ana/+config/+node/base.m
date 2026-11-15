@@ -30,14 +30,6 @@ classdef base < handle
 
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
-
-        function autosave(obj)
-            %AUTOSAVE       Auto-save configuration.
-            ptr = obj.root();
-            if ptr ~= obj
-                ptr.autosave();
-            end
-        end
     end
 
     %% HELPER

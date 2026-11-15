@@ -7,30 +7,8 @@ classdef file < ana.config.object
     %% PROPERTIES
     properties (SetAccess=protected)
         PrivateFilename_
-        PrivateAutosave_ = false;
     end
 
-    %% INTERNAL
-    methods (Hidden,Access = protected)
-        function autosave(obj,force)
-            arguments
-                obj
-                force = false
-            end
-
-            if force || (obj.PrivateAutosave_ && obj.ismodified())
-                fd = fopen(+obj.PrivateFilename_,"w");
-                
-                if ~isempty(obj.PrivateScheme_)
-                    fprintf(fd, "version: ""%s""\n\n", obj.PrivateScheme_.version);
-                end
-
-                obj.save_(fd);
-                fclose(fd);
-            end
-        end
-    end
-    
     %% PUBLIC
     methods
         function obj = file(pathname,options)
@@ -39,13 +17,11 @@ classdef file < ana.config.object
                 pathname (1,:) = []
                 options.Parent = []
                 options.Scheme = []
-                options.Autosave = false
             end
 
             if isempty(pathname)
                 pathname = ana.os.paths('configdir') / "config.yml";
                 options.Scheme = "/general";
-                % options.Autosave = true;
             else
                 pathname = ana.fs.path(pathname);
             end
@@ -77,21 +53,16 @@ classdef file < ana.config.object
 
                 obj.set(data);
             end
-
-            obj.PrivateAutosave_ = options.Autosave;
-
-            if ~obj.PrivateFilename_.isfile()
-                obj.autosave(~isempty(options.Scheme));
-            end
         end
 
-        function delete(obj)
+        function delete(~)
             %DELETE     Delete object.
-            obj.autosave(false);
+            %
         end
 
         function save(obj)
             %SAVE   Save data to associated file.
+            %
             copyfile(+obj.PrivateFilename_, +obj.PrivateFilename_ + ".bak")
             fd = fopen(+obj.PrivateFilename_,"w");
 

@@ -103,8 +103,9 @@ content:
                 comment: |
                     Maximum size of the cache directory (GiB).
                 default: 256
-                limits:
-                    min: 1
+                rules:
+                    limits:
+                        min: 0
 # FIXME external programs
 #           - python
 #           - conda

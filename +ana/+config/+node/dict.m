@@ -212,7 +212,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                 end
     
                 if scope == 0
-                    obj.autosave();
+                    % nothing to be done
                 else
                     scope = scope - 1;
                 end

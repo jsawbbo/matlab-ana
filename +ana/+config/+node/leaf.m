@@ -167,7 +167,7 @@ classdef leaf < ana.config.node.base
             %SET    Set value.
             %
 
-            if ~isempty(obj.PrivateType_)
+            if ~isempty(value) && ~isempty(obj.PrivateType_)
                 switch(obj.PrivateType_)
                     case 'datetime'
                         value = ana.type.datetime(value);
@@ -185,7 +185,6 @@ classdef leaf < ana.config.node.base
             else
                 obj.PrivateData_ = value;
             end
-            obj.autosave();
         end
     end
 end

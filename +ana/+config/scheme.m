@@ -291,7 +291,7 @@ classdef scheme
 
                     switch (obj.Scheme.type)
                         case "category"
-                            cats = obj.Scheme.meta.categories;
+                            cats = obj.Scheme.meta.rules;
                             lines = ["Categories: " + strjoin([cats.value], ", "); ""; lines(:)];
                     end
 
