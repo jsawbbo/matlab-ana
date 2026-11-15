@@ -5,15 +5,35 @@ function [valid, reason] = validate(value, type, rules)
     % meta information given in a scheme.
     %
     % Syntax:
-    %   [valid, reason] = validate(value, rules)
+    %   [valid, reason] = validate(value, type, rules)
     %
-    % with the actual value to be assigned, it's expected type and the
-    % validation rules ("validate" field under "meta" in the scheme).
+    % with the actual value to be assigned, its expected type and the
+    % validation rules. Rules are defined in the configuration <a href="https://github.com/jsawbbo/matlab-ana/blob/main/scheme/README.md">scheme</a> as
+    %
+    %   meta:
+    %       rules:
+    %           <validation rules>
     % 
-    % Validation rules:
+    % The validation rules depend on type:
     %
-    %   FIXME
+    % · integral,numeric:
     %
+    %           limits:
+    %               min: <minimum-value>
+    %               max: <maximum-value>
+    %
+    %TODO: add dimensions
+    %
+    % · strings
+    %
+    %TODO: add length = [min max], pattern = <regexpattern>
+    %
+    % · category:
+    %
+    %           - value: <matlab-value>
+    %             label: <dispay-label>
+    %
+
     %See: ana.config.node.leaf
     valid = true;
     reason = [];

@@ -112,17 +112,26 @@ classdef base < handle
         end
 
         function res = get(obj)
-            %GET    Get configuration as Matlab values.
+            %GET    Get content(s) as Matlab value.
+            %
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
 
         function clear(obj)
             %CLEAR  Clear content.
+            %
+            % Clear or re-initialize contents to default values.
+            %
+            % This is the same as
+            %
+            %   obj.set([])
+            %
             obj.initialize();
         end
 
         function set(obj,varargin)
             %SET    Set entries.
+            %
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
     end

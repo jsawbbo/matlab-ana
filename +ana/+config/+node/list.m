@@ -163,7 +163,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
     %% PUBLIC
     methods
         function obj = list(options)
-            %SEQ            Construct an instance of this class
+            %LIST       Construct an instance of this class
             arguments
                 options.Parent = [];
                 options.Scheme = [];
@@ -174,6 +174,8 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end
 
         function res = get(obj,varargin)
+            %GET        Get content(s) as Matlab value.
+            %
             if isempty(obj)
                 res = {};
                 return;
@@ -198,7 +200,15 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             %
             %   resets the list and stores the values in the list.
             %
+            %See also: ana.config.node.list.clear
 
+            % clear
+            if isscalar(varargin) && isequal(varargin{1},[])
+                obj.initialize();
+                return
+            end
+
+            % get scheme
             sch = obj.PrivateScheme_;
             if ~isempty(sch)
                 sch = sch.content();
@@ -207,6 +217,7 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 end
             end
 
+            % validate and assign
             if isscalar(varargin)
                 s = varargin{1};
                 if iscell(s)

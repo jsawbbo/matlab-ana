@@ -106,7 +106,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
         end
 
         function res = get(obj)
-            %GET    Get content as Matlab value.
+            %GET    Get content(s) as Matlab value.
             %
             try
                 res = struct();
@@ -141,6 +141,8 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
             %
             %   resets the map and stores the key-value pairs in the table.
             %
+            %See also: ana.config.node.dict.clear
+
             persistent scope
             if isempty(scope)
                 scope = 0;
@@ -148,6 +150,13 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                 scope = scope + 1;
             end
 
+            % clear
+            if isscalar(varargin) && isequal(varargin{1},[])
+                obj.initialize();
+                return
+            end
+
+            % validate and assign
             try
                 if isscalar(varargin)
                     s = varargin{1};

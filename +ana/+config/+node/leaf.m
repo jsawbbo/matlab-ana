@@ -157,7 +157,7 @@ classdef leaf < ana.config.node.base
         end
 
         function res = get(obj,varargin)
-            %GET    Get Matlab value.
+            %GET    Get content(s) as Matlab value.
             %
             % See also: ana.config.node.base.uplus
             res = obj.PrivateData_;
@@ -166,8 +166,17 @@ classdef leaf < ana.config.node.base
         function obj = set(obj,value)
             %SET    Set value.
             %
+            %
+            %See also: ana.config.node.leaf.clear
 
-            if ~isempty(value) && ~isempty(obj.PrivateType_)
+            % clear
+            if isequal(value,[])
+                obj.initialize();
+                return
+            end
+
+            % fix type
+            if ~isempty(obj.PrivateType_)
                 switch(obj.PrivateType_)
                     case 'datetime'
                         value = ana.type.datetime(value);
@@ -176,6 +185,7 @@ classdef leaf < ana.config.node.base
                 end
             end
 
+            % validate and assign
             [valid,reason] = obj.validate(value);
             if ~valid
                 error("ANA:runtime", reason)

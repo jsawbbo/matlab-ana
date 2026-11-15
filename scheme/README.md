@@ -87,8 +87,6 @@ or
             eval: |
                 <script>
 
-TODO: establish trust boundaries for eval
-
 #### User interface
 
 FIXME 
@@ -99,10 +97,13 @@ FIXME
 
 FIXME
 
-        validation:
-            <rules>
+        rules:
+            required: <boolean>
+            <type-dependant rules>
 
-See ``ana.config.node.validate`` for further information.
+The ``required`` entry is optional and ``false`` by default.
+
+For type-dependant rules, see ``ana.config.node.validate`` for further information.
 
 #### Actions
 
@@ -120,5 +121,6 @@ The configuration is aware of the following types:
 - **string** 
 - **datetime**
 - **path**
+- **url**
 
 ...
