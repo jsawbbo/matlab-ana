@@ -373,6 +373,3 @@ end
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):
 %   Jürgen "George" Sawinski
-%
-% Development assistance:
-%   ChatGPT (OpenAI, GPT-5.5)

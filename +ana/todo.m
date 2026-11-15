@@ -419,7 +419,3 @@ end
 % SPDX-License-Identifier: GPL-3.0-or-later
 % Author(s):
 %   Jürgen "George" Sawinski
-%
-% Development assistance:
-%   DeepSeek (深度求索) — todo.m function implementation 
-%                        (with minor Author corrections)

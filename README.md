@@ -7,5 +7,6 @@ Analysis tool box for Matlab® with a focus on imaging.
 *matlab-ana* is licensed under GPLv3 or any later version (see accompanying LICENSE) file.
 Additional licenses may apply to bundled, external software and code.
 
-Note: some code was developed using LLMs, as noted in the copyright text per file.
-
+Development assistance:
+- ChatGPT (OpenAI, GPT-5.5 and later versions)
+- DeepSeek (深度求索)
