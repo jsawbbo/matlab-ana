@@ -91,11 +91,7 @@ classdef leaf < ana.config.node.base
             
             % check, what can be assigned
             reason = [];
-            if isempty(obj.PrivateType_)
-                if ~strcmp(T,"*")
-                    % fix type (if value type is not "*", ie. empty)
-                    obj.PrivateType_ = T;
-                end
+            if isempty(obj.PrivateType_) || strcmp(obj.PrivateType_, "*")
                 valid = true;
             else
                 switch (obj.PrivateType_)

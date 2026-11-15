@@ -29,10 +29,59 @@ Each node is described in the scheme file using:
         <content definition>
 
 where <tt>meta</tt> is strictly optional. The entry <tt>content</tt>, though, depends on 
-the node type. For **dict** and **table**, the same form as above is used. For **list**, 
-only the type is given. A **value** does not have a content definition.
+the node type. For **dict** and **table**, the same form as above is used:
+
+    key: "key-name"
+    type: dict
+    meta:
+        <meta information...>
+    content:
+    -   key: "key-name"
+        type: <type-of-entry>
+        meta:
+            <meta information...>
+        content:
+            <content definition>
+    ...
+
+While **list** only has a scalar content (without a key):
+
+    key: "key-name"
+    type: dict
+    meta:
+        <meta information...>
+    content:
+        type: <type-of-entry>
+        meta:
+            <meta information...>
+        content:
+            <content definition>
+
+A **value** does not have a content definition.
 
 ### Meta-information
+
+The ``meta`` field has the following format:
+
+    meta:
+        label: <short-label>
+        comment: |
+            <long-description>
+        ...
+
+Default values can be assigned with 
+
+    default: <value>
+
+or 
+
+    default:
+        eval: |
+            <script>
+
+Additional entries:
+
+FIXME ui, limit, actions, categories
 
 
 ### Values
