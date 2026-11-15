@@ -1,7 +1,7 @@
 classdef testtable < matlab.unittest.TestCase
     %TESTTABLE   Contract and regression tests for ana.config.node.table.
     %
-    % Install as tests/config/testtable.m.
+    % Install as tests/config/node/testtable.m.
     % Uses only in-memory data and schemes; no YAML files or session state.
     %
     % A table is an ordered collection of ana.config.node.dict rows, not
@@ -153,17 +153,8 @@ classdef testtable < matlab.unittest.TestCase
             testCase.verifyEqual(out{2}, struct('x', 2));
         end
 
-        %TODO: Should ana.config.node.table automatically expand columns if an existing line is set or not?
-        %      Ambiguity: add the column to all or not? 
-        %
-        % chatGPT: One thing I'd preserve in the TODO: distinguish adding a column to one row from adding a column to the entire table. Those are different semantics, and I'd favor the former.
-        %
-        % function setExistingRowAcceptsNameValueCell(testCase)
-        %     obj = ana.config.node.table();
-        %     obj.set(struct('x', 1));
-        %     obj.set(1, {'y', 5});
-        %     testCase.verifyEqual(testtable.row(obj, 1), struct('y', 5));
-        % end
+        % TODO: Decide whether set(index, name/value cell) may introduce
+        % new fields in an unschemed table row (and whether other rows change).
 
         function setAtNextIndexAppendsRow(testCase)
             obj = ana.config.node.table();
@@ -286,6 +277,24 @@ classdef testtable < matlab.unittest.TestCase
         end
 
         %% Schema-backed rows (in-memory synthetic schema)
+        function unschemedTableRowAllowsLeafTypeChange(testCase)
+            obj = ana.config.node.table();
+            obj.set(struct('x', 2));
+            row = obj(1);
+            row.x = "text";
+            testCase.verifyEqual(testtable.field(obj, 1, 'x'), "text");
+            row.x = false;
+            testCase.verifyEqual(testtable.field(obj, 1, 'x'), false);
+        end
+
+        function unsupportedTableLeafUpdatePreservesValue(testCase)
+            obj = ana.config.node.table();
+            obj.set(struct('x', 2));
+            row = obj(1);
+            testCase.verifyError(@() row.set('x', @sin), 'ANA:runtime');
+            testCase.verifyEqual(testtable.field(obj, 1, 'x'), 2);
+        end
+
         function schemeCreatesCorrectLeafTypes(testCase)
             obj = ana.config.node.table(Scheme=testtable.rowScheme());
             obj.set(struct('name', "alpha", 'count', 2));
@@ -306,6 +315,14 @@ classdef testtable < matlab.unittest.TestCase
             obj = ana.config.node.table(Scheme=testtable.rowScheme());
             testCase.verifyError(@() obj.set(struct('name', 123, 'count', 2)), ...
                 'ANA:runtime');
+        end
+
+        function schemeRejectsExistingFieldTypeChange(testCase)
+            obj = ana.config.node.table(Scheme=testtable.rowScheme());
+            obj.set(struct('name', "alpha", 'count', 2));
+            row = obj(1);
+            testCase.verifyError(@() row.set('count', "bad"), 'ANA:runtime');
+            testCase.verifyEqual(testtable.field(obj, 1, 'count'), 2);
         end
 
         function schemeRejectsUnknownFieldOnRowEdit(testCase)

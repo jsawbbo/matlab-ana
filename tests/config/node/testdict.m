@@ -1,11 +1,11 @@
 classdef testdict < matlab.unittest.TestCase
     %TESTDICT   Contract and regression tests for ana.config.node.dict.
     %
-    % Install as tests/config/testdict.m.
+    % Install as tests/config/node/testdict.m.
     % Uses synthetic in-memory schemes. No YAML files, GUI, or session.
     %
-    % The apply/reset tests express the intended recursive behavior: a
-    % configuration transaction must include mutations of child nodes.
+    % Unschemed leaf entries may change value type.
+    % Schemed entries must retain their declared type.
 
     methods (Test)
         %% Construction and basic values
@@ -84,10 +84,28 @@ classdef testdict < matlab.unittest.TestCase
             testCase.verifyEqual(oldNode.get(), 5);
         end
 
-        function invalidReplacementDoesNotChangeValue(testCase)
+        function unschemedReplacementCanChangeLeafType(testCase)
             d = ana.config.node.dict();
             d.set('answer', 4);
-            testCase.verifyError(@() d.set('answer', "not a number"), 'ANA:runtime');
+            oldNode = d.answer;
+            d.set('answer', "not a number");
+            testCase.verifyEqual(d.answer.get(), "not a number");
+            testCase.verifyTrue(d.answer == oldNode);
+        end
+
+        function unschemedDotAssignmentChangesExistingLeafType(testCase)
+            d = ana.config.node.dict();
+            d.answer = 1;
+            d.answer = false;
+            testCase.verifyEqual(d.answer.get(), false);
+            d.answer = "now text";
+            testCase.verifyEqual(d.answer.get(), "now text");
+        end
+
+        function unsupportedReplacementRetainsUnschemedValue(testCase)
+            d = ana.config.node.dict();
+            d.answer = 4;
+            testCase.verifyError(@() d.set('answer', @sin), 'ANA:runtime');
             testCase.verifyEqual(d.answer.get(), 4);
         end
 
@@ -122,6 +140,15 @@ classdef testdict < matlab.unittest.TestCase
             d.set('inner', struct('x', 1));
             d.inner.x = 23;
             testCase.verifyEqual(d.inner.x.get(), 23);
+        end
+
+        function nestedUnschemedLeafCanChangeType(testCase)
+            d = ana.config.node.dict();
+            d.set('inner', struct('value', 11));
+            d.inner.value = "changed";
+            testCase.verifyEqual(d.inner.value.get(), "changed");
+            data = d.get();
+            testCase.verifyEqual(data.inner.value, "changed");
         end
 
         function childRootIsItsContainingDictionary(testCase)
@@ -279,6 +306,13 @@ classdef testdict < matlab.unittest.TestCase
             testCase.verifyEqual(d.answer.get(), 10);
         end
 
+        function schemaRejectsTypeChangeAfterValidUpdate(testCase)
+            d = ana.config.node.dict(Scheme=testdict.exampleScheme());
+            d.answer = 75;
+            testCase.verifyError(@() d.set('answer', "bad"), 'ANA:runtime');
+            testCase.verifyEqual(d.answer.get(), 75);
+        end
+
         function structReplacementRestoresMissingSchemaDefaults(testCase)
             d = ana.config.node.dict(Scheme=testdict.exampleScheme());
             d.set('answer', 80, 'label', "custom");
@@ -295,6 +329,8 @@ classdef testdict < matlab.unittest.TestCase
             testCase.verifyEqual(d.answer.get(), 10);
             testCase.verifyEqual(d.label.get(), "default");
         end
+
+        %% Modification tracking and transactions
     end
 
     methods (Static, Access=private)

@@ -202,6 +202,9 @@ classdef list < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             sch = obj.PrivateScheme_;
             if ~isempty(sch)
                 sch = sch.content();
+                if ~isempty(sch)
+                    sch = sch{1};
+                end
             end
 
             if isscalar(varargin)

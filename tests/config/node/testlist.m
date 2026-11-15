@@ -1,7 +1,7 @@
 classdef testlist < matlab.unittest.TestCase
     %TESTLIST   Contract and regression tests for ana.config.node.list.
     %
-    % Install as tests/config/testlist.m.
+    % Install as tests/config/node/testlist.m.
     % No files, session, GUI, or schema registry are required.
     %
     % List elements are leaf nodes; get() returns ordinary MATLAB values.
@@ -140,6 +140,20 @@ classdef testlist < matlab.unittest.TestCase
             testCase.verifyEqual(testlist.dataColumn(obj), {int32(1); int64(2)});
         end
 
+        function unschemedListAcceptsHeterogeneousElements(testCase)
+            obj = ana.config.node.list();
+            obj.set({1, "text", true, eye(2)});
+            testCase.verifyEqual(testlist.dataColumn(obj), ...
+                {1; "text"; true; eye(2)});
+        end
+
+        function unschemedListCanReplaceElementWithNewType(testCase)
+            obj = ana.config.node.list();
+            obj.set({1, 2});
+            obj.set(2, "two");
+            testCase.verifyEqual(testlist.dataColumn(obj), {1; "two"});
+        end
+
         function rejectsGapsWhenAppending(testCase)
             obj = ana.config.node.list();
             obj.set({1});
@@ -167,6 +181,9 @@ classdef testlist < matlab.unittest.TestCase
         end
 
         function schemaBackedListAcceptsElements(testCase)
+            % REGRESSION: a scheme whose node type is "list" must not
+            % reject every element merely because its type is not "list".
+            % The element-type constraint itself is a separate scheme design.
             sch = struct('type', 'list');
             obj = ana.config.node.list(Scheme=sch);
             obj.set({1, 2});
@@ -174,6 +191,65 @@ classdef testlist < matlab.unittest.TestCase
         end
 
         %% Paren indexing, assignment, and deletion
+        function schemaBackedListWithoutContentRemainsHeterogeneous(testCase)
+            obj = ana.config.node.list(Scheme=struct('type','list'));
+            obj.set({1, "two", false});
+            testCase.verifyEqual(testlist.dataColumn(obj), {1; "two"; false});
+        end
+
+        function numericElementSchemeRejectsString(testCase)
+            sch = struct('type','list', 'content',struct('type','numeric'));
+            obj = ana.config.node.list(Scheme=sch);
+            obj.set({1, 2});
+            testCase.verifyError(@() obj.set(2, "bad"), 'ANA:runtime');
+            testCase.verifyEqual(testlist.dataColumn(obj), {1; 2});
+        end
+
+        function numericElementSchemeAlsoConstrainsExistingChild(testCase)
+            sch = struct('type','list', 'content',struct('type','numeric'));
+            obj = ana.config.node.list(Scheme=sch);
+            obj.set({7});
+            item = obj(1);
+            testCase.verifyError(@() item.set("bad"), 'ANA:runtime');
+            testCase.verifyEqual(obj.get(), {7});
+        end
+
+        function numericElementSchemeAcceptsNumericMatrices(testCase)
+            sch = struct('type','list', 'content',struct('type','numeric'));
+            obj = ana.config.node.list(Scheme=sch);
+            obj.set({eye(2), zeros(2)});
+            testCase.verifyEqual(testlist.dataColumn(obj), {eye(2); zeros(2)});
+        end
+
+        function categoryElementSchemeEnforcesAllowedValues(testCase)
+            cats = struct('value', {'one', 'two'});
+            element = struct('type','category', ...
+                'meta',struct('categories',cats));
+            obj = ana.config.node.list(Scheme=struct('type','list', ...
+                'content',element));
+            obj.set({"one"});
+            testCase.verifyError(@() obj.set(1, "three"), 'ANA:runtime');
+            testCase.verifyEqual(obj.get(), {"one"});
+        end
+
+        % TODO:
+        % - Implement chained indexing for list/table.
+        % - Support obj(1).set(...) and obj(1).field.
+        % - Test chained assignment separately from chained reference.
+
+        function directUnschemedChildEditMayChangeType(testCase)
+            obj = ana.config.node.list();
+            obj.set({42});
+
+            % obj(1).set("now text");
+            node = obj(1);
+            node.set("now text");
+
+            testCase.verifyEqual(obj.get(), {"now text"});
+        end
+
+        %% Indexing and child editing
+
         function scalarParenReferenceReturnsNode(testCase)
             obj = ana.config.node.list();
             obj.set({11, 22});

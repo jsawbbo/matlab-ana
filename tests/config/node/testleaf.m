@@ -1,12 +1,12 @@
 classdef testleaf < matlab.unittest.TestCase
     %TESTLEAF   Unit tests for ana.config.node.leaf.
     %
-    % Place in tests/config/testleaf.m.
+    % Place in tests/config/node/testleaf.m.
     % All schemes are in-memory structs. No YAML files, session settings,
     % filesystem state, or GUI interaction is required.
     %
-    % Tests tagged REGRESSION document intended behavior that may expose
-    % an existing implementation issue.
+    % Without a scheme, supported leaf value types may change freely.
+    % A concrete scheme type constrains subsequent assignments.
 
     methods (Test)
         %% Basic value handling
@@ -48,12 +48,22 @@ classdef testleaf < matlab.unittest.TestCase
                 'ANA:runtime');
         end
 
-        %% Type inference and validation
-        function untypedEmptyValueAcceptsFirstNonemptyType(testCase)
+        %% Modification tracking
+        function clearWithoutSchemeEmptiesValue(testCase)
+            node = ana.config.node.leaf(15);
+            node.clear();
+            testCase.verifyEmpty(node.get());
+        end
+
+        %% Dynamic leaf values and validation
+        function untypedEmptyValueRemainsDynamic(testCase)
             node = ana.config.node.leaf([]);
             node.set(10);
             testCase.verifyEqual(node.get(), 10);
-            testCase.verifyError(@() node.set("text"), 'ANA:runtime');
+            node.set("text");
+            testCase.verifyEqual(node.get(), "text");
+            node.set(true);
+            testCase.verifyEqual(node.get(), true);
         end
 
         function numericLeafCanStoreEmptyArray(testCase)
@@ -62,24 +72,28 @@ classdef testleaf < matlab.unittest.TestCase
             testCase.verifyEmpty(node.get());
         end
 
-        function rejectsIncompatibleTypeWithoutChangingValue(testCase)
+        function untypedLeafAcceptsDifferentValueTypes(testCase)
             node = ana.config.node.leaf(10);
-            testCase.verifyError(@() node.set("text"), 'ANA:runtime');
-            testCase.verifyEqual(node.get(), 10);
+            node.set("text");
+            testCase.verifyEqual(node.get(), "text");
+            node.set(eye(2));
+            testCase.verifyEqual(node.get(), eye(2));
         end
 
-        function logicalTypeStaysLogical(testCase)
+        function untypedLogicalLeafCanBecomeNumeric(testCase)
             node = ana.config.node.leaf(true);
             node.set(false);
             testCase.verifyEqual(node.get(), false);
-            testCase.verifyError(@() node.set(1), 'ANA:runtime');
+            node.set(1);
+            testCase.verifyEqual(node.get(), 1);
         end
 
-        function integralTypeAcceptsOtherIntegerClasses(testCase)
+        function untypedIntegralLeafCanBecomeFloatingPoint(testCase)
             node = ana.config.node.leaf(int32(1));
             node.set(int64(2));
             testCase.verifyEqual(node.get(), int64(2));
-            testCase.verifyError(@() node.set(2.5), 'ANA:runtime');
+            node.set(2.5);
+            testCase.verifyEqual(node.get(), 2.5);
         end
 
         function rejectsFunctionHandle(testCase)
@@ -88,12 +102,63 @@ classdef testleaf < matlab.unittest.TestCase
         end
 
         %% Synthetic schemes (no scheme file loading)
+        function unsupportedTypeDoesNotChangeUntypedValue(testCase)
+            node = ana.config.node.leaf("original");
+            testCase.verifyError(@() node.set(@sin), 'ANA:runtime');
+            testCase.verifyEqual(node.get(), "original");
+        end
+
+        function explicitWildcardSchemeAllowsTypeChanges(testCase)
+            node = ana.config.node.leaf(1, Scheme=struct('type','*'));
+            node.set("text");
+            testCase.verifyEqual(node.get(), "text");
+            node.set(false);
+            testCase.verifyEqual(node.get(), false);
+        end
+
+        %% Declared types remain static
+
         function schemaAcceptsNumericValue(testCase)
             sch = struct('type', 'numeric');
             node = ana.config.node.leaf(2.5, Scheme=sch);
             node.set(3.5);
             testCase.verifyEqual(node.get(), 3.5);
             testCase.verifyError(@() node.set("wrong"), 'ANA:runtime');
+        end
+
+        function declaredNumericTypeRejectsChangeAndRetainsValue(testCase)
+            node = ana.config.node.leaf(3, Scheme=struct('type','numeric'));
+            testCase.verifyError(@() node.set("text"), 'ANA:runtime');
+            testCase.verifyEqual(node.get(), 3);
+        end
+
+        function declaredLogicalTypeRejectsNumeric(testCase)
+            node = ana.config.node.leaf(true, Scheme=struct('type','logical'));
+            node.set(false);
+            testCase.verifyError(@() node.set(1), 'ANA:runtime');
+            testCase.verifyEqual(node.get(), false);
+        end
+
+        function declaredIntegralTypeAcceptsIntegerClassesOnly(testCase)
+            node = ana.config.node.leaf(int32(1), Scheme=struct('type','integral'));
+            node.set(int64(2));
+            testCase.verifyEqual(node.get(), int64(2));
+            testCase.verifyError(@() node.set(2.5), 'ANA:runtime');
+            testCase.verifyEqual(node.get(), int64(2));
+        end
+
+        function declaredTypeRemainsAfterAssigningEmpty(testCase)
+            node = ana.config.node.leaf(5, Scheme=struct('type','numeric'));
+            node.set([]);
+            testCase.verifyEmpty(node.get());
+            testCase.verifyError(@() node.set("wrong"), 'ANA:runtime');
+            node.set(8);
+            testCase.verifyEqual(node.get(), 8);
+        end
+
+        function constructorRejectsValueOutsideDeclaredType(testCase)
+            testCase.verifyError(@() ana.config.node.leaf("text", ...
+                Scheme=struct('type','numeric')), 'ANA:runtime');
         end
 
         function numericBoundsIncludeEndpoints(testCase)
@@ -118,6 +183,7 @@ classdef testleaf < matlab.unittest.TestCase
         end
 
         function numericBoundsCheckEveryArrayElement(testCase)
+            % REGRESSION: a single out-of-range element must be rejected.
             sch = testleaf.numberScheme(0, 10);
             node = ana.config.node.leaf([2 4], Scheme=sch);
             testCase.verifyError(@() node.set([3 11]), 'ANA:runtime');
@@ -165,6 +231,10 @@ classdef testleaf < matlab.unittest.TestCase
         end
 
         function schemeOnlyConstructorUsesDefault(testCase)
+            % REGRESSION: a scheme-only leaf should honor its default.
+            % The current leaf constructor may instead reject its implicit
+            % default positional value ({}). Decide whether this is the
+            % intended constructor contract if the test fails.
             sch = struct('type','numeric', ...
                 'meta',struct('default',7));
             node = ana.config.node.leaf(Scheme=sch);
@@ -172,6 +242,8 @@ classdef testleaf < matlab.unittest.TestCase
         end
 
         function assigningAnotherLeafStoresItsValue(testCase)
+            % REGRESSION: validation unwraps a leaf, but set() currently
+            % appears to store the handle itself rather than its value.
             target = ana.config.node.leaf(1);
             source = ana.config.node.leaf(23);
             target.set(source);
