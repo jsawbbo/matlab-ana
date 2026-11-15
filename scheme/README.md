@@ -7,17 +7,23 @@ this allows also to implement migration techniques.
 
 ## Format
 
-The top-level entry of a scheme file consists of a version entry 
+The top-level entry of a scheme file consists of:
 
     version: "<version-string>"
-    
-Followed by the configuration structure.
 
-There are three fundamental node types:
+    scheme: <scheme-path>
+    type: dict
+    meta:
+        label: <scheme-short-label>
+    content:
+
+FIXME
+    
+There are four fundamental node types:
 - **dict** (ana.config.node.dict), 
 - **table** (ana.config.node.table), 
 - **list** (ana.config.node.list), 
-- **value** (ana.config.node.value).
+- **leaf** (ana.config.node.leaf).
 
 Each node is described in the scheme file using:
 
@@ -47,7 +53,7 @@ the node type. For **dict** and **table**, the same form as above is used:
 While **list** only has a scalar content (without a key):
 
     key: "key-name"
-    type: dict
+    type: list
     meta:
         <meta information...>
     content:
@@ -73,44 +79,36 @@ The ``meta`` field has the following format:
 
 Default values can be assigned with 
 
-    default: <value>
+        default: <value>
 
 or 
 
-    default:
-        eval: |
-            <script>
+        default:
+            eval: |
+                <script>
+
+TODO: establish trust boundaries for eval
 
 #### User interface
 
 FIXME 
 
-    ui: <component>
+        ui: <component>
 
-#### Numerical limits
-
-FIXME
-
-    limit:
-        min: <minimum value>
-        max: <maximum value>
-
-TODO: dimensions
-
-#### Categories
+#### Rules for validation
 
 FIXME
 
-    categories:
-    -   value: <value>
-        label: <short-label>
+        validation:
+            <rules>
+
+See ``ana.config.node.validate`` for further information.
 
 #### Actions
 
 TODO 
 
-    actions: |
-        <function>
+        actions: 
 
 ### Values
 

@@ -254,14 +254,16 @@ classdef testleaf < matlab.unittest.TestCase
     methods (Static, Access=private)
         function sch = numberScheme(minimum, maximum)
             sch = struct('type','numeric', ...
-                'meta',struct('limit', ...
-                    struct('min',minimum,'max',maximum)));
+                'meta',struct('rules', ...
+                    struct('limits', ...
+                        struct('min',minimum,...
+                        'max',maximum))));
         end
 
         function sch = categoryScheme()
             cats = struct('value', {'local','network','remote'});
             sch = struct('type','category', ...
-                'meta',struct('categories',cats));
+                'meta',struct('rules',cats));
         end
     end
 end

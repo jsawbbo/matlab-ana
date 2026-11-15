@@ -101,6 +101,8 @@ classdef leaf < ana.config.node.base
                         valid = strcmp(T,"path") || strcmp(T,"string");
                     case "url"
                         valid = strcmp(T,"url") || strcmp(T,"string");
+                    case "category"
+                        valid = strcmp(T,"string");
                     otherwise
                         valid = strcmp(T,"*") || strcmp(T,obj.PrivateType_);
                 end
@@ -115,42 +117,13 @@ classdef leaf < ana.config.node.base
             if ~isempty(obj.PrivateScheme_)
                 meta = obj.PrivateScheme_.meta();
                 if ~isempty(meta)
-                    switch (obj.PrivateScheme_.type)
-                        case "category"
-                            assert(isfield(meta,"categories"), "error in scheme, expected field meta.categories")
-
-                            valid = false;
-                            for k = 1:numel(meta.categories)
-                                valid = strcmp(meta.categories(k).value, value);
-                                if valid
-                                    break
-                                end
-                            end
-
-                            if ~valid
-                                reason = "invalid category";
-                            end
-                        case {"integral","numeric"}
-                            if isfield(meta,"limit")
-                                if isfield(meta.limit, "min")
-                                    if any(value < meta.limit.min)
-                                        valid = false;
-                                    end
-                                end
-
-                                if isfield(meta.limit, "max")
-                                    if any(value > meta.limit.max)
-                                        valid = false;
-                                    end
-                                end
-
-                                if ~valid
-                                    reason = "value out of bounds";
-                                end
-                            end
-                        otherwise
-                            % nothing to be done
+                    if isfield(meta, "rules")
+                        rules = meta.rules;
+                    else
+                        rules = struct();
                     end
+
+                    [valid,reason] = ana.config.node.validate(value, obj.PrivateType_, rules);
                 end
             end
         end        

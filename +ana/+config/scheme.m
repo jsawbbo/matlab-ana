@@ -12,6 +12,17 @@ classdef scheme
     %         <content definition>
     %
     % For further information, see <a href="https://github.com/jsawbbo/matlab-ana/blob/main/scheme/README.md">scheme/README.md</a>.
+
+    %TODO:
+    %- fill missing documentation
+    %- implement scheme hierarchy (see field 'schemes' in static_data)
+    %- rename "/general" path to "/ana", and
+    %- add overlays: e.g. the ana.fs.category could have a general scheme so that the rules: don't have
+    %  to be written every time it is used; the same applies to "searchpath" with is expected to be
+    %  either a list of paths or a list of location/category entries.
+    %  (these would then be scheme /ana/fs/category and /ana/fs/searchpath)
+    %- make indentation configurable?
+    %- add support for units
         
     %% PROPERTIES
     properties (SetAccess = private)
@@ -31,7 +42,7 @@ classdef scheme
             if isempty(static_data)
                 static_data = struct(...
                         paths = dictionary(string([]),false), ...
-                        schemes = dictionary(string([]),{})... % FIXME currently unused
+                        schemes = dictionary(string([]),{})...
                     );
 
                 if isfile(cfgfile)
@@ -146,8 +157,6 @@ classdef scheme
             else
                 id = [];
             end
-            %TODO
-            % - have sth. like "quantity" (value with unit)?
         end
     end
 
@@ -273,8 +282,9 @@ classdef scheme
                 meta = obj.Scheme.meta;
                 if isfield(meta,'comment')
                     column_s = pad("", options.Column);
-                    indent_s = pad("", options.Level*4); % FIXME make configurable?
-                    lines = strsplit(meta.comment, '\n', CollapseDelimiters=false); % FIXME do we need to handle \r?
+                    indent_s = pad("", options.Level*4);
+                    comment = strrep(meta.comment, sprintf('\r'), '');
+                    lines = strsplit(comment, '\n', CollapseDelimiters=false);
                     if strlength(lines(end)) == 0
                         lines = lines(1:end-1);
                     end

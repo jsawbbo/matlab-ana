@@ -224,7 +224,7 @@ classdef testlist < matlab.unittest.TestCase
         function categoryElementSchemeEnforcesAllowedValues(testCase)
             cats = struct('value', {'one', 'two'});
             element = struct('type','category', ...
-                'meta',struct('categories',cats));
+                'meta',struct('rules',cats));
             obj = ana.config.node.list(Scheme=struct('type','list', ...
                 'content',element));
             obj.set({"one"});

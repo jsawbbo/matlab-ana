@@ -46,7 +46,7 @@ content:
             type: category
             meta:
                 label: Storage category
-                categories:
+                rules:
                 -   value: "local"
                     label: "Local"
                 -   value: "network"
@@ -103,6 +103,8 @@ content:
                 comment: |
                     Maximum size of the cache directory (GiB).
                 default: 256
+                limits:
+                    min: 1
 # FIXME external programs
 #           - python
 #           - conda
