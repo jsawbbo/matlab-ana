@@ -230,6 +230,27 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                 rethrow(me);
             end
         end
+
+        function [res,missing] = ispartial(obj,missing)
+            arguments
+                obj ana.config.node.base
+                missing = {}
+            end
+
+            %TODO: needs to be in the documentation, that "required" has no meaning for dict itself
+            % required = ana.util.getfield(obj.PrivateScheme_.meta(), ["rules","required"]);
+
+            res = false;
+            nodes = obj.PrivateData_;
+            names = fieldnames(nodes);
+
+            for k = 1:numel(names)
+                if nodes.(names{k}).ispartial(missing)
+                    res = true;
+                    return
+                end
+            end
+        end
     end
 
     %% RedefinesDot

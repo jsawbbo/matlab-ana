@@ -134,6 +134,21 @@ classdef base < handle
             %
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
+        
+        function [res,missing] = ispartial(obj,missing)
+            %ISPARTIAL      Check if configuration does not fulfill requirements.
+            %
+            %   A configuration should only be saved if requirements are fulfilled (see "Rules" in <a
+            %   href="https://github.com/jsawbbo/matlab-ana/blob/main/scheme/README.md">scheme/README.md</a>).
+            %   This method checks if there are unsatisfied requirements.
+            %
+            arguments
+                obj ana.config.node.base
+                missing = {}
+            end
+
+            error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar

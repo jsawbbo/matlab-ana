@@ -282,6 +282,29 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
                 error("ANA:runtime:invalidArgument", "invalid arguments")
             end
         end
+
+        function [res,missing] = ispartial(obj,missing)
+            arguments
+                obj ana.config.node.base
+                missing = {}
+            end
+
+            required = ana.util.getfield(obj.PrivateScheme_.meta(), ["rules","required"]);
+            if ~isempty(required) && required
+                if isempty(obj.PrivateData_)
+                    res = true;
+                    return;
+                end
+            end
+
+            res = false;
+            for k = 1:numel(obj)
+                if obj.PrivateData_{k}.ispartial(missing)
+                    res = true;
+                    return
+                end
+            end
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar

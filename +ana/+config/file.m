@@ -63,7 +63,15 @@ classdef file < ana.config.object
         function save(obj)
             %SAVE   Save data to associated file.
             %
-            copyfile(+obj.PrivateFilename_, +obj.PrivateFilename_ + ".bak")
+            if ~exist(+obj.PrivateFilename_,"file")
+                if obj.ispartial()
+                    warning("ANA:runtime", "Required fields in the configuration are missing, not saving...");
+                    return
+                end
+            else
+                copyfile(+obj.PrivateFilename_, +obj.PrivateFilename_ + ".bak")
+            end
+
             fd = fopen(+obj.PrivateFilename_,"w");
 
             % emit header

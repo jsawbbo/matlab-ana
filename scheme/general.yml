@@ -30,6 +30,8 @@ content:
                 so that configuration files do not need to be edited for different environments.
 
                 See 'ana.fs.alias' for further information.
+            rules:
+                required: true
         content:
         -   key: location
             type: path

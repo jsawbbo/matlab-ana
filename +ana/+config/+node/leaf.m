@@ -196,6 +196,20 @@ classdef leaf < ana.config.node.base
                 obj.PrivateData_ = value;
             end
         end
+
+        function [res,missing] = ispartial(obj,missing)
+            arguments
+                obj ana.config.node.base
+                missing = {}
+            end
+
+            required = ana.util.getfield(obj.PrivateScheme_.meta(), ["rules","required"]);
+            if isempty(required) || ~required
+                res = false;
+            else
+                res = isequal(obj.PrivateData_,[]);
+            end
+        end
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
