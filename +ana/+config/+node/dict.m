@@ -1,6 +1,8 @@
 classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matlab.mixin.indexing.OverridesPublicDotMethodCall & matlab.mixin.Scalar
     %ana.config.node.dict       A key-value pair mapping.
     %
+    %
+    % 
 
     %% HELPER
     methods (Hidden,Access=protected)
