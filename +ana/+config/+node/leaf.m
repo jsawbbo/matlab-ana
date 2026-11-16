@@ -197,17 +197,24 @@ classdef leaf < ana.config.node.base
             end
         end
 
-        function [res,missing] = ispartial(obj,missing)
+        function [res,missing] = ispartial(obj,missing,key)
             arguments
                 obj ana.config.node.base
                 missing = {}
+                key = {}
             end
 
+            % check
             required = ana.util.getfield(obj.PrivateScheme_.meta(), ["rules","required"]);
             if isempty(required) || ~required
                 res = false;
             else
                 res = isequal(obj.PrivateData_,[]);
+            end
+
+            % book keeping
+            if res
+                missing{end+1} = strjoin(key,'.');
             end
         end
     end

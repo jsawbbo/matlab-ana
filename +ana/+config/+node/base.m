@@ -135,7 +135,7 @@ classdef base < handle
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")
         end
         
-        function [res,missing] = ispartial(obj,missing)
+        function [res,missing] = ispartial(obj,missing,key)
             %ISPARTIAL      Check if configuration does not fulfill requirements.
             %
             %   A configuration should only be saved if requirements are fulfilled (see "Rules" in <a
@@ -145,6 +145,7 @@ classdef base < handle
             arguments
                 obj ana.config.node.base
                 missing = {}
+                key = {}
             end
 
             error("ANA:logic:requiresImplementation", "Internal error: function or method should but is not implemented.")

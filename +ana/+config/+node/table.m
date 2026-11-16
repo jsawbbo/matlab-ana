@@ -283,23 +283,34 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
         end
 
-        function [res,missing] = ispartial(obj,missing)
+        function [res,missing] = ispartial(obj,missing,key)
             arguments
                 obj ana.config.node.base
                 missing = {}
+                key = {}
             end
 
+            res = false;
+
+            % check list
             required = ana.util.getfield(obj.PrivateScheme_.meta(), ["rules","required"]);
             if ~isempty(required) && required
                 if isempty(obj.PrivateData_)
                     res = true;
-                    return;
                 end
             end
 
+            % book keeping
+            if res
+                missing{end+1} = strjoin(key,'.') + ":list";
+                return
+            end
+
+            % check children
             res = false;
             for k = 1:numel(obj)
-                if obj.PrivateData_{k}.ispartial(missing)
+                [partial,missing] = obj.PrivateData_{k}.ispartial(missing, [key;{sprintf("(%d)",k)}]);
+                if partial
                     res = true;
                     return
                 end

@@ -64,8 +64,15 @@ classdef file < ana.config.object
             %SAVE   Save data to associated file.
             %
             if ~exist(+obj.PrivateFilename_,"file")
-                if obj.ispartial()
-                    warning("ANA:runtime", "Required fields in the configuration are missing, not saving...");
+                [partial,missing] = obj.ispartial();
+                if partial
+                    msg = "Required fields in the configuration are missing:\n";
+                    for k = 1:numel(missing)
+                        msg = msg + sprintf("- %s\n", messing{k});
+                    end
+                    msg = msg + "File not saved.";
+
+                    warning("ANA:runtime", msg);
                     return
                 end
             else
