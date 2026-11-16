@@ -60,20 +60,27 @@ classdef file < ana.config.object
             %
         end
 
-        function save(obj)
+        function save(obj,options)
             %SAVE   Save data to associated file.
             %
-            if ~exist(+obj.PrivateFilename_,"file")
-                [partial,missing] = obj.ispartial();
-                if partial
-                    msg = "Required fields in the configuration are missing:\n";
-                    for k = 1:numel(missing)
-                        msg = msg + sprintf("- %s\n", missing{k});
-                    end
-                    msg = msg + "File not saved.";
+            arguments
+                obj ana.config.file
+                options.Force logical = false
+            end
 
-                    warning("ANA:runtime", msg);
-                    return
+            if ~exist(+obj.PrivateFilename_,"file")
+                if ~options.Force
+                    [partial,missing] = obj.ispartial();
+                    if partial
+                        msg = "Required fields in the configuration are missing:\n";
+                        for k = 1:numel(missing)
+                            msg = msg + sprintf("- %s\n", missing{k});
+                        end
+                        msg = msg + "File not saved.";
+    
+                        warning("ANA:runtime", msg);
+                        return
+                    end
                 end
             else
                 copyfile(+obj.PrivateFilename_, +obj.PrivateFilename_ + ".bak")
