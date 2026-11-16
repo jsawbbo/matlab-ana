@@ -302,7 +302,7 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
 
             % book keeping
             if res
-                missing{end+1} = strjoin(key,'.') + ":list";
+                missing{end+1} = strjoin(key,'.') + ":table";
                 return
             end
 

@@ -248,11 +248,9 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
 
             for k = 1:numel(names)
                 name = names{k};
-                [partial,missing] = nodes.(name).ispartial(missing,[key;{name}]);
-                if partial
-                    res = true;
-                    break
-                end
+                node = nodes.(name);
+                [partial,missing] = node.ispartial(missing,[key;{name}]);
+                res = res || partial;
             end
 
             % book keeping

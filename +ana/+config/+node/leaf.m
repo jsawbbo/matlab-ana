@@ -214,7 +214,7 @@ classdef leaf < ana.config.node.base
 
             % book keeping
             if res
-                missing{end+1} = strjoin(key,'.');
+                missing{end+1} = strjoin(key,'.') + ":leaf";
             end
         end
     end

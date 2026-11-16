@@ -68,7 +68,7 @@ classdef file < ana.config.object
                 if partial
                     msg = "Required fields in the configuration are missing:\n";
                     for k = 1:numel(missing)
-                        msg = msg + sprintf("- %s\n", messing{k});
+                        msg = msg + sprintf("- %s\n", missing{k});
                     end
                     msg = msg + "File not saved.";
 
