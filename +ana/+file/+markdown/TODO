@@ -1,0 +1,64 @@
+(This could be used for displaying help text in ana.config.ui and the scheme files)
+
+There are two good candidates:
+
+## **1. commonmark-java — my preference**
+
+[GitHub repository](https://github.com/commonmark/commonmark-java?utm_source=chatgpt.com)
+
+- Pure Java, with **no additional dependencies** for the core library.
+- Converts Markdown directly to HTML.
+- Supports headings, paragraphs, lists, links, emphasis, and code blocks.
+- Optional extensions for tables, strikethrough, and other features.
+- BSD-2-Clause license, compatible with ANA's GPL-3.0 licensing.
+- Requires Java 11 or newer.
+
+The latest release is **0.32.0 (November 1, 2026)**.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://github.com\&sz=32)
+
+GitHub+1
+
+
+
+The actual conversion is remarkably straightforward:
+
+```
+parser = org.commonmark.parser.Parser.builder().build();
+renderer = org.commonmark.renderer.html.HtmlRenderer.builder().build();
+
+document = parser.parse("**Hello**, world!");
+html = string(renderer.render(document));
+```
+
+That's essentially all you need.
+
+## **2. flexmark-java**
+
+[GitHub repository](https://github.com/vsch/flexmark-java?utm_source=chatgpt.com)
+
+A more comprehensive alternative supporting numerous Markdown dialects and extensions.
+
+It's especially useful for sophisticated documentation, but has more dependencies and configuration options.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://github.com\&sz=32)
+
+GitHub
+
+
+
+For rendering configuration help text, it's probably overkill.
+
+## **For ANA**
+
+I'd add `commonmark-java` alongside SnakeYAML and expose it through a small MATLAB wrapper, perhaps:
+
+`ana.text.markdown.tohtml(...)`
+
+That would give you a reusable conversion facility for help text, documentation, and future GUI components without introducing JavaScript code into ANA.
+
+One distinction remains: Java would **convert** the Markdown to HTML; MATLAB's `uihtml` or another HTML-capable component would still **display** it.
+
+And unlike the JavaScript approach, you wouldn't need to implement or maintain a browser-side Markdown converter.
+
+**Confidence: 99%.**
