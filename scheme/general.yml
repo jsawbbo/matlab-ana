@@ -4,6 +4,7 @@ scheme: /general
 type: dict
 meta:
     label: General
+    ui: ana.config.general
 content:
 -   key: storage
     type: dict
@@ -11,7 +12,6 @@ content:
         label: Storage
         comment: |
             Data storage locations.
-        ui: ana.config.general
         actions:
     content:
     -   key: searchpath
