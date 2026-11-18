@@ -393,7 +393,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
 
             if obj.isabsolute()
-                res = obj;
+                if obj.isfile() || obj.isfolder()
+                    res = obj;
+                else
+                    res = [];
+                end
             elseif obj.isalias()
                 res = ana.fs.alias.locate(obj, Aliases=options.Aliases);
             else % isrelative

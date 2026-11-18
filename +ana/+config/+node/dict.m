@@ -280,7 +280,7 @@ classdef dict < ana.config.node.base & matlab.mixin.indexing.RedefinesDot & matl
                     end
                     return
                 catch me
-                    if startsWith(me.identifier,"MATLAB")
+                    if ~strcmp(me.identifier,"MATLAB:UndefinedFunction")
                         rethrow(me)
                     end
                 end
