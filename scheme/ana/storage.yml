@@ -4,7 +4,7 @@ scheme: /ana/storage
 meta:
     label: Storage
     config:
-        path: /ana/storage
+        index: /ana/storage
         ui: ana.config.general
         file: {config}/storage.yml
 content:

@@ -9,18 +9,88 @@ In the following we will use the convention that optional configuration entries 
 
 ## Format
 
-### Top level format
+### Overview
 
-Scheme files header is
+A scheme file consists of the header
 
     version: "<version-string>"
-
     [scheme]: <scheme-path>
 
-Where the ``scheme-path`` defines the schemes identity. The identity is automatically generated based on the 
+where the ``scheme-path`` defines the schemes identity. The identity is automatically generated based on the 
 folder layout and may, therefore, be omitted.
 
-The header is followed by the general definition for nodes below:
+TODO: What happens if the scheme-path deviates from the expected path?
+
+It is followed by the body that depends on the kind of the scheme, which is either a
+1. ``branch scheme`` - defining a node in the scheme hierarchy, without describing data,
+2. ``type scheme`` - defining a reusable data structure, including validation rules, or,
+3. ``configuration scheme`` - defining a persistent configuration based on a particular structure.
+
+#### Branch schemes
+
+The minimal body of a branch scheme is
+
+    [key]: <navigation-key>
+    meta:
+        label: <label>
+        [comment]: |
+            <long description>
+
+The ``key`` refers to the navigational path in the configuration tree. By default it is identical to the 
+scheme path and can be omitted.
+
+The ``meta`` information — as with any node in the scheme — is used for display purposes.
+
+#### Type schemes
+
+Type schemes follow the same semantics as the content (see below). The format is
+
+    [key]: <navigation-key>
+    type: <data-type>
+    meta:
+        <meta-information>
+    [content]:
+    <content-definition>
+
+FIXME
+
+#### Configuration schemes
+
+Configuration schemes refer to an actual settings file. In addition to the content (see below) the 
+
+    [key]: <navigation-key>
+    type: <data-type>
+    meta:
+        <meta-information>
+    config:
+        [file]: <settings-file>
+        [ui]:
+            <user-interface-definition>
+    [content]:
+    <content-definition>
+
+FIXME
+
+The user interface definition FIXME
+
+### Content
+
+FIXME
+
+
+
+
+
+
+## FIXME
+
+
+
+
+
+### Content
+
+The header is followed by the general definition for node entries:
 
     [type]: <data-type>
     meta:
