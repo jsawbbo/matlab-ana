@@ -2,5 +2,9 @@ version: "1.0"
 
 scheme: /ana/dialogs
 meta:
-label: Dialogs
-# ui: ana.config.
+    label: Dialogs
+    config:
+        path: /ana/dialogs
+        ui: ana.config.xyz
+        file: {config}/dialogs.yml
+

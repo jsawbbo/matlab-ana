@@ -45,7 +45,7 @@ content:
                     - UNC paths (\\server\share or //server/share)
                     - URLs (e.g. https://server/path)
         -   key: category
-            type: category
+            # import: /ana/fs/category
             meta:
                 label: Storage category
                 rules:

@@ -3,7 +3,10 @@ version: "1.0"
 scheme: /ana/storage
 meta:
     label: Storage
-    ui: ana.config.general
+    config:
+        path: /ana/storage
+        ui: ana.config.general
+        file: {config}/storage.yml
 content:
 -   key: storage
     type: dict
@@ -44,32 +47,9 @@ content:
                     - UNC paths (\\server\share or //server/share)
                     - URLs (e.g. https://server/path)
         -   key: category
-            type: category
+            import: /ana/fs/category
             meta:
                 label: Storage category
-                rules:
-                -   value: "local"
-                    label: "Local"
-                -   value: "network"
-                    label: "Network"
-                -   value: "external"
-                    label: "External"
-                -   value: "remote"
-                    label: "Remote"
-                default: local
-                comment: |
-                    Local storage means storage that is permanently connected to the computing device.
-
-                    Network storage refers to mounted data volumes permanently attached (such as mapped 
-                    network drives, NFS, etc.).
-
-                    External storage refers to removable media, such has USB hard disks, SD cards, etc.
-                    (mind that this requires a consistent mount point [Linux/Unix] or drive letter 
-                    [Windows]).
-
-                    Remote storage may refer to any remotely accessible source, which is supported by ANA.
-
-                    See: ana.fs.category
     -   key: scratch
         type: path
         meta:

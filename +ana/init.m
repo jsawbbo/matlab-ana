@@ -5,6 +5,9 @@ function init()
     %   is only called from functions or classes that require said
     %   initialization.
     %
+    
+    %TODO: We have ana.session now - this file should actually only deal with external libraries (and be called ana.external).
+
     persistent version
 
     if isempty(version) | (version ~= ana.version())

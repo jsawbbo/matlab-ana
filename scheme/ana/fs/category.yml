@@ -1,0 +1,29 @@
+version: "1.0"
+
+scheme: ana.fs.category
+type: category
+meta:
+    label: Filesystem category
+    comment: |
+        Local storage means storage that is permanently connected to the computing device.
+    
+        Network storage refers to mounted data volumes permanently attached (such as mapped 
+        network drives, NFS, etc.).
+    
+        External storage refers to removable media, such has USB hard disks, SD cards, etc.
+        (mind that this requires a consistent mount point [Linux/Unix] or drive letter 
+        [Windows]).
+    
+        Remote storage may refer to any remotely accessible source, which is supported by ANA.
+    
+        See: ana.fs.category
+    rules:
+    -   value: "local"
+        label: "Local"
+    -   value: "network"
+        label: "Network"
+    -   value: "external"
+        label: "External"
+    -   value: "remote"
+        label: "Remote"
+    default: local

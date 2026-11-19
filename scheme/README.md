@@ -11,25 +11,46 @@ In the following we will use the convention that optional configuration entries 
 
 ### Top level format
 
-The top-level entry of a scheme file consists of:
+Scheme files header is
 
     version: "<version-string>"
 
-    scheme: <scheme-path>
+    [scheme]: <scheme-path>
+
+Where the ``scheme-path`` defines the schemes identity. The identity is automatically generated based on the 
+folder layout and may, therefore, be omitted.
+
+The header is followed by the general definition for nodes below:
+
+    [type]: <data-type>
+    meta:
+        <meta-information>
+    [content]:
+        <content definitions>
+
+Schemes serve two purposes, either define the contents of a configuration file (see ''Configuration scheme format'') 
+or as type declarations that can be imported (see ''Node format''). 
+
+### Configuration scheme format
+
+Schemes intended as the basis for configuration files have the following entries
+
+    [type]: <content-type>
     meta:
         label: <scheme-short-label>
-        [ui]: <ui-component>
         [comment]: |
             <long description>
-    content:
+        [config]:
+            file: <settings-file-path>
+            [index]: <configuration-index>
+            [ui]: <ui-component>
+    [content]:
+    <content-definition>
 
-The scheme path is organized similar to Matlab's configuration:
-
-    /ana
-        /dialog
-        /storage
-
-FIXME other...
+1. ``content type``:
+    The content type is by default a ''dict'' (see below) and may be omitted.
+2. ``config``
+3. ``content``
 
 ### Node format
     
