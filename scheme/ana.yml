@@ -2,5 +2,4 @@ version: "1.0"
 
 scheme: /ana
 meta:
-label: ANA
-# ui: ana.config.general
+    label: ANA
