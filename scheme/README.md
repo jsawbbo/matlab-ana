@@ -16,7 +16,7 @@ A scheme file consists of the header
     version: "<version-string>"
     [scheme]: <scheme-path>
 
-where the ``scheme-path`` defines the schemes identity. The identity is automatically generated based on the 
+where the ``scheme-path`` defines the scheme's identity. The identity is automatically generated based on the 
 folder layout and may, therefore, be omitted.
 
 TODO: What happens if the scheme-path deviates from the expected path?
@@ -41,103 +41,71 @@ scheme path and can be omitted.
 
 The ``meta`` information — as with any node in the scheme — is used for display purposes.
 
+Note: A branch scheme may not describe configuration data. The ``type`` field, present in the other scheme
+formats, must not be used.
+
 #### Type schemes
 
 Type schemes follow the same semantics as the content (see below). The format is
 
-    [key]: <navigation-key>
     type: <data-type>
     meta:
         <meta-information>
     [content]:
     <content-definition>
 
-FIXME
+Note: The top-level key is meaningful only for branch and configuration schemes. It is ignored in type schemes.
+
+For further information, see ''Content'' below.
 
 #### Configuration schemes
 
-Configuration schemes refer to an actual settings file. In addition to the content (see below) the 
+Configuration schemes refer to an actual configuration file. In addition to the content (see below), the top-level definition also
+contains the ``config`` entry:
 
     [key]: <navigation-key>
     type: <data-type>
     meta:
         <meta-information>
     config:
-        [file]: <settings-file>
+        [file]: <config-file>
         [ui]:
             <user-interface-definition>
     [content]:
     <content-definition>
 
-FIXME
+The ``config.file`` entry sets the filename. By default it is created from the navigation key under the default
+configuration save path (see ``ana.os.paths()``). Project configurations may instead use a settings path within 
+the project tree, for example "{project}/settings/config.yml".
 
-The user interface definition FIXME
+TODO: key vs. file location persistence vs. expected sorting order (accessing ana.storage.cachedir should somehow be reflected in the config file path...)
 
-### Content
+The user interface definition is the form:
 
-FIXME
+        ui:
+            component: <page-component>
 
-
-
-
-
-
-## FIXME
-
-
-
-
-
-### Content
-
-The header is followed by the general definition for node entries:
-
-    [type]: <data-type>
-    meta:
-        <meta-information>
-    [content]:
-        <content definitions>
-
-Schemes serve two purposes, either define the contents of a configuration file (see ''Configuration scheme format'') 
-or as type declarations that can be imported (see ''Node format''). 
-
-### Configuration scheme format
-
-Schemes intended as the basis for configuration files have the following entries
-
-    [type]: <content-type>
-    meta:
-        label: <scheme-short-label>
-        [comment]: |
-            <long description>
-        [config]:
-            file: <settings-file-path>
-            [index]: <configuration-index>
-            [ui]: <ui-component>
-    [content]:
-    <content-definition>
-
-1. ``content type``:
-    The content type is by default a ''dict'' (see below) and may be omitted.
-2. ``config``
-3. ``content``
+where the component can be loaded with ana.config.ui as a configuration page. If a dedicated component is not
+provided, a generic editor will be used.
 
 ### Node format
     
-Each node is described in the scheme file using:
+Each configuration node is described in list form under ``content`` as:
 
-    -   key: "key-name"
+    -   key: <node-key>
         type: <node-type>
         meta:
             <meta information...>
         content:
         <content definition>
 
-There are four fundamental node types:
+The ``node key`` is a single word. Both navigation paths and node keys appear in the configuration (see e.g. ``ana.config.file``) 
+as structure-like keys. It is recommended to use Matlab identifiers.
+
+There are thre fundamental branch types:
 - **dict** (ana.config.node.dict), 
 - **table** (ana.config.node.table), 
-- **list** (ana.config.node.list), 
-- **leaf** (ana.config.node.leaf).
+- **list** (ana.config.node.list), and,
 
 For **dict** and **table**, the same form as above is used:
 
@@ -167,7 +135,35 @@ While **list** only has a scalar content (without a key):
             content:
             <content definition>
 
-A **value** does not have a content definition.
+**Leaf nodes** are described by
+
+    -   key: "key-name"
+        type: <leaf-type>
+        meta:
+            <meta information...>
+
+Know leaf types are:
+- **logical** (``true`` or ``false``),
+- **integral** (integer-valued numbers in general),
+- **numeric** (floating-point numbers),
+- **string** (strings),
+- **datetime** (see ``ana.type.datetime``),
+- **path** (see ``ana.fs.path``), and,
+- **url** (see ``ana.type.url``).
+
+### Imported types
+
+Common node types may also be defined in "type schemes" (see above). They can be imported using
+
+    -   key: "key-name"
+        import: <scheme-path>
+        [meta]:
+            <meta information...>
+
+Note: 
+- type, content, and meta.rules cannot be overridden.
+- meta.label, meta.comment, and meta.default can be overridden.
+- Imported schemes never cause configuration files to be loaded.
 
 ### Meta-information
 
@@ -193,7 +189,7 @@ or
 
 #### Rules for validation
 
-FIXME
+The general format for validation rules is:
 
             rules:
                 required: <boolean>
@@ -202,22 +198,3 @@ FIXME
 The ``required`` entry is optional and ``false`` by default.
 
 For type-dependant rules, see ``ana.config.node.validate`` for further information.
-
-#### Actions
-
-TODO 
-
-            actions: 
-
-### Values
-
-The configuration is aware of the following types:
-
-- **logical**
-- **integral**
-- **numeric**
-- **string** 
-- **datetime**
-- **path**
-- **url**
-

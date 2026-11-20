@@ -224,6 +224,22 @@ classdef scheme
             end
         end
 
+        function res = kind(obj)
+            %KIND   Get "kind of scheme".
+            if isempty(obj.Scheme)
+                res = [];
+                return
+            end
+
+            if isfield(obj.Scheme, 'config')
+                res = 'config';
+            elseif ~isfield(obj.Scheme, 'type')
+                res = 'branch';
+            else
+                res = 'type';
+            end
+        end
+
         function id = type(obj)
             %TYPE   Get current node type.
             if isempty(obj.Scheme)
