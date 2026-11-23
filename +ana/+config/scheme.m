@@ -63,6 +63,12 @@ classdef scheme
             % FIXME
         end
 
+        function scan()
+            %SCAN       Scan or re-scan scheme hierarchy.
+
+            % FIXME
+        end
+
         function res = load(key)
             %LOAD       Load a scheme (with navigation key).
             %
