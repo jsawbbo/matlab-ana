@@ -41,8 +41,12 @@ classdef session < handle
     %   long, as weak references to applications are kept.
     %
 
+    %TODO:
+    %- automatically load config
+
+
     %% PROPERTIES
-    properties
+    properties(Access=protected)
         Config ana.config.object            % Configuration tree.
     end
 
@@ -88,6 +92,8 @@ classdef session < handle
                 obj.Aliases.("storage") = aliases;
                 obj.Aliases.("scratch") = ana.fs.path(storage.scratch.get());
                 obj.Aliases.("project") = [];
+                obj.Aliases.("config") = ana.os.paths('configdir');
+                obj.Aliases.("home") = ana.os.paths('homedir');
 
                 % fill standard variables
                 obj.set("USER", getenv("USER"));
@@ -293,6 +299,12 @@ classdef session < handle
                 key (1,1) string
                 loc (1,1) string
                 cat = []
+            end
+
+            reserved = ["home";"config"];
+            if any(reserved == key)
+                error('ana.session:ReservedAlias', ...
+                    'Alias "%s" is reserved and cannot be modified.', key);
             end
 
             obj.Aliases(key) = struct('location', loc, 'category', cat);

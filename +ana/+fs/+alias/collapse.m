@@ -4,6 +4,8 @@ function resolved = collapse(path,options)
     % FIXME
     % 
     % See: ana.fs.alias.expand
+
+    %TODO: ana.fs.alias.collapse documentation
     arguments (Input)
         path ana.fs.path        % The path to collapse.
         options.Aliases = []    % Aliases (internally used for unit tests).

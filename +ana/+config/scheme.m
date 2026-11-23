@@ -164,6 +164,7 @@ classdef scheme
     methods
         function obj = scheme(doc)
             %SCHEME     Construct a singleton instance of this class
+            %
             arguments
                 doc (1,:) = []
             end
@@ -212,11 +213,13 @@ classdef scheme
 
         function res = isempty(obj)
             %ISEMPTY    Check if scheme is empty.
+            %
             res = isempty(obj.Scheme);
         end
 
         function res = version(obj)
             %VERSION    Get scheme version.
+            %
             if isempty(obj.Scheme)
                 res = [];
             else
@@ -226,6 +229,7 @@ classdef scheme
 
         function res = kind(obj)
             %KIND   Get "kind of scheme".
+            %
             if isempty(obj.Scheme)
                 res = [];
                 return
@@ -242,6 +246,7 @@ classdef scheme
 
         function id = type(obj)
             %TYPE   Get current node type.
+            %
             if isempty(obj.Scheme)
                 id = '*';
             else
@@ -251,12 +256,14 @@ classdef scheme
 
         function res = key(obj)
             %KEY    Get key of current node.
+            %
             assert(~isempty(obj.Scheme));
             res = obj.Scheme.key;
         end
 
         function res = meta(obj)
             %META    Get meta table of current node.
+            %
             if isfield(obj.Scheme, 'meta')
                 res = obj.Scheme.meta;
             else
@@ -286,6 +293,7 @@ classdef scheme
 
         function follow = comment(obj,fd,options)
             %COMMENT    Emit comment.
+            %
             arguments
                 obj (1,1) ana.config.scheme
                 fd (1,1) double 

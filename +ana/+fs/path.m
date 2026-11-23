@@ -1,15 +1,36 @@
 classdef path < matlab.mixin.indexing.RedefinesParen
     %ana.fs.path    Canonical representation of a file path.
     %
-    %   This class represents a file system path agnostic to operating system 
-    %   (Windows uses, both, forward and backward slash). 
+    %   This class represents a file system path agnostic to operating system
+    %   (Windows uses both forward and backward slashes).
     %
-    %   FIXME
+    %   To avoid machine-dependent paths, this class supports aliases (for details
+    %   see <a href="matlab:help ana.fs.alias">ana.fs.alias</a>).
     %
+    %   Examples:
+    %       p = ana.fs.path("{home}/data/file.txt");
     %
-    %TODO
-    %- parenAssign,parenDelete need checks (e.g. if Drive == true)
-    %- add "~" for $HOME
+    %       % Append path components
+    %       p = ana.fs.path("~") / "data" / "file.txt";
+    %
+    %       % Obtain the canonical path without resolving aliases
+    %       filename = string(p);
+    %
+    %       % Resolve aliases and locate an existing file
+    %       filename = +p;
+    %
+    %       % Resolve a path even if the file does not exist
+    %       filename = string(p.resolve(MustExist=false));
+    %
+    %   Note: The unary plus operator (+) resolves the path and returns its
+    %   string representation. An error is raised if the path cannot be resolved.
+    %
+    %   See also: ana.fs.alias, ana.fs.path.resolve
+
+    %TODO:
+    % - Protect root/drive/share components in parenAssign and parenDelete.
+    % - Ensure Parts never becomes empty.
+    % - Validate assigned path components.
 
     %% CONSTANTS
     properties (Constant)
@@ -149,12 +170,12 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         end
 
         function res = uplus(obj)
-            %UPLUS  Equivalent of string() but with path resolution (see locate()).
+            %UPLUS  Equivalent of string() but with path resolution (see resolve()).
             %
-
-            loc = obj.locate();
+e
+            loc = obj.resolve();
             if isempty(loc)
-                error("ana.fs.path:NoSuchLocation", "The file '%s' could not be located.", string(obj))
+                error("ana.fs.path:NoSuchLocation", "The file '%s' could not be resolved.", string(obj))
             end
 
             res = string(loc);
@@ -289,7 +310,9 @@ classdef path < matlab.mixin.indexing.RedefinesParen
                 obj ana.fs.path
             end
 
-            res = obj.isrelative() && startsWith(obj.Parts{1}, "{") && endsWith(obj.Parts{1}, "}");
+            res = obj.isrelative() && ...
+                (obj.Parts{1} == "~" || ...
+                    (startsWith(obj.Parts{1}, "{") && endsWith(obj.Parts{1}, "}")));
         end
 
         function str = drive(obj)
@@ -317,7 +340,11 @@ classdef path < matlab.mixin.indexing.RedefinesParen
 
             if obj.isalias()
                 s = obj.Parts{1};
-                res = extractBetween(string(s),2,strlength(s)-1);
+                if s == "~"
+                    res = "home";
+                else
+                    res = extractBetween(string(s),2,strlength(s)-1);
+                end
             else
                 res = [];
             end
@@ -376,38 +403,69 @@ classdef path < matlab.mixin.indexing.RedefinesParen
             end
         end
 
-        function res = locate(obj, options)
-            %LOCATE         Locate local storage of a file.
+        function res = resolve(obj, options)
+
+            %RESOLVE    Resolve a path to a file-system location.
             %
-            % Locate a path with alias expansion or file-system search.
+            %   RES = OBJ.RESOLVE() returns the first existing file or directory
+            %   matching OBJ. Absolute paths are checked directly, alias paths
+            %   are expanded, and relative paths are resolved against the current
+            %   working directory.
             %
-            % Syntax:
-            %   res = path.locate();
-            %   res = path.locate(SearchPath=ana.fs.searchpath);
+            %   RES = OBJ.RESOLVE(MustExist=false) also permits non-existing paths.
+            %   If an existing location is found, it is returned. Otherwise, the
+            %   first possible location is returned.
             %
-            %See: ana.fs.alias.locate
+            %   Options:
+            %       MustExist   Require the resolved path to exist (default: true).
+            %       Searchpath  Search path used for relative paths. If omitted,
+            %                   the current working directory is used.
+            %       Aliases     Alternative alias definitions (primarily for
+            %                   unit testing).
+            %
+            %   Returns:
+            %       An ana.fs.path object representing the resolved location,
+            %       or [] if no suitable location can be resolved.
+            %
+            %   Notes:
+            %   - Existing locations take precedence over non-existing candidates.
+            %   - Alias expansions are considered in their defined order.
+            %   - With MustExist=false, unresolved aliases still return [].
+            %   - Searchpath.find() searches only for existing locations;
+            %     MustExist=false does not change its behavior.
+            %
+            %   See also: ana.fs.alias.expand, ana.fs.alias.locate,
+            %             ana.fs.searchpath.find
             arguments 
                 obj ana.fs.path
-                options.Searchpath = [] % A search path (ana.fs.searchpath).
-                options.Aliases = []    % Aliases (internally used for unit tests).
+                options.Searchpath = []     % A search path (ana.fs.searchpath).
+                options.Aliases = []        % Aliases (internally used for unit tests).
+                options.MustExist = true    % Resolved path must exist.
             end
 
             if obj.isabsolute()
-                if obj.isfile() || obj.isfolder()
-                    res = obj;
-                else
+                res = obj;
+                if options.MustExist && ~(obj.isfile() || obj.isfolder())
                     res = [];
                 end
             elseif obj.isalias()
                 res = ana.fs.alias.locate(obj, Aliases=options.Aliases);
+                if ~options.MustExist && isempty(res)
+                    res = ana.fs.alias.expand(obj, Aliases=options.Aliases);
+                    if isempty(res)
+                        res = [];
+                    else
+                        res = res{1};
+                    end
+                end
             else % isrelative
                 if isempty(options.Searchpath)
                     res = ana.fs.pwd() / obj;
-                    if ~res.isfile() && ~res.isfolder()
+                    if options.MustExist && ~(res.isfile() || res.isfolder())
                         res = [];
                     end
                 else
-                    res = options.Searchpath.locate(obj);
+                    res = options.Searchpath.find(obj);
                 end
             end
         end

@@ -15,10 +15,6 @@
 %                   The search path is defined in the general configuration.
 %                   Using this alias is optional.
 %
-%    {project}      The directory containing the loaded project configuration
-%                   file. References to files within this directory remain
-%                   valid when the project directory is moved.
-%
 %    {scratch}      A project-specific directory for transient analysis data,
 %                   located below the scratch directory defined in the general
 %                   configuration.
@@ -30,13 +26,24 @@
 %                   Note: Retention depends on the underlying storage and its
 %                   cleanup policy; scratch is not permanent project storage.
 %
+%    {config}       The users configuration directory.
+%                   (see ``ana.os.paths()``)
+%
+%    {project}      The directory containing the loaded project configuration
+%                   file. References to files within this directory remain
+%                   valid when the project directory is moved.
+%
+%    {home}         The user's "home" directory (on Windows, this is called "user 
+%                   profile directory"). As is common on Unix-like operating 
+%                   systems, the tilde "~" is also recognized as shorthand.
+%
 % Projects may define additional aliases. Alias definitions may reference
 % other aliases; for example, an alias "{results}" could be defined as
 % "{project}/results".
 %
 % Commands:
 %
-% <a href="matlab:help ana.fs.alias.find">find</a>         - Find an existing file, resolving aliases as needed.
-% <a href="matlab:help ana.fs.alias.expand">expand</a>     - Expand aliases into candidate paths without checking file existence.
+% <a href="matlab:help ana.fs.alias.find">find</a>     - Find an existing file, resolving aliases as needed.
+% <a href="matlab:help ana.fs.alias.expand">expand</a>   - Expand aliases into candidate paths without checking file existence.
 % <a href="matlab:help ana.fs.alias.collapse">collapse</a> - Replace a matching path prefix with an alias.
 %

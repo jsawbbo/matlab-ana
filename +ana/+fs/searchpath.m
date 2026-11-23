@@ -87,7 +87,7 @@ classdef searchpath < matlab.mixin.indexing.RedefinesBrace & matlab.mixin.indexi
             end
         end
 
-        function res = locate(obj,path)
+        function res = find(obj,path)
             %FIND       Find a file or folder in this search path.
             %
             arguments

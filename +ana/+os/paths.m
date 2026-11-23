@@ -9,7 +9,8 @@ function s = paths(what)
     %       configdir       System-dependent user-local configuration directory path.
     %       tmpdir          System-dependent temporary storage path.
     %       cachedir        System-dependent cache directory.
-    %       toolboxdir      Matlab®-ana's toolbox directory.
+    %       homedir         System-dependent user directory.
+    %       toolboxdir      Matlab®-ANA's toolbox directory.
     %
     %   s = ana.os.paths(what)
     %
@@ -29,8 +30,16 @@ function s = paths(what)
         s.tmpdir = ana.os.paths('tmpdir');
         s.toolboxdir = ana.os.paths('toolboxdir');
         s.cachedir = ana.os.paths('cachedir');
+        s.homedir = ana.os.paths('homedir');
     else
         switch(what)
+            case 'homedir'
+                if ispc
+                    s = getenv('USERPROFILE');
+                else
+                    s = getenv('HOME');
+                end
+                
             case 'configdir'
                 if ispc
                     s = getenv('LOCALAPPDATA');                                 

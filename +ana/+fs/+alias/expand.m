@@ -4,6 +4,8 @@ function resolved = expand(path, options)
     % FIXME
     % 
     % See: ana.fs.alias.collapse
+
+    %TODO: ana.fs.alias.expand documentation
     arguments 
         path ana.fs.path        % The path to expand.
         options.Aliases = []    % Aliases (internally used for unit tests).
