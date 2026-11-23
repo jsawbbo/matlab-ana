@@ -75,6 +75,9 @@ classdef session < handle
                 obj.Instance = true;
                 instance = obj;
 
+                % bootstrap system
+                ana.bootstrap();
+
                 % load general config
                 %TODO: load all relevant configs
                 obj.load();

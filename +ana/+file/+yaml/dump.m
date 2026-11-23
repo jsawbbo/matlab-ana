@@ -11,7 +11,7 @@ function result = dump(data,options)
         options.Style {mustBeMember(options.Style, ["flow", "block", "auto"])} = "block"
     end
 
-    ana.init
+    ana.external("snakeyaml");
     import org.yaml.snakeyaml.*;
     
     try

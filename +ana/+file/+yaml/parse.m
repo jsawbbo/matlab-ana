@@ -7,7 +7,7 @@ function result = parse(s,options)
         options.ConvertToArray (1, 1) logical = true
     end
 
-    ana.init
+    ana.external("snakeyaml");
     import org.yaml.snakeyaml.*;
     try
         rootNode = Yaml().load(s);

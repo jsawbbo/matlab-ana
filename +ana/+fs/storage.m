@@ -4,6 +4,7 @@ classdef storage
     %   FIXME
     %
 
+    %TODO: delete this file
     properties(Constant,Hidden)
         Data = ana.util.shared(...
             struct(searchpath=[],...
@@ -49,7 +50,6 @@ classdef storage
                 options.Partial = ana.fs.storage.Data.partial;
             end
 
-            ana.init();
             if iscell(path)
                 res = cellfun(@(p) resolve(p), path, 'UniformOutput', false);
             else
@@ -72,7 +72,6 @@ classdef storage
                 return
             end
 
-            ana.init();
             data = ana.fs.storage.Data;
             
             searchpaths = data.searchpath.Paths;
