@@ -16,11 +16,6 @@ classdef scheme
     %TODO:
     %- fill missing documentation
     %- implement scheme hierarchy (see field 'schemes' in static_data)
-    %- rename "/general" path to "/ana", and
-    %- add overlays: e.g. the ana.fs.category could have a general scheme so that the rules: don't have
-    %  to be written every time it is used; the same applies to "searchpath" with is expected to be
-    %  either a list of paths or a list of location/category entries.
-    %  (these would then be scheme /ana/fs/category and /ana/fs/searchpath)
     %- make indentation configurable?
     %- add support for units
         
@@ -38,21 +33,13 @@ classdef scheme
 
             persistent static_data 
 
-            cfgfile = ana.os.paths('configdir') / "schemes.yml";
             if isempty(static_data)
                 static_data = struct(...
                         paths = dictionary(string([]),false), ...
                         schemes = dictionary(string([]),{})...
                     );
 
-                if isfile(cfgfile)
-                    cfg = ana.file.yaml.load(cfgfile);
-                    for k = 1:numel(cfg.paths)
-                        static_data.paths(cfg.paths{k}) = true;
-                    end
-                else
-                    static_data.paths(+(ana.os.paths('toolboxdir')/"scheme")) = true;
-                end
+                static_data.paths(+(ana.os.paths('toolboxdir')/"scheme")) = true;
 
                 data = static_data;
             end
@@ -73,36 +60,14 @@ classdef scheme
             %REGISTER   Registers a path as "scheme" path.
             %
 
-            path = ana.fs.path(path);
-
-            internal = ana.config.scheme.static();
-            if internal.paths.isKey(+path)
-                return
-            end
-            internal.paths(+path) = true;
-            ana.config.scheme.static(internal);
+            % FIXME
         end
 
-        function path = find(name)
-            %FIND   Find scheme file.
+        function res = load(key)
+            %LOAD       Load a scheme (with navigation key).
             %
 
-            name = ana.fs.path(name);
-            name(end) = name(end) + ".yml";
-            if ~name.isrelative()
-                name = name(2:end);
-            end
-
-            internal = ana.config.scheme.static();
-            searchpath = keys(internal.paths);
-            for k = 1:numel(searchpath)
-                path = ana.fs.path(searchpath{k}) / name;
-                if isfile(path)
-                    return
-                end
-            end
-
-            path = [];
+            res = [];
         end
     end
 
