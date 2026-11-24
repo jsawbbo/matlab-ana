@@ -26,32 +26,19 @@ classdef scheme
 
     %% REGISTRY
     methods(Static,Hidden)
-        function data = static(data)
-            arguments
-                data = []
+        function data = private()
+            persistent internal
+    
+            if isempty(internal)
+                toolboxdir = ana.os.paths('toolboxdir');
+
+                internal = ana.util.shared(struct( ...
+                    paths = dictionary(string([]), false), ...
+                    schemes = dictionary(string([]), {}) ...
+                ));
             end
-
-            persistent static_data 
-
-            if isempty(static_data)
-                static_data = struct(...
-                        paths = dictionary(string([]),false), ...
-                        schemes = dictionary(string([]),{})...
-                    );
-
-                static_data.paths(+(ana.os.paths('toolboxdir')/"scheme")) = true;
-
-                data = static_data;
-            end
-
-            if ~isempty(data)
-                static_data = data;
-
-                cfg.paths = keys(data.paths);
-                ana.file.yaml.save(cfgfile,cfg);
-            end
-
-            data = static_data;
+    
+            data = internal;
         end
     end
 
@@ -60,12 +47,13 @@ classdef scheme
             %REGISTER   Registers a path as "scheme" path.
             %
 
-            % FIXME
+            priv = ana.config.scheme.private();
         end
 
         function scan()
             %SCAN       Scan or re-scan scheme hierarchy.
 
+            priv = ana.config.scheme.private();
             % FIXME
         end
 
@@ -73,6 +61,8 @@ classdef scheme
             %LOAD       Load a scheme (with navigation key).
             %
 
+            priv = ana.config.scheme.private();
+            % FIXME
             res = [];
         end
     end
@@ -154,14 +144,14 @@ classdef scheme
                     error("ANA:config:noSuchScheme", "could not find scheme file")
                 end
 
-                internal = obj.static();
+                internal = obj.private();
                 if internal.schemes.isKey(+schemefile)
                     doc = internal.schemes(+schemefile);
                     doc = doc{1};
                 else
                     doc = ana.file.yaml.load(schemefile);
                     internal.schemes(+schemefile) = {doc};
-                    obj.static(internal);
+                    obj.private(internal);
                 end
             end
 

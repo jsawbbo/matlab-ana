@@ -8,8 +8,11 @@ function message(level, fmt, varargin)
     %TODO: ana.log needs a Contents.m file and more function documentation
     level = ana.log.level(level);
 
-    if ana.session().LogLevel > level
-        return
+    try
+        if ana.session().LogLevel > level
+            return
+        end
+    catch
     end
 
     formattedMessage = sprintf(fmt, varargin{:});

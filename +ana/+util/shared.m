@@ -1,34 +1,31 @@
 classdef shared < handle & matlab.mixin.indexing.RedefinesDot
-    %ana.util.shared        Shared data object.
+    %ana.util.shared        Shared data struct.
     %
-    %   Generic shared data object (or handle, respectively).
+    % Generic shared data object (or handle, respectively).
     %
-    %   The main purpose of this class is to facilitate global static
-    %   class members (in terms of C++). This class behaves like a struct.
+    % The main purpose of this class is to facilitate global static
+    % class members (in terms of C++). This class behaves like a struct.
     %
-    %   Example:
-    % 
-    %       classdef MyClass
-    %           properties (Constant)
-    %               AppData = ana.util.shared(...
-    %                   struct(initialized=false))
-    %           end
-    %           
-    %           methods
-    %               function obj = MyClass()
-    %                   if ~obj.AppData.initialized
-    %                       % ...
-    %                   end
-    %               end
-    %           end
-    %       end
+    % Example:
     %
-    %   Note: Handling the shared data should always be handled by making a copy. 
-    %   In the example above, use 
+    %     classdef MyClass
+    %         properties (Constant)
+    %             AppData = ana.util.shared(...
+    %                 struct(initialized=false))
+    %         end
+    %         
+    %         methods
+    %             function obj = MyClass()
+    %                 if ~obj.AppData.initialized
+    %                     % ...
+    %                 end
+    %             end
+    %         end
+    %     end
     %
-    %       appdata = path.to.MyClass.AppData;
-    %
-    %   before accessing it. Otherwise Matlab will not recognize "path.to.".
+    % Note: When accessing shared data through a package-qualified class property, 
+    % retrieve the shared object into a local variable first. MATLAB may not correctly 
+    % resolve chained dot indexing involving overloaded indexing methods.
     %
 
     properties (Hidden,Access=private)
