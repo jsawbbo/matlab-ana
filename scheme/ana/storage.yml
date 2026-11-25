@@ -1,12 +1,11 @@
 version: "1.0"
 
-scheme: /ana/storage
+index: /ana/storage
 meta:
     label: Storage
     config:
-        index: /ana/storage
         ui: ana.config.general
-        file: {config}/storage.yml
+        file: "{config}/storage.yml"
 content:
 -   key: storage
     type: dict

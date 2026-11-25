@@ -14,9 +14,8 @@ classdef scheme
     % For further information, see <a href="https://github.com/jsawbbo/matlab-ana/blob/main/scheme/README.md">scheme/README.md</a>.
 
     %TODO:
-    %- fill missing documentation
-    %- implement scheme hierarchy (see field 'schemes' in static_data)
-    %- make indentation configurable?
+    %- scheme could be a handle class - shouldn't it?
+    %- make indentation configurable (start with making it a constant here)?
     %- add support for units
         
     %% PROPERTIES
@@ -26,44 +25,274 @@ classdef scheme
 
     %% REGISTRY
     methods(Static,Hidden)
-        function data = private()
-            persistent internal
-    
-            if isempty(internal)
-                toolboxdir = ana.os.paths('toolboxdir');
+        function res = newcatalog()
+            %newcatalog     Helper to create a new catalog entry in the private data.
+            res = struct(...
+                    index = {}, ...
+                    path = {}, ...
+                    kind = {}, ...
+                    meta = {} ...
+                );
+        end
 
-                internal = ana.util.shared(struct( ...
-                    paths = dictionary(string([]), false), ...
-                    schemes = dictionary(string([]), {}) ...
+        function res = newtree(what)
+            %newtree        Helper to create a new tree branch/leaf in the config hierarchy.
+            arguments
+                what = {}
+            end
+            res = struct(key=what, ...
+                meta=what, ...
+                config=what, ...
+                content=what);
+        end
+
+        function data = private()
+            %private        Persistent internal data.
+            %
+
+            persistent store
+    
+            if isempty(store)
+                % main structure
+                store = ana.util.shared(struct( ...
+                    catalog = ana.config.scheme.newcatalog(), ...
+                    tree = ana.config.scheme.newtree(), ...
+                    index = ana.type.dict ...
                 ));
+
+                % load catalog
+                cfgdir = ana.os.paths("configdir");
+
+                schemecat = cfgdir / "internal/schemes.yml";
+                if schemecat.isfile()
+                    try
+                        store.catalog = ana.file.yaml.load(string(schemecat));
+
+                        % generate index
+                        for k = 1:numel(store.catalog)
+                            item = store.catalog(k);
+                            store.index(item.index) = ana.fs.path(item.path);
+                        end
+                    catch me
+                        store.catalog = ana.config.scheme.newcatalog();
+                        warning("ANA:config:invalidSchemeCatalog", ...
+                            "Could not load scheme catalog: %s", string(schemecat));
+                    end
+                end
+
+                % load config tree
+                configtree = cfgdir / "internal/configuration.yml";
+                if configtree.isfile()
+                    try
+                        store.tree = ana.file.yaml.load(configtree);
+                    catch 
+                        store.tree = ana.config.scheme.newtree();
+                        warning("ANA:config:invalidConfigurationTree", ...
+                            "Could not load configuration tree: %s", string(configtree));
+                    end
+                end
             end
     
-            data = internal;
+            data = store;
         end
     end
 
     methods(Static)
-        function register(path)
-            %REGISTER   Registers a path as "scheme" path.
-            %
-
-            priv = ana.config.scheme.private();
-        end
-
         function scan()
             %SCAN       Scan or re-scan scheme hierarchy.
+            %
 
+            % prepare
             priv = ana.config.scheme.private();
-            % FIXME
+            priv.catalog = ana.config.scheme.newcatalog();
+            priv.tree = ana.config.scheme.newtree();
+            priv.index = ana.type.dict;
+            
+            % toolbox directories
+            cfgdir = ana.os.paths("configdir");
+
+            toolboxdirs = {ana.os.paths("toolboxdir")};
+
+            toolboxcfg = cfgdir / "toolbox.yml";
+            if toolboxcfg.isfile()
+                % FIXME
+            end
+
+            % find schemes, load and parse
+            for k = 1:numel(toolboxdirs)
+                toolbox = toolboxdirs{k};
+                files = ana.fs.find(toolbox/"scheme",".*[.]yml");
+
+                for n = 1:numel(files)
+                    schemefile = files{n};
+
+                    % load
+                    try
+                        sch = ana.file.yaml.load(string(schemefile));
+
+                        % kind
+                        if isfield(sch, 'config')
+                            kind = 'config';
+                        elseif ~isfield(sch, 'type')
+                            kind = 'branch';
+                        else
+                            kind = 'type';
+                        end
+
+                        % meta
+                        if ~isfield(sch, 'meta')
+                            sch.meta = struct();
+                        end
+
+                        if ~isfield(sch.meta,'label')
+                            p = ana.fs.path(sch.index);
+                            p = string(p(end));
+
+                            sch.meta.label = ana.string.title(p);
+                        end
+
+                        % index
+                        switch (kind)
+                            case "type"
+                                index = "/" + string(schemefile(numel(toolbox)+2:end));
+                                index = string(index{1}(1:end-4));
+
+                                if isfield(sch,'index')
+                                    warning("ANA:Scheme:InvalidIndex", "Scheme file '%s' is neither a branch nor a configuration, ignoring 'index' entry.",...
+                                        string(schemefile))
+                                    sch.Scheme = rmfield(sch,'index');
+                                end
+
+                            otherwise
+                                if ~isfield(sch,'index')
+                                    index = "/" + string(schemefile(numel(toolbox)+2:end));
+                                    sch.index = string(index{1}(1:end-4));
+                                end
+                                index = sch.index;
+                        end
+
+                        % catalog
+                        priv.catalog(end+1) = struct(...
+                            index = index, ...
+                            path = string(schemefile), ...
+                            kind = kind, ...
+                            meta = sch.meta);
+
+                        % index
+                        priv.index(index) = sch;
+
+                    catch me
+                        disp(me)
+                    end
+                end
+            end
+
+            % save 
+            internaldir = cfgdir / "internal";
+            if ~internaldir.isfolder()
+                mkdir(string(internaldir));
+            end
+
+            % save catalog
+            ana.file.yaml.save(cfgdir / "internal/schemes.yml", priv.catalog);
+
+            % build config tree
+            branches = [string([])];
+            for k = 1:numel(priv.catalog)
+                cat = priv.catalog(k);
+
+                switch (cat.kind)
+                    case 'type'
+                        % nothing to be done
+                    otherwise
+                        branches(end+1) = cat.index; %#ok<AGROW>
+                end
+            end
+            branches = sort(branches);
+
+            % assemble hierarchical configuration tree
+            stack = {priv.tree};
+            for k = 1:numel(branches)
+                name = branches(k);
+
+                % find catalog entry
+                cat = [];
+                for c = 1:numel(priv.catalog)
+                    if priv.catalog(c).index == name
+                        cat = priv.catalog(k);
+                        break;
+                    end
+                end
+                assert(~isempty(cat));
+
+                % current branch key
+                branch = ana.fs.path(name);
+                key = string(branch(end));
+
+                % cleanup meta
+                meta = cat.meta;
+
+                fn = fieldnames(meta);
+                for n = 1:numel(fn)
+                    switch (fn{n})
+                        case {'label','comment'}
+                            % keep
+                        otherwise
+                            meta = rmfield(meta, fn{n});
+                    end
+                end
+
+                % config
+                if isfield(cat,'config')
+                    config = cat.config;
+                else
+                    config = struct();
+                end
+
+                % manage stack
+                depth = numel(branch)-1;
+
+                stack = stack(1:depth);
+
+                while numel(stack) > depth
+                    stack{end-1}(end).content = stack{end};
+                    stack = stack(1:end-1);
+                end
+
+                current = stack{end};
+
+                % add leaf/branch
+                node = ana.config.scheme.newtree([]);
+                node.key = key;
+                node.meta = meta;
+                node.config = config;
+                node.content = ana.config.scheme.newtree();
+
+                current(end+1) = node; %#ok<AGROW>
+                stack{end} = current;
+
+                % get into
+                stack = [stack; {node.content}]; %#ok<AGROW>
+            end
+            while numel(stack) > 1
+                stack{end-1}(end).content = stack{end};
+                stack = stack(1:end-1);
+            end
+            priv.tree = stack{1};
+
+            ana.file.yaml.save(cfgdir / "internal/configuration.yml", priv.tree);
         end
 
         function res = load(key)
-            %LOAD       Load a scheme (with navigation key).
+            %LOAD       Load scheme fie (by index or file name).
             %
 
-            priv = ana.config.scheme.private();
-            % FIXME
-            res = [];
+            if ~isa(key, 'ana.fs.path')
+                FIXME()
+            end
+
+            res = ana.file.yaml.load(key);
+            % FIXME keep in tree
         end
     end
 
@@ -137,22 +366,9 @@ classdef scheme
                 return
             end
 
-            % load scheme based on string id
-            if ischar(doc) || isstring(doc)
-                schemefile = ana.config.scheme.find(doc);
-                if isempty(schemefile)
-                    error("ANA:config:noSuchScheme", "could not find scheme file")
-                end
-
-                internal = obj.private();
-                if internal.schemes.isKey(+schemefile)
-                    doc = internal.schemes(+schemefile);
-                    doc = doc{1};
-                else
-                    doc = ana.file.yaml.load(schemefile);
-                    internal.schemes(+schemefile) = {doc};
-                    obj.private(internal);
-                end
+            % load from file
+            if ~isstruct(doc)
+                doc = ana.scheme.config.load(doc);
             end
 
             if ~isstruct(doc)

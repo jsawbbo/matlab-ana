@@ -1,12 +1,11 @@
 version: "1.0"
 
-scheme: /ana/dialogs
+index: /ana/dialogs
 type: dict
 meta:
     label: Dialogs
 config:
-    index: /ana/dialogs
     ui: ana.config.xyz
-    file: {config}/dialogs.yml
+    file: "{config}/dialogs.yml"
 content:
 # FIXME

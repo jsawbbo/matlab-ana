@@ -29,7 +29,7 @@ function result = dump(data,options)
 end
 
 function result = convert(data)
-    if sum(size(data)) == 0 % null
+    if ~isstruct(data) && sum(size(data)) == 0 % null
         result = data;
     elseif isempty(data)
         result = java.util.ArrayList();

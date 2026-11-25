@@ -138,14 +138,20 @@ classdef dict < matlab.mixin.indexing.RedefinesParen & ...
             obj.PrivateData_ = remove(obj.PrivateData_, string(name));
         end
 
-        function s = struct(obj)
-            % struct            Convert to scalar struct (if possible).
-            s = struct();
-            ks = keys(obj.PrivateData_);
-            for k = reshape(ks, 1, [])
-                value = obj.PrivateData_(k);
-                value = value{1};
-                s.(k) = value;
+        function s = struct(varargin)
+            %STRUCT    Convert dictionary to scalar struct (if possible).
+        
+            if nargin == 1 && isa(varargin{1}, "ana.type.dict")
+                obj = varargin{1};
+        
+                s = builtin('struct');
+                ks = keys(obj.PrivateData_);
+                for k = reshape(ks, 1, [])
+                    value = obj.PrivateData_(k);
+                    s.(k) = value{1};
+                end
+            else
+                s = builtin('struct', varargin{:});
             end
         end
     end

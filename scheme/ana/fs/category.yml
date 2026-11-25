@@ -1,6 +1,5 @@
 version: "1.0"
 
-scheme: ana.fs.category
 type: category
 meta:
     label: Filesystem category

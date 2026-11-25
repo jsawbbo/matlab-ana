@@ -150,8 +150,8 @@ classdef session < handle
 
             for k = 1:numel(key)
                 if key(k) == "general"
-                    cfg = ana.config.file(configdir/"general.yml", Scheme="/general");
-                    obj.Config.("general") = cfg;
+                    % cfg = ana.config.file(configdir/"general.yml", Scheme="/general");
+                    % obj.Config.("general") = cfg;
                 else
                     %TODO load additional configs, might be of the form "plugin.device"
                 end

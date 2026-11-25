@@ -172,7 +172,7 @@ classdef path < matlab.mixin.indexing.RedefinesParen
         function res = uplus(obj)
             %UPLUS  Equivalent of string() but with path resolution (see resolve()).
             %
-e
+
             loc = obj.resolve();
             if isempty(loc)
                 error("ana.fs.path:NoSuchLocation", "The file '%s' could not be resolved.", string(obj))

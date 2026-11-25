@@ -5,21 +5,20 @@ that may consist of several configuration files. To allow validation, as well as
 user-interface integration, configurations are accompanied by scheme files. 
 
 *Note*:
-In the following we will use the convention that optional configuration entries are displayed as ``[key]``.
+Throughout this document, optional configuration entries are denoted by ``[key]``.
 
 ## Format
 
 ### Overview
 
-A scheme file consists of the header
+A scheme file begins with the following header:
 
     version: "<version-string>"
-    [scheme]: <scheme-path>
+    [index]: <branch-index>
 
-where the ``scheme-path`` defines the scheme's identity. The identity is automatically generated based on the 
-folder layout and may, therefore, be omitted.
-
-TODO: What happens if the scheme-path deviates from the expected path?
+The ``branch-index`` specifies the location of the branch within the scheme and configuration hierarchy. 
+It takes the  form of a path (e.g., /ana/storage). If omitted, the index is automatically derived from 
+the location of the scheme file within the directory hierarchy.
 
 It is followed by the body that depends on the kind of the scheme, which is either a
 1. ``branch scheme`` - defining a node in the scheme hierarchy, without describing data,
@@ -35,6 +34,7 @@ The minimal body of a branch scheme is
         label: <label>
         [comment]: |
             <long description>
+        [visibility]: <visibility-function>
 
 The ``key`` refers to the navigational path in the configuration tree. By default it is identical to the 
 scheme path and can be omitted.
@@ -198,3 +198,9 @@ The general format for validation rules is:
 The ``required`` entry is optional and ``false`` by default.
 
 For type-dependant rules, see ``ana.config.node.validate`` for further information.
+
+#### Visibility
+
+FIXME 
+
+            [visibility]: <visibility-function>

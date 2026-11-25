@@ -18,7 +18,11 @@ function save(filename,data,options)
         mkdir(folder);
     end
     
-    [fid, msg] = fopen(+filename, "wt");
+    if filename.isabsolute()
+        [fid, msg] = fopen(string(filename), "wt"); % (avoids ana.session)
+    else
+        [fid, msg] = fopen(+filename, "wt");
+    end
     if fid == -1
         error("ANA:runtime", msg)
     end
