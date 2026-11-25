@@ -42,6 +42,7 @@ classdef scheme
             end
             res = struct(key=what, ...
                 meta=what, ...
+                config=what, ...
                 branches=what);
         end
 
@@ -62,7 +63,7 @@ classdef scheme
                 % load catalog
                 cfgdir = ana.os.paths("configdir");
 
-                schemecat = cfgdir / "internal/schemes.yml";
+                schemecat = cfgdir / "internal" / "schemes.yml";
                 if schemecat.isfile()
                     try
                         store.catalog = ana.file.yaml.load(string(schemecat));
@@ -80,7 +81,7 @@ classdef scheme
                 end
 
                 % load config tree
-                configtree = cfgdir / "internal/configuration.yml";
+                configtree = cfgdir / "internal" / "configuration.yml";
                 if configtree.isfile()
                     try
                         store.tree = ana.file.yaml.load(configtree);
@@ -120,7 +121,7 @@ classdef scheme
             % find schemes, load and parse
             for k = 1:numel(toolboxdirs)
                 toolbox = toolboxdirs{k};
-                files = ana.fs.find(toolbox/"scheme",".*[.]yml");
+                files = ana.fs.find(toolbox / "scheme",".*[.]yml");
 
                 for n = 1:numel(files)
                     schemefile = files{n};
@@ -138,18 +139,6 @@ classdef scheme
                             kind = 'type';
                         end
 
-                        % meta
-                        if ~isfield(sch, 'meta')
-                            sch.meta = struct();
-                        end
-
-                        if ~isfield(sch.meta,'label')
-                            p = ana.fs.path(sch.index);
-                            p = string(p(end));
-
-                            sch.meta.label = ana.string.title(p);
-                        end
-
                         % index
                         switch (kind)
                             case "type"
@@ -159,7 +148,7 @@ classdef scheme
                                 if isfield(sch,'index')
                                     warning("ANA:Scheme:InvalidIndex", "Scheme file '%s' is neither a branch nor a configuration, ignoring 'index' entry.",...
                                         string(schemefile))
-                                    sch.Scheme = rmfield(sch,'index');
+                                    sch = rmfield(sch,'index');
                                 end
 
                             otherwise
@@ -168,6 +157,18 @@ classdef scheme
                                     sch.index = string(index{1}(1:end-4));
                                 end
                                 index = sch.index;
+                        end
+
+                        % meta
+                        if ~isfield(sch, 'meta')
+                            sch.meta = struct();
+                        end
+
+                        if ~isfield(sch.meta,'label')
+                            p = ana.fs.path(index);
+                            p = string(p(end));
+
+                            sch.meta.label = ana.string.title(p);
                         end
 
                         % catalog
@@ -181,19 +182,12 @@ classdef scheme
                         priv.index(index) = sch;
 
                     catch me
+                        %TODO: 
+                        %    This should be recorded in the internal configuration. 
                         disp(me)
                     end
                 end
             end
-
-            % save 
-            internaldir = cfgdir / "internal";
-            if ~internaldir.isfolder()
-                mkdir(string(internaldir));
-            end
-
-            % save catalog
-            ana.file.yaml.save(cfgdir / "internal/schemes.yml", priv.catalog);
 
             % list branches
             branches = [string([])];
@@ -219,22 +213,29 @@ classdef scheme
                 branch = ana.fs.path(name);
                 key = string(branch(end));
 
-                % cleanup meta
+                % copy/cleanup meta
                 meta = sch.meta;
 
                 fn = fieldnames(meta);
                 for n = 1:numel(fn)
                     switch (fn{n})
-                        case {'label','comment','config'}
-                            % keep
-                        otherwise
+                        case {'rules', 'default'}
                             meta = rmfield(meta, fn{n});
                     end
                 end
 
+                % copy config
+                if isfield(sch, 'config')
+                    config = sch.config;
+                else
+                    config = [];
+                end
+
                 % manage stack
                 depth = numel(branch)-1;
-                %FIXME if depth > numel(stack), there's possibly an error in a scheme file
+                %TODO 
+                % - if depth > numel(stack), there's possibly an error in a scheme file
+                % - better checking required if schemes are missing
                 while numel(stack) > depth
                     if isempty(stack{end})
                         stack{end-1}(end).branches = [];   
@@ -250,6 +251,7 @@ classdef scheme
                 node = ana.config.scheme.newtree([]);
                 node.key = key;
                 node.meta = meta;
+                node.config = config;
                 node.branches = ana.config.scheme.newtree();
 
                 current(end+1) = node; %#ok<AGROW>
@@ -268,7 +270,14 @@ classdef scheme
             end
             priv.tree = stack{1};
 
+            % save 
+            internaldir = cfgdir / "internal";
+            if ~internaldir.isfolder()
+                mkdir(string(internaldir));
+            end
+
             ana.file.yaml.save(cfgdir / "internal/configuration.yml", priv.tree);
+            ana.file.yaml.save(cfgdir / "internal/schemes.yml", priv.catalog);
         end
 
         function res = load(index)
