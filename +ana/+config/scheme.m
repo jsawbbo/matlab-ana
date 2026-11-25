@@ -42,8 +42,7 @@ classdef scheme
             end
             res = struct(key=what, ...
                 meta=what, ...
-                config=what, ...
-                content=what);
+                branches=what);
         end
 
         function data = private()
@@ -196,16 +195,16 @@ classdef scheme
             % save catalog
             ana.file.yaml.save(cfgdir / "internal/schemes.yml", priv.catalog);
 
-            % build config tree
+            % list branches
             branches = [string([])];
             for k = 1:numel(priv.catalog)
-                cat = priv.catalog(k);
+                sch = priv.catalog(k);
 
-                switch (cat.kind)
+                switch (sch.kind)
                     case 'type'
                         % nothing to be done
                     otherwise
-                        branches(end+1) = cat.index; %#ok<AGROW>
+                        branches(end+1) = sch.index; %#ok<AGROW>
                 end
             end
             branches = sort(branches);
@@ -214,48 +213,34 @@ classdef scheme
             stack = {priv.tree};
             for k = 1:numel(branches)
                 name = branches(k);
-
-                % find catalog entry
-                cat = [];
-                for c = 1:numel(priv.catalog)
-                    if priv.catalog(c).index == name
-                        cat = priv.catalog(k);
-                        break;
-                    end
-                end
-                assert(~isempty(cat));
+                sch = priv.index(name);
 
                 % current branch key
                 branch = ana.fs.path(name);
                 key = string(branch(end));
 
                 % cleanup meta
-                meta = cat.meta;
+                meta = sch.meta;
 
                 fn = fieldnames(meta);
                 for n = 1:numel(fn)
                     switch (fn{n})
-                        case {'label','comment'}
+                        case {'label','comment','config'}
                             % keep
                         otherwise
                             meta = rmfield(meta, fn{n});
                     end
                 end
 
-                % config
-                if isfield(cat,'config')
-                    config = cat.config;
-                else
-                    config = struct();
-                end
-
                 % manage stack
                 depth = numel(branch)-1;
-
-                stack = stack(1:depth);
-
+                %FIXME if depth > numel(stack), there's possibly an error in a scheme file
                 while numel(stack) > depth
-                    stack{end-1}(end).content = stack{end};
+                    if isempty(stack{end})
+                        stack{end-1}(end).branches = [];   
+                    else
+                        stack{end-1}(end).branches = stack{end};
+                    end
                     stack = stack(1:end-1);
                 end
 
@@ -265,17 +250,20 @@ classdef scheme
                 node = ana.config.scheme.newtree([]);
                 node.key = key;
                 node.meta = meta;
-                node.config = config;
-                node.content = ana.config.scheme.newtree();
+                node.branches = ana.config.scheme.newtree();
 
                 current(end+1) = node; %#ok<AGROW>
                 stack{end} = current;
 
-                % get into
-                stack = [stack; {node.content}]; %#ok<AGROW>
+                % manage stack
+                stack = [stack; {node.branches}]; %#ok<AGROW>
             end
             while numel(stack) > 1
-                stack{end-1}(end).content = stack{end};
+                if isempty(stack{end})
+                    stack{end-1}(end).branches = [];   
+                else
+                    stack{end-1}(end).branches = stack{end};
+                end
                 stack = stack(1:end-1);
             end
             priv.tree = stack{1};
@@ -283,16 +271,20 @@ classdef scheme
             ana.file.yaml.save(cfgdir / "internal/configuration.yml", priv.tree);
         end
 
-        function res = load(key)
-            %LOAD       Load scheme fie (by index or file name).
+        function res = load(index)
+            %LOAD       Load scheme file index.
             %
 
-            if ~isa(key, 'ana.fs.path')
-                FIXME()
+            priv = ana.config.scheme.private();
+            if ~isfield(priv.index, index)
+                error("ANA:Scheme:InvalidIndex", "Scheme index '%s' is not known - maybe rerun ana.config.scheme.scan().", index)
             end
 
-            res = ana.file.yaml.load(key);
-            % FIXME keep in tree
+            res = priv.index(index);
+            if isa(res,'ana.fs.path')
+                res = ana.file.yaml.load(res);
+                priv.index(index) = res;
+            end
         end
     end
 

@@ -4,7 +4,7 @@ index: /ana/storage
 meta:
     label: Storage
     config:
-        ui: ana.config.general
+        ui: ana.config.ui.storage
         file: "{config}/storage.yml"
 content:
 -   key: storage

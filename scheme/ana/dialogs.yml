@@ -1,11 +1,26 @@
 version: "1.0"
 
 index: /ana/dialogs
-type: dict
+type: table
 meta:
     label: Dialogs
+    comment: |
+        ANA uses the notion of "optional dialogs". This idea was borrowed from Qt, where dialogs
+        can have a toggle: [ ] Do not show this dialog again. 
 config:
-    ui: ana.config.xyz
+    ui: ana.config.ui.dialogs
     file: "{config}/dialogs.yml"
 content:
-# FIXME
+-   key: id
+    type: string
+    meta:
+        label: Dialog ID
+-   key: enabled
+    type: logical
+    meta:
+        label: Enabled
+-   key: comment
+    type: string
+    meta:
+        label: Comment
+       
