@@ -161,6 +161,7 @@ classdef scheme
 
                         % meta
                         if ~isfield(sch, 'meta')
+                            %TODO this should be in load(), too?
                             sch.meta = struct();
                         end
 
@@ -182,8 +183,7 @@ classdef scheme
                         priv.index(index) = sch;
 
                     catch me
-                        %TODO: 
-                        %    This should be recorded in the internal configuration. 
+                        % FIXME ana.log.error("%s: %!\n", string(schemefile), me);
                         disp(me)
                     end
                 end
@@ -233,9 +233,7 @@ classdef scheme
 
                 % manage stack
                 depth = numel(branch)-1;
-                %TODO 
-                % - if depth > numel(stack), there's possibly an error in a scheme file
-                % - better checking required if schemes are missing
+                
                 while numel(stack) > depth
                     if isempty(stack{end})
                         stack{end-1}(end).branches = [];   
@@ -243,6 +241,13 @@ classdef scheme
                         stack{end-1}(end).branches = stack{end};
                     end
                     stack = stack(1:end-1);
+                end
+
+                % check stack
+                for c = 1:depth-1
+                    if isempty(stack{c}) || (stack{c}.key ~= string(branch(1+c)))
+                        error("ANA:Scheme:MissingBranch", "A scheme file is missing for a branch above '%s'.", name)
+                    end
                 end
 
                 current = stack{end};
@@ -276,13 +281,15 @@ classdef scheme
                 mkdir(string(internaldir));
             end
 
-            ana.file.yaml.save(cfgdir / "internal/configuration.yml", priv.tree);
-            ana.file.yaml.save(cfgdir / "internal/schemes.yml", priv.catalog);
+            ana.file.yaml.save(cfgdir / "internal" / "configuration.yml", priv.tree);
+            ana.file.yaml.save(cfgdir / "internal" / "schemes.yml", priv.catalog);
         end
 
         function res = load(index)
             %LOAD       Load scheme file index.
             %
+            % Note: This function will not sanitize entries (in contrast to the scan() function).
+            % 
 
             priv = ana.config.scheme.private();
             if ~isfield(priv.index, index)
@@ -373,7 +380,7 @@ classdef scheme
             end
 
             if ~isstruct(doc)
-                error("ANA:config:invalidArguments", "neither name of scheme nor scheme struct")
+                error("ANA:Scheme:InvalidArguments", "neither name of scheme nor scheme struct")
             end
 
             obj.Scheme = doc;

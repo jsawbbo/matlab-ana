@@ -1,4 +1,4 @@
-classdef file < ana.config.object
+classdef file < ana.config.branch
     %ana.config.file      Configuration file.
     %
     %   FIXME
@@ -26,7 +26,7 @@ classdef file < ana.config.object
                 pathname = ana.fs.path(pathname);
             end
 
-            obj@ana.config.object(Parent=options.Parent,Scheme=options.Scheme,Init=false);
+            obj@ana.config.branch(Parent=options.Parent,Scheme=options.Scheme,Init=false);
 
             % do not load twice
             % FIXME implement a singleton mechanism

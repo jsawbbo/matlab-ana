@@ -5,7 +5,12 @@ function message(level, fmt, varargin)
     %
     % For colored output, install the <a href="https://www.mathworks.com/matlabcentral/fileexchange/24093-cprintf-display-formatted-colored-text-in-command-window">cprintf</a> toolbox.
     %
-    %TODO: ana.log needs a Contents.m file and more function documentation
+
+    %TODO: 
+    % - Contents.m file
+    % - see VidRe: allow log message be temporarily capture to a string
+    %   (esp. useful for GUIs)
+    % - add "%!" format (-> ana.util.exception2string)
     level = ana.log.level(level);
 
     try

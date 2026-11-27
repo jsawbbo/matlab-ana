@@ -187,6 +187,14 @@ or
                 eval: |
                     <script>
 
+TODO: I need to be able to use also YAML for populating a whole config (e.g. the roles in a project).
+      ->
+            default:
+                [eval]: |
+                    <script>
+                [import]: <yaml-file>
+                [value]: <default-value>
+
 #### Rules for validation
 
 The general format for validation rules is:
