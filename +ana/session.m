@@ -79,10 +79,12 @@ classdef session < handle
                 ana.bootstrap();
 
                 % load essential config
-                obj.Config.ana = ana.config.branch(Scheme="/ana");
                 configdir = ana.os.paths('configdir');
                 cfg = ana.config.file(configdir/"storage.yml", Scheme="/ana/storage");
-                obj.Config.ana.storage = cfg;
+
+                %TODO:
+                % obj.Config.ana = ana.config.branch(Scheme="/ana");
+                % obj.Config.ana.storage = cfg;
 
                 % fill standard aliases from general config
                 storage = cfg.storage;
