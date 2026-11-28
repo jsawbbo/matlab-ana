@@ -63,111 +63,6 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
         end        
     end
 
-    %% RedefinesParen
-    methods (Access=protected)
-        function varargout = parenReference(obj, indexOp)
-            idx = indexOp(1).Indices;
-            selected = obj.PrivateData_(idx{:});
-
-            if isscalar(selected)
-                result = selected{1};
-            else
-                result = selected;
-            end
-
-            if isscalar(indexOp)
-                varargout{1} = result;
-            else
-                [varargout{1:nargout}] = result.(indexOp(2:end));
-            end
-        end
-
-        function obj = parenAssign(obj, indexOp, varargin)
-            idx = [indexOp(1).Indices{:}];
-            value = varargin{1};
-            assert(numel(idx) == numel(value));
-
-            if isscalar(indexOp)
-                if isscalar(value)
-                    if isa(value,'ana.config.node.base')
-                        value = value.get();
-                    end
-                    obj.set(idx,value);
-                else
-                    for k = 1:numel(idx)
-                        if isa(value,'ana.config.node.base')
-                            value{k} = value{k}.get();
-                        end
-                        obj.set(idx(k),value{k});
-                    end
-                end
-            else
-                for k = 1:numel(idx)
-                    if idx(k) > numel(obj.PrivateData_)
-                        if idx(k) > numel(obj.PrivateData_)+1
-                            error("ANA:runtime:invalidIndex", "index out of range")
-                        end
-                        tmp = ana.config.node.dict(Parent=obj,Scheme=obj.PrivateScheme_);
-                        obj.PrivateData_{idx(k)} = tmp;
-                    else
-                        tmp = obj.PrivateData_{idx(k)};
-                    end
-                    tmp.(indexOp(2:end)) = varargin{k};
-                end
-            end
-            % TODO:
-            % - if new entry is created, it needs to run the initialize() function first
-        end
-
-        function obj = parenDelete(obj, indexOp)
-            obj.PrivateData_(indexOp.Indices{:}) = [];
-        end
-
-        function n = parenListLength(~, indexOp, ~)
-            n = numel(indexOp(1).Indices{:});
-        end
-    end
-    
-    methods (Access=public)
-        function out = value(obj)
-            out = obj.PrivateData_;
-        end
-        
-        function out = cat(dim,varargin)
-            error("ANA:internal:requiresImplementation", "Internal error: function or method should but is not implemented.")
-        end
-
-        function data = cell(obj)
-            data = obj.PrivateData_;
-        end
-
-        function n = numel(obj, varargin)
-            n = numel(obj.PrivateData_);
-        end
-
-        function n = length(obj)
-            n = length(obj.PrivateData_);
-        end
-
-        function s = size(obj, dim)
-            if nargin == 1
-                s = size(obj.PrivateData_);
-            else
-                s = size(obj.PrivateData_, dim);
-            end
-        end        
-
-        function tf = isempty(obj)
-            tf = isempty(obj.PrivateData_);
-        end
-    end
-
-    methods (Static, Access=public)
-        function obj = empty()
-            obj = ana.config.node.table();
-        end
-    end
-    
     %% PUBLIC
     methods
         function obj = table(options)
@@ -317,6 +212,111 @@ classdef table < ana.config.node.base & matlab.mixin.indexing.RedefinesParen
             end
         end
     end
+
+    %% RedefinesParen
+    methods (Access=protected)
+        function varargout = parenReference(obj, indexOp)
+            idx = indexOp(1).Indices;
+            selected = obj.PrivateData_(idx{:});
+
+            if isscalar(selected)
+                result = selected{1};
+            else
+                result = selected;
+            end
+
+            if isscalar(indexOp)
+                varargout{1} = result;
+            else
+                [varargout{1:nargout}] = result.(indexOp(2:end));
+            end
+        end
+
+        function obj = parenAssign(obj, indexOp, varargin)
+            idx = [indexOp(1).Indices{:}];
+            value = varargin{1};
+            assert(numel(idx) == numel(value));
+
+            if isscalar(indexOp)
+                if isscalar(value)
+                    if isa(value,'ana.config.node.base')
+                        value = value.get();
+                    end
+                    obj.set(idx,value);
+                else
+                    for k = 1:numel(idx)
+                        if isa(value,'ana.config.node.base')
+                            value{k} = value{k}.get();
+                        end
+                        obj.set(idx(k),value{k});
+                    end
+                end
+            else
+                for k = 1:numel(idx)
+                    if idx(k) > numel(obj.PrivateData_)
+                        if idx(k) > numel(obj.PrivateData_)+1
+                            error("ANA:runtime:invalidIndex", "index out of range")
+                        end
+                        tmp = ana.config.node.dict(Parent=obj,Scheme=obj.PrivateScheme_);
+                        obj.PrivateData_{idx(k)} = tmp;
+                    else
+                        tmp = obj.PrivateData_{idx(k)};
+                    end
+                    tmp.(indexOp(2:end)) = varargin{k};
+                end
+            end
+            % TODO:
+            % - if new entry is created, it needs to run the initialize() function first
+        end
+
+        function obj = parenDelete(obj, indexOp)
+            obj.PrivateData_(indexOp.Indices{:}) = [];
+        end
+
+        function n = parenListLength(~, indexOp, ~)
+            n = numel(indexOp(1).Indices{:});
+        end
+    end
+    
+    methods (Access=public)
+        function out = value(obj)
+            out = obj.PrivateData_;
+        end
+        
+        function out = cat(dim,varargin)
+            error("ANA:internal:requiresImplementation", "Internal error: function or method should but is not implemented.")
+        end
+
+        function data = cell(obj)
+            data = obj.PrivateData_;
+        end
+
+        function n = numel(obj, varargin)
+            n = numel(obj.PrivateData_);
+        end
+
+        function n = length(obj)
+            n = length(obj.PrivateData_);
+        end
+
+        function s = size(obj, dim)
+            if nargin == 1
+                s = size(obj.PrivateData_);
+            else
+                s = size(obj.PrivateData_, dim);
+            end
+        end        
+
+        function tf = isempty(obj)
+            tf = isempty(obj.PrivateData_);
+        end
+    end
+
+    methods (Static, Access=public)
+        function obj = empty()
+            obj = ana.config.node.table();
+        end
+    end   
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
 % SPDX-License-Identifier: GPL-3.0-or-later

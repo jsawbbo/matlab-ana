@@ -80,14 +80,13 @@ classdef session < handle
 
                 % load essential config
                 configdir = ana.os.paths('configdir');
-                cfg = ana.config.file(configdir/"storage.yml", Scheme="/ana/storage");
+                storage = ana.config.file(configdir/"storage.yml", Scheme="/ana/storage");
 
                 %TODO:
                 % obj.Config.ana = ana.config.branch(Scheme="/ana");
-                % obj.Config.ana.storage = cfg;
+                % obj.Config.ana.storage = storage;
 
                 % fill standard aliases from general config
-                storage = cfg.storage;
                 searchpath = storage.searchpath;
                 aliases = cell(1, numel(searchpath));
 

@@ -1,9 +1,7 @@
-classdef branch < ana.config.node.dict
+classdef branch < handle
     %ana.config.branch      Configuration branch.
     %
-    %   Configuration branches are, in itself, separate configuration nodes 
-    %   (usually files, see ana.config.file). They can appear in a hierarchical
-    %   tree of configuration objects, but are treated independently.
+    %   Configuration branches define the configuration tree in a hierarchical way.
     %
 
     %TODO 
@@ -12,37 +10,53 @@ classdef branch < ana.config.node.dict
     %  for example obj.storage.storage (see also ana.session: obj.Config.ana.storage = storage;)
     %- validation needs to be based on the scheme hierarchy
 
+    %% PROPERTIES
+    properties(SetAccess = protected)
+        Index                           % Branch index (local part only).
+
+        PrivateParent_ = [];            % Parent node.
+        PrivateScheme_ = [];            % Scheme node (if available).
+        PrivateData_ = [];              % Representation of encapsulated data.
+    end
+
     %% SCHEME
     methods (Access = protected)
-        function initialize(obj)
-            % FIXME handle version
-            initialize@ana.config.node.dict(obj);
-        end
     end
     
-    %% SCHEME
+    %% UTILS
     methods (Access = protected)
-        function [valid,reason] = validate(obj,key)
-            reason = [];
-            valid = true;
-        end        
     end
 
     %% PUBLIC
     methods
         function obj = branch(options)
-            %object            Construct an instance of this class
+            %branch            Construct an instance of this class
             arguments
                 options.Parent = []
                 options.Scheme = []
-                options.Init = true
             end
 
-            obj@ana.config.node.dict(Parent=options.Parent,Scheme=options.Scheme);
-            if options.Init
-                obj.initialize()
+            % FIXME
+        end
+
+        function res = index(obj)
+            %INDEX      Get current index (including parents) as array.
+            %
+
+            if isempty(obj.PrivateParent_)
+                res = obj.Index;
+            else
+                res = [obj.PrivateParent_.index(), obj.Index];
             end
         end
+    end
+
+    %% RedefinesParen
+    methods (Access=protected)
+    end
+
+    %% RedefinesDot
+    methods(Access=protected)
     end
 end
 % Copyright (C) 2026 MPI f. Neurobiol. of Behavior — caesar
