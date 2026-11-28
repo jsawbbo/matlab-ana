@@ -187,13 +187,15 @@ or
                 eval: |
                     <script>
 
-TODO: I need to be able to use also YAML for populating a whole config (e.g. the roles in a project).
+TODO: 
+- I need to be able to use also YAML for populating a whole config (e.g. the roles in a project).
       ->
             default:
                 [eval]: |
                     <script>
                 [import]: <yaml-file>
                 [value]: <default-value>
+- language independence: should not be "eval" but rather "matlab"?
 
 #### Rules for validation
 

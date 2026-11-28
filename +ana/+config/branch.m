@@ -1,7 +1,7 @@
-classdef object < ana.config.node.dict
-    %ana.config.object      Configuration object.
+classdef branch < ana.config.node.dict
+    %ana.config.branch      Configuration branch.
     %
-    %   Configuration objects are, in itself, separate configuration nodes 
+    %   Configuration branches are, in itself, separate configuration nodes 
     %   (usually files, see ana.config.file). They can appear in a hierarchical
     %   tree of configuration objects, but are treated independently.
     %
@@ -16,7 +16,7 @@ classdef object < ana.config.node.dict
     
     %% PUBLIC
     methods
-        function obj = object(options)
+        function obj = branch(options)
             %object            Construct an instance of this class
             arguments
                 options.Parent = []
