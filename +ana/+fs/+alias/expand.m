@@ -34,6 +34,10 @@ function resolved = expand_helper(path, aliases, resolved)
     end
 
     list = aliases.(thealias);
+    if ~iscell(list)
+        list = {list};
+    end
+    
     for k = 1:numel(list)
         if isscalar(path)
             tmp = list{k};

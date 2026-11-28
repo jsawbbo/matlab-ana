@@ -6,6 +6,12 @@ classdef branch < ana.config.node.dict
     %   tree of configuration objects, but are treated independently.
     %
 
+    %TODO 
+    %- should not be a child of "ana.config.node.dict" because the semantics are different:
+    %  here, we list branches of branches: if it's a config file, the lookup would be,
+    %  for example obj.storage.storage (see also ana.session: obj.Config.ana.storage = storage;)
+    %- validation needs to be based on the scheme hierarchy
+
     %% SCHEME
     methods (Access = protected)
         function initialize(obj)
@@ -14,6 +20,14 @@ classdef branch < ana.config.node.dict
         end
     end
     
+    %% SCHEME
+    methods (Access = protected)
+        function [valid,reason] = validate(obj,key)
+            reason = [];
+            valid = true;
+        end        
+    end
+
     %% PUBLIC
     methods
         function obj = branch(options)
@@ -21,7 +35,6 @@ classdef branch < ana.config.node.dict
             arguments
                 options.Parent = []
                 options.Scheme = []
-                options.Tag = [] % FIXME not implemented currently!
                 options.Init = true
             end
 

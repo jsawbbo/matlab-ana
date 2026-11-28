@@ -288,8 +288,6 @@ classdef scheme
         function res = load(index)
             %LOAD       Load scheme file index.
             %
-            % Note: This function will not sanitize entries (in contrast to the scan() function).
-            % 
 
             priv = ana.config.scheme.private();
             if ~isfield(priv.index, index)
@@ -376,16 +374,81 @@ classdef scheme
 
             % load from file
             if ~isstruct(doc)
-                doc = ana.scheme.config.load(doc);
+                doc = ana.config.scheme.load(doc);
             end
 
             if ~isstruct(doc)
                 error("ANA:Scheme:InvalidArguments", "neither name of scheme nor scheme struct")
             end
 
-            obj.Scheme = doc;
+            % meta
+            if ~isfield(doc, 'meta')
+                doc.meta = ana.type.dict;
+            end
 
-            % ensure, content is a cell
+            % import
+            if isfield(doc, 'import')
+                imports = doc.import;
+                if ischar(imports) || isstring(imports)
+                    imports = cellstr(imports);
+                end
+
+                for k = 1:numel(imports)
+                    imported = ana.config.scheme.load(imports{k});
+                    
+                    if isfield(doc,'type')
+                        if doc.type ~= imported.type
+                            warning("ANA:Scheme:NoType", "Type must not be set when importing a scheme. Ignoring...")
+                        end
+                    end
+                    doc.type = imported.type;
+
+                    if isfield(doc,'content')
+                        error("ANA:Scheme:NoContent", "Imported types must not have 'content' set.")
+                    end
+
+                    fn = fieldnames(imported.meta);
+                    for n = 1:numel(fn)
+                        field = fn{n};
+                        switch(field)
+                            case {'rules'}
+                                if isfield(doc.meta,field)
+                                    error("ANA:Scheme:NoRules", "Imported types must not have 'meta.%s' set.", field)
+                                end
+
+                                doc.meta.(field) = imported.meta.(field);
+                            otherwise
+                                if ~isfield(doc.meta, field)
+                                    doc.meta.(field) = imported.meta.(field);
+                                end
+                        end
+                    end
+                end
+            end
+
+            % default type
+            if ~isfield(doc,'type')
+                doc.type = 'dict';
+            end
+
+            % default label
+            if ~isfield(doc.meta, 'label')
+                if isfield(doc, 'index')
+                    p = ana.fs.path(doc.index);
+                    p = string(p(end));
+
+                    doc.meta.label = ana.string.title(p);
+                elseif isfield(doc, 'key')
+                    doc.meta.label = ana.string.title(doc.key);
+                else
+                    % FIXME ana.log.warn
+                    warning('ANA:Scheme:MissingLabel', 'meta.label should be provided.')
+                    doc.meta.label = '-';
+                end
+            end
+
+            % final adjustments
+            obj.Scheme = doc;
             if isfield(doc,'content') && ~iscell(doc.content)
                 N = numel(doc.content);
                 content = cell(N,1);
@@ -449,8 +512,19 @@ classdef scheme
         function res = meta(obj)
             %META    Get meta table of current node.
             %
-            if isfield(obj.Scheme, 'meta')
-                res = obj.Scheme.meta;
+            assert(~isempty(obj.Scheme));
+            res = obj.Scheme.meta;
+        end
+
+        function res = config(obj)
+            %CONFIG     Get config (if applicable).
+            %
+            assert(~isempty(obj.Scheme));
+
+            if isfield(obj.Scheme,'config')
+                res = obj.Scheme.config;
+
+                % FIXME should check if "file" is present
             else
                 res = [];
             end
@@ -462,7 +536,7 @@ classdef scheme
             assert(~isempty(obj.Scheme));
 
             if ~isfield(obj.Scheme, 'content')
-                res = ana.config.scheme();
+                res = {};
                 return
             end
 
@@ -486,41 +560,41 @@ classdef scheme
                 options.Level (1,1) = 0     % Nested comment level
             end
 
+            assert(~isempty(obj.Scheme));
+
             follow = true;
-            if isfield(obj.Scheme, 'meta')
-                meta = obj.Scheme.meta;
-                if isfield(meta,'comment')
-                    column_s = pad("", options.Column);
-                    indent_s = pad("", options.Level*4);
-                    comment = strrep(meta.comment, sprintf('\r'), '');
-                    lines = strsplit(comment, '\n', CollapseDelimiters=false);
-                    if strlength(lines(end)) == 0
-                        lines = lines(1:end-1);
-                    end
+            meta = obj.Scheme.meta;
+            if isfield(meta,'comment')
+                column_s = pad("", options.Column);
+                indent_s = pad("", options.Level*4);
+                comment = strrep(meta.comment, sprintf('\r'), '');
+                lines = strsplit(comment, '\n', CollapseDelimiters=false);
+                if strlength(lines(end)) == 0
+                    lines = lines(1:end-1);
+                end
 
-                    switch (obj.Scheme.type)
-                        case "category"
-                            cats = obj.Scheme.meta.rules;
-                            lines = ["Categories: " + strjoin([cats.value], ", "); ""; lines(:)];
-                    end
+                switch (obj.Scheme.type)
+                    case "category"
+                        cats = obj.Scheme.meta.rules;
+                        lines = ["Categories: " + strjoin([cats.value], ", "); ""; lines(:)];
+                end
 
-                    for k = 1:numel(lines)
-                        fprintf(fd, "%s# %s%s\n", column_s, indent_s, lines{k});
-                    end
+                for k = 1:numel(lines)
+                    fprintf(fd, "%s# %s%s\n", column_s, indent_s, lines{k});
+                end
 
-                    switch (obj.Scheme.type)
-                        case "table"
-                            fprintf(fd, "%s# \n", column_s);
-                            fprintf(fd, "%s# %sEntries:\n", column_s, indent_s);
+                switch (obj.Scheme.type)
+                    case "table"
+                        fprintf(fd, "%s# \n", column_s);
+                        fprintf(fd, "%s# %sEntries:\n", column_s, indent_s);
 
-                            for k = 1:numel(obj.Scheme.content)
-                                node = ana.config.scheme(obj.Scheme.content{k});
-                                fprintf(fd, "%s# %s- ""%s""\n", column_s, indent_s, node.Scheme.key);
-                                node.comment(fd,Column=options.Column,Level=options.Level+1);
-                            end
+                        for k = 1:numel(obj.Scheme.content)
+                            node = ana.config.scheme(obj.Scheme.content{k});
+                            fprintf(fd, "%s# %s- ""%s""\n", column_s, indent_s, node.Scheme.key);
+                            node.comment(fd,Column=options.Column,Level=options.Level+1);
+                        end
 
-                            follow = false;
-                    end
+                        follow = false;
                 end
             end
         end

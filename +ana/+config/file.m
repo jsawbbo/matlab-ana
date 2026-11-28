@@ -11,31 +11,43 @@ classdef file < ana.config.branch
 
     %% PUBLIC
     methods
-        function obj = file(pathname,options)
+        function obj = file(path,options)
             %file            Construct an instance of this class
+            %
             arguments
-                pathname (1,:) = []
-                options.Parent = []
-                options.Scheme = []
+                path (1,:) = []         % File path or scheme index.
+                options.Parent = []     % Parent branch.
+                options.Scheme = []     % Scheme.
             end
 
-            if isempty(pathname)
-                pathname = ana.os.paths('configdir') / "config.yml";
-                options.Scheme = "/general";
-            else
-                pathname = ana.fs.path(pathname);
+            % singleton
+            %TODO: implement singleton behavior (config is listed in ana.session)
+
+            % check if index
+            try 
+                sch = ana.config.scheme(path);
+
+                if sch.kind() ~= 'config'
+                    error("ANA:Config:InvalidIndex", "Given index is not a configuration scheme.")
+                end
+
+                options.Scheme = sch;
+                path = sch.config().file;
+            catch
             end
 
             obj@ana.config.branch(Parent=options.Parent,Scheme=options.Scheme,Init=false);
-
-            % do not load twice
-            % FIXME implement a singleton mechanism
 
             % initialize (delayed for singleton mechanism)
             obj.initialize()                     
             
             % load config file if it exists
-            obj.PrivateFilename_ = ana.fs.path(pathname);
+            obj.PrivateFilename_ = ana.fs.path(path);
+
+            if obj.PrivateFilename_.isalias()
+                obj.PrivateFilename_ = obj.PrivateFilename_.resolve();
+            end
+
             if obj.PrivateFilename_.isfile()
                 data = ana.file.yaml.load(obj.PrivateFilename_);
 

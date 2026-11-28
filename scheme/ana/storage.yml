@@ -1,6 +1,7 @@
 version: "1.0"
 
 index: /ana/storage
+type: dict
 meta:
     label: Storage
 config:

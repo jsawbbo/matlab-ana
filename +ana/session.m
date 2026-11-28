@@ -47,7 +47,7 @@ classdef session < handle
 
     %% PROPERTIES
     properties(Access=protected)
-        Config ana.config.object            % Configuration tree.
+        Config ana.config.branch            % Configuration tree.
     end
 
     properties(SetAccess=protected)
@@ -78,12 +78,14 @@ classdef session < handle
                 % bootstrap system
                 ana.bootstrap();
 
-                % load general config
-                %TODO: load all relevant configs
-                obj.load();
+                % load essential config
+                obj.Config.ana = ana.config.branch(Scheme="/ana");
+                configdir = ana.os.paths('configdir');
+                cfg = ana.config.file(configdir/"storage.yml", Scheme="/ana/storage");
+                obj.Config.ana.storage = cfg;
 
                 % fill standard aliases from general config
-                storage = obj.Config.general.storage;
+                storage = cfg.storage;
                 searchpath = storage.searchpath;
                 aliases = cell(1, numel(searchpath));
 
@@ -136,26 +138,17 @@ classdef session < handle
 
     %% CONFIG
     methods
-        function load(obj,key)
+        function load(obj,index)
             %LOAD       Load configuration.
             %
             %   FIXME
             %
             arguments
                 obj ana.session
-                key (1,:) string = "general";
+                index (1,:) string;
             end
 
-            configdir = ana.os.paths('configdir');
-
-            for k = 1:numel(key)
-                if key(k) == "general"
-                    % cfg = ana.config.file(configdir/"general.yml", Scheme="/general");
-                    % obj.Config.("general") = cfg;
-                else
-                    %TODO load additional configs, might be of the form "plugin.device"
-                end
-            end
+            % configdir = ana.os.paths('configdir');
         end
     end
 
